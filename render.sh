@@ -6,10 +6,10 @@
 #
 
 type=main
-pdflatex thesis-$type.tex
-bibtex   thesis-$type
-pdflatex thesis-$type.tex
-pdflatex thesis-$type.tex
+pdflatex $type.tex
+bibtex   $type
+pdflatex $type.tex
+pdflatex $type.tex
 
 rm -f *.aux *.bak *.log *.blg *.bbl *.toc *.out
 
