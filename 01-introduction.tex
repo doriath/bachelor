@@ -42,49 +42,35 @@ With the increase of usage and importance of Internet services in everyday life 
 Providing these features to the services is a complex matter, often requiring various trade-offs between user satisfaction and service resource demands.
 
 Most common and effective method of providing reliable services is replication. Applying the replication requires only minor difference between non-replicated services and the replicated ones, what makes it usable both for creating new services in the typical way % poprawić zwrot
-as well as transfroming existing services into replicated ones.
+as well as transforming existing services into replicated ones.
 
 
-TODO
-
-Why providing reliability and constant availability is hard? What is causing the problem? 
-
-\section{Problem Definition}
-
-\section{Our solution}
-
-Implement state machine replication based on Paxos protocol.
+% TODO What do we want to write here?
+% Why providing reliability and constant availability is hard? What is causing the problem? 
+% fault tolerance
 
 \section{Related work}
 
-%    \item cel pracy (patrz niżej); 
-%    \item zakres (przedmiotowy, podmiotowy, czasowy) wyjaśniający, w jakim rozmiarze praca będzie realizowana; 
-%    \item ewentualne hipotezy, które autor zamierza sprawdzić lub udowodnić; 
-%    \item krótką charakterystykę źródeł, zwłaszcza literaturowych; 
-%    \item ewentualne uwagi dotyczące realizacji tematu pracy np.~trudności, które pojawiły się w trakcie 
-%    realizacji poszczególnych zadań, uwagi dotyczące wykorzystywanego sprzętu, współpraca z firmami zewnętrznymi. 
-%\end{itemize}
+Few words about state machine replication, about different approaches (2PC
+Two-Phase Commit, 3PC Three-Phase Commit, e3PC Enhanced Three Phase Commit).
+
+Point to first paper about Paxos (The part-time parliament). Then few words about
+other papers like Paxos made simple or more engineer papers like Paxos for system
+builders or Paxos made live.  
+
+\section{Problem Definition}
+
+Fault tolerant
+
+\section{Our solution}
+
+Implement state machine replication based on Paxos protocol. 
+
+Mention about all modules and performance optimization to make the library ready to use 
+in production systems. (Batching, Catch-up, snapshoting)
 
 \section{Organization of the Thesis}
-%\noindent
-%\textbf{Wstęp do pracy musi się kończyć dwoma następującymi akapitami:}
-%\begin{quote}
-%Celem pracy jest opracowanie / wykonanie analizy / zaprojektowanie / ...........
-%\end{quote}
-%oraz:
-%\begin{quote}
-%Struktura pracy jest następująca. W rozdziale 2 przedstawiono przegląd literatury na temat ........ 
-%Rozdział 3 jest poświęcony ....... (kilka zdań). 
-%Rozdział 4 zawiera ..... (kilka zdań) ............ itd. 
-%Rozdział X stanowi podsumowanie pracy. 
-%\end{quote}
-The structure of this bachelor's thesis is following. In chapter 2 the theory about consensus, paxos algorithm, replication, state machine, failure detector is provided. In chapter 3 ... . In chapter 4. In chapter 5.
+The structure of this bachelor's thesis is following. In chapter 2 the theory about consensus, Paxos algorithm, replication, state machine, failure detector is provided. In chapter 3 our solution is described, Multi Paxos, features like snapshotting, catch-up, failure-detector, recovery algorithms. In chapter 4 the Recovery is described. In chapter 5.
 
-%W przypadku prac inżynierskich zespołowych lub magisterskich 2-osobowych, po tych dwóch w/w akapitach 
-%musi w pracy znaleźć się akapit, w którym będzie opisany udział w pracy poszczególnych członków zespołu. Na przykład:
-%\begin{quote}
-%Jan Kowalski w ramach niniejszej pracy wykonał projekt tego i tego, opracował ......
-%Grzegorz Brzęczyszczykiewicz wykonał ......, itd. 
-%\end{quote}
-Jan Konczak has done catch-up, recovery from stable storage.
-Tomasz Zurkowski has done ...
+Jan Konczak has done catch-up, recovery from stable storage, ....
+Tomasz Zurkowski has done ....
