@@ -44,33 +44,40 @@ Providing these features to the services is a complex matter, often requiring va
 Most common and effective method of providing reliable services is replication. Applying the replication requires only minor difference between non-replicated services and the replicated ones, what makes it usable both for creating new services in the typical way % poprawić zwrot
 as well as transforming existing services into replicated ones.
 
-
-% TODO What do we want to write here?
-% Why providing reliability and constant availability is hard? What is causing the problem? 
-% fault tolerance
+Goals
+- stworzenie JPaxos, replikacja maszyny stanowej crash recovery
 
 \section{Related work}
+Literature
 
-Few words about state machine replication, about different approaches (2PC
-Two-Phase Commit, 3PC Three-Phase Commit, e3PC Enhanced Three Phase Commit).
+\begin{itemize}
+  \item The part-time pariliament
+  \item Paxos made simple
+  \item Paxos made live
+  \item Paxos for system builders
+  \item ? Chandra Tuega
+\end{itemize}
 
-Point to first paper about Paxos (The part-time parliament). Then few words about
-other papers like Paxos made simple or more engineer papers like Paxos for system
-builders or Paxos made live.  
+Uklad pracy
 
-\section{Problem Definition}
+\begin{itemize}
+  \item -
+\end{itemize}
 
-Fault tolerant
+Jan Konczak 
 
-\section{Our solution}
+\begin{itemize}
+  \item catch up 
+  \item snapshot 
+  \item service proxy
+  \item benchmark project
+\end{itemize}
 
-Implement state machine replication based on Paxos protocol. 
+Tomasz Zurkowski
 
-Mention about all modules and performance optimization to make the library ready to use 
-in production systems. (Batching, Catch-up, snapshoting)
-
-\section{Organization of the Thesis}
-The structure of this bachelor's thesis is following. In chapter 2 the theory about consensus, Paxos algorithm, replication, state machine, failure detector is provided. In chapter 3 our solution is described, Multi Paxos, features like snapshotting, catch-up, failure-detector, recovery algorithms. In chapter 4 the Recovery is described. In chapter 5.
-
-Jan Konczak has done catch-up, recovery from stable storage, ....
-Tomasz Zurkowski has done ....
+\begin{itemize}
+  \item unit tests
+  \item client manager, network
+  \item view ss
+  \item disc writer for full ss
+\end{itemize}

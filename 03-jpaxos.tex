@@ -8,36 +8,26 @@ Servers communicate with each other using asynchronous communication with no
 guarantees - messages can be lost and duplicated. Each server is running the
 same state machine which is executing all requests from the clients.
 
-\section{Paxos Protocol}
-
-- leader election phase (prepare, prepare ok)
-- propose / accept phase
-
-\section{Leader election}
-
-Every process keeps track of most recent view number received from any of other
-process. View number is inside every message sent between processes. The view
-number is used to determine the current leader. The process is a leader if: 
-$$ view \bmod N \equiv process\_id $$
-where:
-
-\begin{description}
-  \item[view] - current view number
-  \item[N] - number of replicated servers (processes)
-  \item[process\_id] - the unique process id in range 
-\end{description}
-
-\section{MultiPaxos}
-
-Multiple instances.
+\section{Client}
 
 \section{Architecture}
 
+\section{Paxos}
+Proposer, acceptor, learner.
+
 \section{Batching}
+
+\section{Concurent instanses}
 
 \section{Catch-up mechanism}
 
-\section{Recovery algorithms}
+\section{Snapshoting}
+
+\section{Storage}
+
+\section{Client manager}
+
+\section{Recovery}
 
 \subsection{Crash Stop}
 
@@ -46,6 +36,11 @@ Multiple instances.
 \subsection{View based recovery}
 
 \subsection{Epoch based recovery}
+
+\section{Application}
+MapService, DigestService - validation
+
+PaxosSTM - []
 
 %Rozdziały dokumentujące pracę własną studenta: opisujące ideę, sposób lub metodę 
 %rozwiązania postawionego problemu oraz rozdziały opisujące techniczną stronę rozwiązania 
