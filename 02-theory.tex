@@ -10,19 +10,19 @@
 %dotyczy to również rysunków, tabel, fragmentów kodu źródłowego programów itd. Należy także podać
 %adresy stron internetowych w przypadku źródeł pochodzących z Internetu.
 
-In this chapter the background for paxos algorithm is presented.
+In this chapter the background for Paxos algorithm is presented.
 
 
 
 \section{Definitions}
 
-In order to prevent misunderstandng and to clarify the subject of the thesis we open it with definitions of
+In order to prevent misunderstandings and to clarify the subject of the thesis we open it with definitions of
 basic % TODO lepszy odpwoednik 
 terms we use.
 
 
 \paragraph{Consensus}
-is a problem in distributed computing that encapsulates the task of group agreement in the presence of faluts.
+is a problem in distributed computing that encapsulates the task of group agreement in the presence of faults.
 
 \begin{description}
     \item[Validity] any value decided is a value proposed by some process,
@@ -87,7 +87,7 @@ In the best case no algorithm is able to solve consensus in time less than $1n+1
 Our implementation, as described in % TODO: reference needed
 , is theoretically able to decide messages in $n+1$ time. Moreover, assuming no network congestion and message loss the average time is equal to the best-case time.
 
-However, with TCP and simple UDP it is not possble to use either multicast or broadcast primitive; this prelongs the real time needed for sending a message, as in the lowest network module \emph{broadcast} is translated to $n$ identical $unicast$ messages.
+However, with TCP and simple UDP it is not possible to use either multicast or broadcast primitive; this prelongs the real time needed for sending a message, as in the lowest network module \emph{broadcast} is translated to $n$ identical $unicast$ messages.
 
 Please note that no other Paxos implementation uses multicast for reducing communication. Only current implementation using multicast is the RingPaxos\cite{Mar10}, but the ring topology used for further message passing increases the time.
 

@@ -44,15 +44,15 @@ Providing these features to the services is a complex matter, often requiring va
 Most common and effective method of providing reliable services is replication. Applying the replication requires only minor changes between non-replicated services and the replicated ones, what makes it usable both for creating new services in the typical way % poprawić zwrot
 as well as transforming existing services into replicated ones.
 
-Each replication approach relies on certain group communication mechanism - usually providing strong guarantees. Total-order (atomic) broadcast is a very usefull for interconnecting replicas - it simplifies the design and implementation of replicated protocols, as it alows for dividing the system into two main modules with clearly visible responsibilities.
+Each replication approach relies on certain group communication mechanism - usually providing strong guarantees. Total-order (atomic) broadcast is a very useful for interconnecting replicas - it simplifies the design and implementation of replicated protocols, as it allows for dividing the system into two main modules with clearly visible responsibilities.
 
 The services vary, and so the approaches for replication must also vary. A library able to replicate every service would not only be hard to implement, but also could be too complicated for the user.
 
-We chose to implement one of the replication appropach - an approach we trust to have bright future.
+We chose to implement one of the replication approach - an approach we trust to have bright future.
 
-We implement active replication of services - that means each copy does the same work. The replicas must work identically, therefore we require the service to behave deterministicly.
+We implement active replication of services - that means each copy does the same work. The replicas must work identically, therefore we require the service to behave deterministically.
 
-Every library for replicating services should adress it's main purpose -- guarantee high availability of service as well as durability of the service work results -- while having minimum requirements for the enviornment.
+Every library for replicating services should address it's main purpose -- guarantee high availability of service as well as durability of the service work results -- while having minimum requirements for the environment.
 
 Our software design goal is to work well in real networks, survive temporary network crashes and be able to recover from replica crashes as well.
 
@@ -67,7 +67,7 @@ The goal of this bachelor's thesis is to create Java library implementing state 
 Literature
 
 \begin{itemize}
-  \item The part-time pariliament
+  \item The part-time parliament
   \item Paxos made simple
   \item Paxos made live
   \item Paxos for system builders
@@ -87,7 +87,7 @@ Jan Konczak for the purpose of this thesis has prepared design and implementatio
   \item benchmark project.
 \end{itemize}
 
-Tomasz Zurkowski has prepared design and implemenation of:
+Tomasz Zurkowski has prepared design and implementation of:
 \begin{itemize}
   \item unit tests for JPaxos project,
   \item client manager module, 
