@@ -1,0 +1,200 @@
+\chapter{Architecture}
+
+\section{Architecture overview}
+\indent\par
+Easiest way to understand the architecture of \paxosJava is to analyze the diagram below:
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[keepaspectratio, width=0.75\textwidth]{architecture/replica_architecture.pdf}
+ \caption{Block diagram of \paxosJava modules}
+ \label{fig:replica_architecture}
+\end{figure}
+
+Here comes the description for all modules but client and service (for these, see section \ref{sec:client_service}):
+
+\begin{description}
+  \item[ClientManager ] gets new requests from clients
+  \item[Replica ] executes decisions
+  \item[Paxos ] implements Paxos consensus algorithm
+  \begin{description}
+    \item[Proposer ] sends new proposes
+    \item[Acceptor ] receives proposes and accepts them
+    \item[Learner ] collects accepts and decides
+  \end{description}
+  \item[CatchUp ] takes care for lost ballots
+  \item[SnapshotMaintainer ] controls snapshot mechanism
+  \item[Storage ] keeps less significant data
+  \item[Stable Storage ] keeps the data needed for disk recovery
+\end{description}
+
+\section{Storage and data structures}
+\label{sec:storage_and_data_structures}
+
+\subsection{Storage and StableStorage interfaces}
+\label{subsubsec:storage_and_stablestorage_interfaces}
+
+There are two interfaces containing data for Paxos protocol.
+
+Most of the data is used in multiple classes, but should be accessed only from dispatcher thread (see subsection \ref{sec:threads})
+
+\paragraph{\normalfont \ttfamily lsr.paxos.Storage}
+holds all data that are not required for disk-recovery or have been read from a config file.
+
+It also holds some data that could be generated every time used, but as they don't change it's more efficient to have them prepared before.
+
+This class also has the reference on \texttt{StableStorage}.
+
+\begin{description}
+\setlength{\itemindent}{0pt}
+  \item[]{\tiny\vspace{-0.5em}Config file\vspace{-0.5em}}
+    \item[n] Number of processes 
+    \item[processes] List of processes
+    \item[localID] ID of the replica
+  \item[]{\tiny\vspace{-0.5em}Pre-generated\vspace{-0.5em}}
+    \item[acceptors] List of processes acting as acceptors
+    \item[learners]  List of processes acting as learners
+  \item[]{\tiny\vspace{-0.5em}Protocol data\vspace{-0.5em}}
+    \item[firstUncommited] First not decided yet instance.
+    \item[windowSize] Current size of the window used for multiple instances
+    % TODO: ref for multiple instances
+\end{description}
+
+\paragraph{\normalfont \ttfamily lsr.paxos.StableStorage} interface is designed to hold all data that must be synchronised with disk.
+
+It is a good practise to keep all data needed for disk recovery in one class, and the StableStorage is such a interface.
+
+The interface currently provides:
+\begin{description}
+\setlength{\itemindent}{0pt}
+  \item[log] the Paxos Log
+  \item[snapshot] most recent snapshot
+\end{description}
+
+
+\subsection{The Paxos Log}
+\label{subsubsec:the_paxos_log}
+The most important data structure, the log, is part of StableStorage.
+
+In our program responsible for that is interface \texttt{lsr.paxos.Log} and class \texttt{lsr.paxos.Con\-sen\-susInstance}.
+
+\texttt{ConsensusInstance} is class keeping all data related to single instance:
+\begin{description}
+  \setlength{\itemindent}{0pt}
+  \item[state] - the instance can be in one of three state:
+  \begin{description}
+    \setlength{\itemindent}{0pt}
+    \item[\tiny UNKNOWN] - no information about current view nor value,
+    \item[\tiny KNOWN] - view and value are specified and \textbf{can} be changed later,
+    \item[\tiny DECIDED] - view and value are specified and \textbf{cannot} be changed.
+  \end{description}
+  \item[view] - view of last received message related with this instance,
+  \item[value] - the value which is held by this instance (packed requests received from clients which are executed after deciding),
+  \item[accepts] - set of known replicas which accepted (view, value) pair.
+\end{description}
+This class can be easily serialised(deserialised) to(from) byte array to send instances across network. Currently all instance data is saved in RAM memory. When implementing stable storage, this class should be changed.
+
+\texttt{Log} implementations are responsible for managing list of consensus instances. Inside log we have always all instances with id between \textbf{lowestAvailableId}(inclusive) and \textbf{nextId} (exclusive). Instances below \textbf{lowestAvailableId} have already been truncated and instances above \textbf{nextId} are yet unknown. \\New instances can be appended to log and after this operation \textbf{nextId} value is increased by 1. \\Log allows also to retrieve instances from it. There are 3 possible cases when retrieving instance with specified id:
+\begin{itemize}
+  \item (id $<$ lowestAvailableId) - instance has been truncated and null value is returned,
+  \item (lowestAvailableId $\leq$ id $<$ nextId) - instance is inside log so it is returned,
+  \item (nextId $\leq$ id) - empty instances between nextId and id are created and empty instance is returned.
+\end{itemize}
+Old instances can be removed by truncating log and after that lowestAvailableId is increased. 
+
+Appending, retrieving and truncating instances are three main operations performed by log. To perform this operations fast, we have used \texttt{TreeMap} structure for holding all instances.
+
+\subsection{Significant data structures}
+\label{subsubsec:significant_structures}
+  \begin{description}
+    \item[pendingRequests\textless RequestId, Client \textgreater] -- Keeps the requests received from the client for execution that were not yet executed. After execution of request, the reply is sent to client from this structure.
+    \item[lastReplies\textless ClientID, Reply\textgreater] -- For each c\-li\-en\-t, keeps the last reply that was sent to it. If client retransmits message which was executed, replica responses immediately.
+    \item[decidedWaitingExecution] -- Paxos might d\-e\-cide instance $k$ before instance $k-1$, but the replica must execute all requests in order. So it must cache instance $k$ until all previous instances are decided.
+    \item[executedRequests] -- We have to save IDs of all requests which were executed on state machine to prevent executing the same request twice. 
+	\item[executedDifference] -- Used to recreate executedRequests structure from moment when snapshot was made by state machine.
+  \end{description}
+
+
+\section{Threads}
+\label{sec:threads}
+
+\begin{description}
+  \item[Replica] \hfill
+    
+    Designed as event loop -- waits for new events at certain event queue and reacts on them.
+
+    The event may either be ``instance ordered'', or may concern snapshotting -- new snapshot was made by service, catch-up provided new snapshot or new snapshot is requested from the state machine.
+
+    For most of the time Replica thread waits for requests to be ordered. If they can not be yet executed, puts them on a list (uses for that the decidedWaitingExecution object), when instance executeUB is ordered, replica executes all possible instances.
+    
+    If there is a client connection waiting for this request, answer is sent to the client.
+    
+    As for snapshotting -- replica is a proxy ensuring linearizability in snapshot handling.
+    Multiple threads (replica itself, dispatcher and catch-up) may therefore safely execute their snapshot-concerning routines.
+    
+    % Work of the Replica thread could be done by the dispatcher, but executing requests might take some time, which would block the dispatcher thread and therefore the state machine. Like this, there is more parallelism on the framework, as the protocol and the request execution can proceed in parallel.
+
+  \item[Dispatcher] \hfill
+    
+    Also designed as an event loop, the dispatcher executes Paxos consensus algorithm as well as provides secure access to critical data structures.
+
+    It is responsible for sending, receiving and handling most of the protocol messages. 
+    
+    Events are placed on the event queue in the following situations:
+    
+    
+    \begin{tabular}{rl}
+      FailureDetector & \begin{tabular}[t]{l}
+                          suspects another process \\
+                          leader sends alive messages
+                        \end{tabular} \\
+      NetworkListener & \begin{tabular}[t]{l}
+                          receives a new message \\
+                          sent a message %\footnote{failure detector is informes about each sent message, as it may update timeout for sending alives}
+                        \end{tabular} \\
+      Paxos.propose() & \begin{tabular}[t]{l}
+                          the application starts a new proposal
+                        \end{tabular} \\
+      Paxos.startProposal() & \begin{tabular}[t]{l}
+                                the application asks the current process \\ \hspace{1em} to become a proposer.
+                              \end{tabular} \\
+      CatchUp &  \begin{tabular}[t]{l}
+                   gets and merges log fragment \\
+                   received a snapshot form other replica
+                 \end{tabular} \\
+      SnapshotMaintainer & \begin{tabular}[t]{l}
+                             Truncates the log after receiving new snapshot
+                           \end{tabular} \\
+      
+    \end{tabular}
+
+
+	\item[NioClientManager] \hfill
+
+		Using java.nio package we need only one thread \textsc{SelectorThread} to manage all clients connection. Every time new event occurs (incoming connection waits for accepting, data received from client, data ready to be sent) appropriate action is executed. Current implementation allows easy scaling to more \textsc{SelectorThread}'s to balance the CPU load if one thread wouldn't cope with big number of connections.
+
+	\item[UdpNetwork] \hfill
+
+		One thread responsible for listening on DatagramSocket for datagram packages. Every time new message is received, it is deserialised and all listeners are notified. 
+
+	\item[TcpNetwork] \hfill
+
+		For TCP connection between each two replicas a separate thread is created. Also there is one thread which waits for new incoming connections. Overall we have replica\_count + 1 threads handling TCP. Each of them can be in one of three states:
+		\begin{itemize}
+			\item connected, waiting for new messages,
+			\item not connected, trying to establish new connection,
+			\item not connected, waiting for new connection to be established by other replica.
+		\end{itemize}
+
+	\item[FailureDetector] \hfill
+
+	 It can work in two states depending whether current replica is leader or not. If leader, failure detector is sending \alive message every amount of time. If the replica is a follower, it waits for new message from leader or for timeout. If any message from leader is received, timer is reset. Otherwise, when timeout occurs, proposer is started.
+
+  \item[CatchUp]\hfill
+
+    This thread manages catch-up process.
+
+    Most of the time it is inactive (sleeping). It activates itself every 2 seconds or when some other thread wakes it up. The thread controls catch-up mechanism (see: \ref{subsec:catch_up_algorithm}) until certain conditions are met (i.e. as long as needed), and suspends itself after then.
+    
+    Even if the conditions are met at the waking of CatchUp, the thread sends one query for missing instances before deactivating itself.
+\end{description}
