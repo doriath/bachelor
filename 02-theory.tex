@@ -13,12 +13,16 @@
 In this chapter the background for paxos algorithm is presented. First the consensus problem is described, th
 
 
-Co to consensus, snapshot, service, catchup, deterministic state machinme, state machine, 
-crash models, atomic broadcast, nierozwiazywalnosc paxos'a
 
-\section{Consensus}
+\section{Definitions}
 
-Consensus is a problem in distributed computing that encapsulates the task of group agreement in the presence of faluts.
+In order to prevent misunderstandng and to clarify the subject of the thesis we open it with definitions of
+basic % TODO lepszy odpwoednik 
+terms we use.
+
+
+\paragraph{Consensus}
+is a problem in distributed computing that encapsulates the task of group agreement in the presence of faluts.
 
 \begin{description}
     \item[Validity] any value decided is a value proposed by some process,
@@ -26,4 +30,51 @@ Consensus is a problem in distributed computing that encapsulates the task of gr
     \item[Termination] every correct process eventually decides,
     \item[Integrity] no process decides twice
 \end{description}
+
+\paragraph{State machine}
+is any program, algorithm or protocol that can be described by it's state and that can transit to other state only by receiving a command.
+There are no restrictions how the state may change.
+
+\paragraph{Deterministic state machine}
+is a state machine that from the same state under the same command will always change state in the same way.
+
+Thanks to this property one may describe the state machine's state by the initial state and consecutive commands. 
+
+\paragraph{Service}
+is a program that receives requests -- or commands -- and execues them generating a response.
+
+\paragraph{Deterministic service}
+is a service, that will respond from given state and given command always with the same response, and will always change the state to the same state.
+
+\paragraph{Client}
+is the program sending requests to the service
+
+\paragraph{Atomic -- or total order -- broadcast}
+is a networking pritive providing send-to-all communication for which holds:
+\begin{itemize}
+ \item a message reaches all targets
+ \item each two messages are delivered in the same order at every receiver
+\end{itemize}
+
+\paragraph{Failure}
+is permanent lack od activity from a program. It may be caused by programming error, lack of electricity etc.
+
+We do not consider byzantine crashes, i.e. a process may not misbehave in any way.
+
+\paragraph{Crash model}
+defines how the crashed processes may behave.
+\begin{list}{}{ \setlength{\leftmargin}{0.2\textwidth} \setlength{\itemindent}{-0.1\textwidth}}
+ \item[\textbf{Crash-Stop}] means that if a process failed, it failed permanently and will never be up again
+ \item[\textbf{Crash-Recovery}] assumes that a crashed process may recover (i.e. start working again)
+\end{list}
+
+
+!! Poprawić definicje, sprawdzić poprawność !!
+
+
+nierozwiazywalnosc paxos'a
+
+
+
+
 
