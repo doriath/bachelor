@@ -44,40 +44,32 @@ Providing these features to the services is a complex matter, often requiring va
 Most common and effective method of providing reliable services is replication. Applying the replication requires only minor difference between non-replicated services and the replicated ones, what makes it usable both for creating new services in the typical way % poprawić zwrot
 as well as transforming existing services into replicated ones.
 
-Goals
-- stworzenie JPaxos, replikacja maszyny stanowej crash recovery
-
-\section{Related work}
-Literature
-
+The goal of this bachelor's thesis is to create Java package implementing state machine replication primitive. The library should support the crash-recovery model of failure and should tolerate message loss and communication delays.
+ 
 \begin{itemize}
   \item The part-time pariliament
   \item Paxos made simple
   \item Paxos made live
   \item Paxos for system builders
-  \item ? Chandra Tuega
 \end{itemize}
 
-Uklad pracy
+The organization of this thesis is following. In chapter 2 the background for distributed computing is provided. We describe what is consensus problem, etc. In chapter 3 we describe the architecture and modules of JPaxos.
 
+Jan Konczak for the purpose of this thesis has prepared design and implementation of:
 \begin{itemize}
-  \item -
+  \item catch-up module (Section \ref{sec:catch-up}),
+  \item snapshotting module (Section \ref{sec:snapshotting}),
+  \item service proxy (Section \ref{sec:service-proxy}),
+  \item benchmark project.
 \end{itemize}
 
-Jan Konczak 
-
+Tomasz Zurkowski has prepared design and implemenation of:
 \begin{itemize}
-  \item catch up 
-  \item snapshot 
-  \item service proxy
-  \item benchmark project
+  \item unit tests for JPaxos project,
+  \item client manage module (Section \ref{sec:client-manager}), 
+  \item network module for communication between replicas (Section \ref{sec:network}),
+  \item view based recovery (Section \ref{sec:view-ss}),
+  \item disc writers for full stable storage recovery.
 \end{itemize}
 
-Tomasz Zurkowski
-
-\begin{itemize}
-  \item unit tests
-  \item client manager, network
-  \item view ss
-  \item disc writer for full ss
-\end{itemize}
+The rest modules were result of work of both of us.

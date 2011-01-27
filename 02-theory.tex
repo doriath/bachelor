@@ -10,15 +10,14 @@
 %dotyczy to również rysunków, tabel, fragmentów kodu źródłowego programów itd. Należy także podać
 %adresy stron internetowych w przypadku źródeł pochodzących z Internetu.
 
-In this chapter the background for paxos algorithm is presented. First the consensus problem is described, th
+In this chapter the background for paxos algorithm is presented.
 
-
-Co to consensus, snapshot, service, catchup, deterministic state machinme, state machine, 
+Co to consensus, snapshot, service, catchup, deterministic state machine, state machine, 
 crash models, atomic broadcast, nierozwiazywalnosc paxos'a
 
 \section{Consensus}
 
-Consensus is a problem in distributed computing that encapsulates the task of group agreement in the presence of faluts.
+Consensus is a problem in distributed computing that encapsulates the task of group agreement in the presence of faults.
 
 \begin{description}
     \item[Validity] any value decided is a value proposed by some process,
@@ -27,3 +26,16 @@ Consensus is a problem in distributed computing that encapsulates the task of gr
     \item[Integrity] no process decides twice
 \end{description}
 
+The consensus problem is not solvable in asynchronous system where at least one process may crash and processes communicates by sending messages. This fact has been proved in FLP impossibility proof \cite{FLP}. 
+
+This problem is related with atomic broadcast. If one can be solved, then the other also can be solved.
+
+\section{State machine}
+
+TODO: Definition, properties, etc.
+
+\section{Fault models}
+
+Crash stop
+
+Crash recovery
