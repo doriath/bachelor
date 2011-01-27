@@ -18,7 +18,7 @@ Proposer, acceptor, learner.
 \section{Concurrent instances}
 
 \section{Network}
-\label{network}
+\label{sec:network}
 
 \section{Storage}
 
@@ -280,7 +280,7 @@ In line \ref{alg_1_a} a best replica is chosen. We've implemented it as follows:
 Magic line \ref{alg_1_c} executes a predicate checking if the catch-up shall finish (see \ref{subsubsec:Conditions_for_starting_and_finishing_the_catch-up}).
 
 \section{Snapshotting}
-\label{sec:Snapshotting}
+\label{sec:snapshotting}
 As presented before, the support of storing and transmitting state of replicated machine is very useful and important part of a replica. In practical systems it is necessary -- it allows log truncating, faster recovery and catch-up.
 
 \subsection{When to snapshot}
