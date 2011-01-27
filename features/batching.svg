@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="617.45874"
+   height="57.385201"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47pre1 r21720"
+   sodipodi:docname="batching.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4">
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect5015"
+       is_visible="true"
+       pattern="M 0,0 0,10 10,5 z"
+       copytype="single_stretched"
+       prop_scale="1"
+       scale_y_rel="false"
+       spacing="0"
+       normal_offset="0"
+       tang_offset="0"
+       prop_units="false"
+       vertical_pattern="false"
+       fuse_tolerance="0" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect5011"
+       is_visible="true"
+       pattern="M 0,0 0,10 10,5 z"
+       copytype="single_stretched"
+       prop_scale="1"
+       scale_y_rel="false"
+       spacing="0"
+       normal_offset="0"
+       tang_offset="0"
+       prop_units="false"
+       vertical_pattern="false"
+       fuse_tolerance="0" />
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path3692"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+    <inkscape:perspective
+       id="perspective4750"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4781"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4814"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4851"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4923"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend-7"
+       style="overflow:visible">
+      <path
+         id="path3692-1"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <inkscape:perspective
+       id="perspective5082"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend-5"
+       style="overflow:visible">
+      <path
+         id="path3692-9"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.28"
+     inkscape:cx="284.97416"
+     inkscape:cy="141.54338"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:snap-global="true"
+     inkscape:window-width="1280"
+     inkscape:window-height="730"
+     inkscape:window-x="-4"
+     inkscape:window-y="-3"
+     inkscape:window-maximized="1"
+     units="cm" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(164.09403,-465.70546)">
+    <g
+       id="g4580"
+       transform="translate(648.51793,4.9086271)" />
+    <g
+       id="g4624"
+       transform="translate(648.51793,99.13709)" />
+    <g
+       id="g5406"
+       transform="translate(32.807382,-5.6204585)" />
+    <g
+       id="g5602"
+       transform="matrix(0.33402351,0,0,0.33402351,-109.28277,348.36608)">
+      <g
+         transform="translate(76.285641,0.31961139)"
+         id="g5476">
+        <g
+           transform="translate(389.10275,-65.205381)"
+           id="g2883">
+          <rect
+             style="fill:none;stroke:none"
+             id="rect2873"
+             width="146.3481"
+             height="48.571423"
+             x="-282.85715"
+             y="477.79077" />
+          <flowRoot
+             transform="translate(1.740509,114)"
+             xml:space="preserve"
+             style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+             id="flowRoot2875"><flowRegion
+               id="flowRegion2877"><use
+                 x="0"
+                 y="0"
+                 xlink:href="#rect2816"
+                 id="use2879"
+                 width="744.09448"
+                 height="1052.3622" /></flowRegion><flowPara
+               id="flowPara2881">Replica</flowPara></flowRoot>        </g>
+        <rect
+           y="409.04233"
+           x="101.63549"
+           height="55.657547"
+           width="155.56833"
+           id="rect4913"
+           style="fill:none;stroke:#000000;stroke-width:2.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      </g>
+      <g
+         transform="translate(56.977183,0.29560736)"
+         id="g5415">
+        <g
+           id="g4884"
+           transform="translate(-8.1160691,-3.0089279)">
+          <g
+             transform="translate(-4,0)"
+             id="g4708">
+            <g
+               transform="translate(648.51793,4.9086271)"
+               id="g4532">
+              <rect
+                 style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:none"
+                 id="rect4534"
+                 width="207.96741"
+                 height="48.571423"
+                 x="-282.85715"
+                 y="363.79077" />
+              <flowRoot
+                 xml:space="preserve"
+                 style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:0.49803922;stroke:none;font-family:Bitstream Vera Sans"
+                 id="flowRoot4536"
+                 transform="translate(-2.259491,0)"><flowRegion
+                   id="flowRegion4538"><use
+                     x="0"
+                     y="0"
+                     xlink:href="#rect2816"
+                     id="use4540"
+                     width="744.09448"
+                     height="1052.3622" /></flowRegion><flowPara
+                   id="flowPara4542">Request A</flowPara></flowRoot>            </g>
+            <g
+               transform="translate(648.51793,52.022824)"
+               id="g4544">
+              <rect
+                 y="363.79077"
+                 x="-282.85715"
+                 height="48.571423"
+                 width="207.96741"
+                 id="rect4546"
+                 style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:none" />
+              <flowRoot
+                 transform="translate(-2.259491,0)"
+                 id="flowRoot4548"
+                 style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:0.49803922;stroke:none;font-family:Bitstream Vera Sans"
+                 xml:space="preserve"><flowRegion
+                   id="flowRegion4550"><use
+                     height="1052.3622"
+                     width="744.09448"
+                     id="use4552"
+                     xlink:href="#rect2816"
+                     y="0"
+                     x="0" /></flowRegion><flowPara
+                   id="flowPara4554">Request B</flowPara></flowRoot>            </g>
+            <g
+               transform="translate(648.51793,99.13709)"
+               id="g4556">
+              <rect
+                 style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:none"
+                 id="rect4558"
+                 width="207.96741"
+                 height="48.571423"
+                 x="-282.85715"
+                 y="363.79077" />
+              <flowRoot
+                 xml:space="preserve"
+                 style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:0.49803922;stroke:none;font-family:Bitstream Vera Sans"
+                 id="flowRoot4560"
+                 transform="translate(-2.259491,0)"><flowRegion
+                   id="flowRegion4562"><use
+                     x="0"
+                     y="0"
+                     xlink:href="#rect2816"
+                     id="use4564"
+                     width="744.09448"
+                     height="1052.3622" /></flowRegion><flowPara
+                   id="flowPara4566">Request C</flowPara></flowRoot>            </g>
+            <g
+               id="g4568"
+               transform="matrix(1,0,0,2.9319556,541.12145,-579.4501)"
+               style="fill:none;stroke:#000000;stroke-opacity:1">
+              <rect
+                 y="323.38467"
+                 x="-175.78098"
+                 height="48.571423"
+                 width="207.96741"
+                 id="rect4570"
+                 style="fill:none;stroke:#000000;stroke-opacity:1" />
+              <flowRoot
+                 transform="translate(-2.259491,0)"
+                 id="flowRoot4572"
+                 style="font-size:40px;font-style:normal;font-weight:normal;fill:none;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+                 xml:space="preserve"><flowRegion
+                   id="flowRegion4574"><use
+                     height="1052.3622"
+                     width="744.09448"
+                     id="use4576"
+                     xlink:href="#rect2816"
+                     y="0"
+                     x="0" /></flowRegion><flowPara
+                   id="flowPara4578" /></flowRoot>            </g>
+          </g>
+          <text
+             transform="matrix(0.8660254,0.5,-0.5,0.8660254,0,0)"
+             id="text4880"
+             y="158.10962"
+             x="517.25507"
+             style="font-size:27.16900444px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><tspan
+               y="158.10962"
+               x="517.25507"
+               id="tspan4882"
+               sodipodi:role="line">Request A, B, C</tspan></text>
+        </g>
+      </g>
+      <path
+         id="path4954"
+         d="m 335.67696,437.19071 72.73098,0"
+         style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)"
+         d="m 619.96264,437.19071 72.73098,0"
+         id="path4968" />
+      <path
+         id="path4994"
+         d="m 1111.9527,437.19071 72.7309,0"
+         style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)" />
+      <g
+         transform="translate(114.31388,0)"
+         id="g5346">
+        <g
+           id="g2850"
+           transform="translate(4.9492373,-12)"
+           style="stroke:#000000;stroke-opacity:1">
+          <rect
+             y="363.79077"
+             x="-282.85715"
+             height="48.571423"
+             width="207.96741"
+             id="rect2816"
+             style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:#000000;stroke-opacity:1" />
+          <flowRoot
+             transform="translate(-2.259491,0)"
+             id="flowRoot2822"
+             style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><flowRegion
+               id="flowRegion2824"><use
+                 height="1052.3622"
+                 width="744.09448"
+                 id="use2826"
+                 xlink:href="#rect2816"
+                 y="0"
+                 x="0" /></flowRegion><flowPara
+               id="flowPara2828">Request A</flowPara></flowRoot>        </g>
+        <g
+           id="g4134"
+           transform="translate(4.9492373,49.114197)"
+           style="stroke:#000000;stroke-opacity:1">
+          <rect
+             style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:#000000;stroke-opacity:1"
+             id="rect4136"
+             width="207.96741"
+             height="48.571423"
+             x="-282.85715"
+             y="363.79077" />
+          <flowRoot
+             xml:space="preserve"
+             style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+             id="flowRoot4138"
+             transform="translate(-2.259491,0)"><flowRegion
+               id="flowRegion4140"><use
+                 x="0"
+                 y="0"
+                 xlink:href="#rect2816"
+                 id="use4142"
+                 width="744.09448"
+                 height="1052.3622" /></flowRegion><flowPara
+               id="flowPara4144">Request B</flowPara></flowRoot>        </g>
+        <g
+           id="g4146"
+           transform="translate(4.9492373,110.22846)"
+           style="stroke:#000000;stroke-opacity:1">
+          <rect
+             y="363.79077"
+             x="-282.85715"
+             height="48.571423"
+             width="207.96741"
+             id="rect4148"
+             style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:#000000;stroke-opacity:1" />
+          <flowRoot
+             transform="translate(-2.259491,0)"
+             id="flowRoot4150"
+             style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><flowRegion
+               id="flowRegion4152"><use
+                 height="1052.3622"
+                 width="744.09448"
+                 id="use4154"
+                 xlink:href="#rect2816"
+                 y="0"
+                 x="0" /></flowRegion><flowPara
+               id="flowPara4156">Request C</flowPara></flowRoot>        </g>
+      </g>
+      <g
+         transform="translate(106.58896,0.67464777)"
+         id="g5366">
+        <path
+           id="path5043"
+           d="m -60.778089,437.19068 129.922758,0"
+           style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)"
+           d="m -60.778089,380.30587 129.922758,35.9375"
+           id="path5045"
+           sodipodi:nodetypes="cc" />
+        <path
+           sodipodi:nodetypes="cc"
+           id="path5049"
+           d="M -60.778089,492.72626 69.144669,456.78876"
+           style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)" />
+      </g>
+      <g
+         transform="translate(8.8439354,-2.6714705)"
+         id="g5445">
+        <g
+           id="g4884-6"
+           transform="translate(532.00728,-0.04185007)">
+          <g
+             transform="translate(-4,0)"
+             id="g4708-3">
+            <g
+               transform="translate(648.51793,4.9086271)"
+               id="g4532-9">
+              <rect
+                 style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:none"
+                 id="rect4534-4"
+                 width="207.96741"
+                 height="48.571423"
+                 x="-282.85715"
+                 y="363.79077" />
+              <flowRoot
+                 xml:space="preserve"
+                 style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:0.49803922;stroke:none;font-family:Bitstream Vera Sans"
+                 id="flowRoot4536-8"
+                 transform="translate(-2.259491,0)"><flowRegion
+                   id="flowRegion4538-1"><use
+                     x="0"
+                     y="0"
+                     xlink:href="#rect2816"
+                     id="use4540-2"
+                     width="744.09448"
+                     height="1052.3622" /></flowRegion><flowPara
+                   id="flowPara4542-9">Request A</flowPara></flowRoot>            </g>
+            <g
+               transform="translate(648.51793,52.022824)"
+               id="g4544-3">
+              <rect
+                 y="363.79077"
+                 x="-282.85715"
+                 height="48.571423"
+                 width="207.96741"
+                 id="rect4546-9"
+                 style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:none" />
+              <flowRoot
+                 transform="translate(-2.259491,0)"
+                 id="flowRoot4548-0"
+                 style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:0.49803922;stroke:none;font-family:Bitstream Vera Sans"
+                 xml:space="preserve"><flowRegion
+                   id="flowRegion4550-8"><use
+                     height="1052.3622"
+                     width="744.09448"
+                     id="use4552-8"
+                     xlink:href="#rect2816"
+                     y="0"
+                     x="0" /></flowRegion><flowPara
+                   id="flowPara4554-5">Request B</flowPara></flowRoot>            </g>
+            <g
+               transform="translate(648.51793,99.13709)"
+               id="g4556-0">
+              <rect
+                 style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:none"
+                 id="rect4558-9"
+                 width="207.96741"
+                 height="48.571423"
+                 x="-282.85715"
+                 y="363.79077" />
+              <flowRoot
+                 xml:space="preserve"
+                 style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:0.49803922;stroke:none;font-family:Bitstream Vera Sans"
+                 id="flowRoot4560-6"
+                 transform="translate(-2.259491,0)"><flowRegion
+                   id="flowRegion4562-3"><use
+                     x="0"
+                     y="0"
+                     xlink:href="#rect2816"
+                     id="use4564-8"
+                     width="744.09448"
+                     height="1052.3622" /></flowRegion><flowPara
+                   id="flowPara4566-5">Request C</flowPara></flowRoot>            </g>
+            <g
+               id="g4568-6"
+               transform="matrix(1,0,0,2.9319556,541.12145,-579.4501)"
+               style="fill:none;stroke:#000000;stroke-opacity:1">
+              <rect
+                 y="323.38467"
+                 x="-175.78098"
+                 height="48.571423"
+                 width="207.96741"
+                 id="rect4570-1"
+                 style="fill:none;stroke:#000000;stroke-opacity:1" />
+              <flowRoot
+                 transform="translate(-2.259491,0)"
+                 id="flowRoot4572-1"
+                 style="font-size:40px;font-style:normal;font-weight:normal;fill:none;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+                 xml:space="preserve"><flowRegion
+                   id="flowRegion4574-5"><use
+                     height="1052.3622"
+                     width="744.09448"
+                     id="use4576-9"
+                     xlink:href="#rect2816"
+                     y="0"
+                     x="0" /></flowRegion><flowPara
+                   id="flowPara4578-8" /></flowRoot>            </g>
+          </g>
+          <text
+             transform="matrix(0.8660254,0.5,-0.5,0.8660254,0,0)"
+             id="text4880-4"
+             y="132.05701"
+             x="518.37946"
+             style="font-size:27.16900444px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><tspan
+               y="132.05701"
+               x="518.37946"
+               id="tspan4882-8"
+               sodipodi:role="line"
+               style="stroke-width:1.5">      Decided</tspan><tspan
+               y="166.01826"
+               x="518.37946"
+               sodipodi:role="line"
+               id="tspan5209"
+               style="stroke-width:1.5">Request A, B, C</tspan></text>
+        </g>
+      </g>
+      <path
+         id="path4954-1"
+         d="m 827.66704,437.19071 72.731,0"
+         style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)" />
+      <g
+         transform="translate(30.76064,-5.6204585)"
+         id="g5593">
+        <rect
+           y="415.27728"
+           x="664.12048"
+           height="55.687637"
+           width="130.59842"
+           id="rect5207"
+           style="fill:none;stroke:#000000;stroke-width:2.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           x="671.13843"
+           y="457.41797"
+           id="text5589"><tspan
+             sodipodi:role="line"
+             id="tspan5591"
+             x="671.13843"
+             y="457.41797">Paxos</tspan></text>
+      </g>
+      <g
+         transform="translate(-16.326853,-4.3678886)"
+         id="g5397">
+        <g
+           id="g5211"
+           transform="translate(1490.6653,-60.517881)">
+          <rect
+             y="477.79077"
+             x="-282.85715"
+             height="48.571423"
+             width="146.3481"
+             id="rect5213"
+             style="fill:none;stroke:none" />
+          <flowRoot
+             id="flowRoot5215"
+             style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+             xml:space="preserve"
+             transform="translate(1.740509,114)"><flowRegion
+               id="flowRegion5217"><use
+                 height="1052.3622"
+                 width="744.09448"
+                 id="use5219"
+                 xlink:href="#rect2816"
+                 y="0"
+                 x="0" /></flowRegion><flowPara
+               id="flowPara5221">Replica</flowPara></flowRoot>        </g>
+        <rect
+           style="fill:none;stroke:#000000;stroke-width:2.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           id="rect5223"
+           width="155.56833"
+           height="55.657547"
+           x="1203.198"
+           y="413.72983" />
+      </g>
+      <g
+         transform="translate(-34.104779,0)"
+         id="g5376">
+        <g
+           id="g5305">
+          <g
+             id="g5227"
+             transform="translate(1792.9492,-12)"
+             style="stroke:#000000;stroke-opacity:1">
+            <rect
+               y="363.79077"
+               x="-282.85715"
+               height="48.571423"
+               width="207.96741"
+               id="rect5229"
+               style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:#000000;stroke-opacity:1" />
+            <flowRoot
+               transform="translate(-2.259491,0)"
+               id="flowRoot5231"
+               style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+               xml:space="preserve"><flowRegion
+                 id="flowRegion5233"><use
+                   height="1052.3622"
+                   width="744.09448"
+                   id="use5235"
+                   xlink:href="#rect2816"
+                   y="0"
+                   x="0" /></flowRegion><flowPara
+                 id="flowPara5237">Request A</flowPara></flowRoot>          </g>
+          <g
+             id="g5239"
+             transform="translate(1792.9492,49.114197)"
+             style="stroke:#000000;stroke-opacity:1">
+            <rect
+               style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:#000000;stroke-opacity:1"
+               id="rect5241"
+               width="207.96741"
+               height="48.571423"
+               x="-282.85715"
+               y="363.79077" />
+            <flowRoot
+               xml:space="preserve"
+               style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+               id="flowRoot5243"
+               transform="translate(-2.259491,0)"><flowRegion
+                 id="flowRegion5245"><use
+                   x="0"
+                   y="0"
+                   xlink:href="#rect2816"
+                   id="use5247"
+                   width="744.09448"
+                   height="1052.3622" /></flowRegion><flowPara
+                 id="flowPara5249">Request B</flowPara></flowRoot>          </g>
+          <g
+             id="g5251"
+             transform="translate(1792.9492,110.22846)"
+             style="stroke:#000000;stroke-opacity:1">
+            <rect
+               y="363.79077"
+               x="-282.85715"
+               height="48.571423"
+               width="207.96741"
+               id="rect5253"
+               style="fill:#000000;fill-opacity:0.16470588;fill-rule:evenodd;stroke:#000000;stroke-opacity:1" />
+            <flowRoot
+               transform="translate(-2.259491,0)"
+               id="flowRoot5255"
+               style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;font-family:Bitstream Vera Sans"
+               xml:space="preserve"><flowRegion
+                 id="flowRegion5257"><use
+                   height="1052.3622"
+                   width="744.09448"
+                   id="use5259"
+                   xlink:href="#rect2816"
+                   y="0"
+                   x="0" /></flowRegion><flowPara
+                 id="flowPara5261">Request C</flowPara></flowRoot>          </g>
+        </g>
+      </g>
+      <g
+         transform="translate(-24.594926,0.67464777)"
+         id="g5371">
+        <path
+           style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)"
+           d="m 1369.2219,437.19068 129.9228,0"
+           id="path5263" />
+        <path
+           sodipodi:nodetypes="cc"
+           id="path5265"
+           d="m 1369.2219,416.56544 129.9228,-35.9375"
+           style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:1.875;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow1Lend)"
+           d="m 1369.2219,456.46669 129.9228,35.9375"
+           id="path5267"
+           sodipodi:nodetypes="cc" />
+      </g>
+    </g>
+  </g>
+</svg>
