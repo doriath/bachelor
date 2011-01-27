@@ -41,8 +41,14 @@
 With the increase of usage and importance of Internet services in everyday life comes demand on reliability and constant availability.
 Providing these features to the services is a complex matter, often requiring various trade-offs between user satisfaction and service resource demands.
 
-Most common and effective method of providing reliable services is replication. Applying the replication requires only minor difference between non-replicated services and the replicated ones, what makes it usable both for creating new services in the typical way % poprawić zwrot
+Most common and effective method of providing reliable services is replication. Applying the replication requires only minor changes between non-replicated services and the replicated ones, what makes it usable both for creating new services in the typical way % poprawić zwrot
 as well as transforming existing services into replicated ones.
+
+Each replication approach relies on certain group communication mechanism - usually providing strong guarantees. Total-order (atomic) broadcast is commonly used for interconnecting replicas.
+
+%Thanks to atomic broadcast protocols replication may be implemented easier without loosing efficiency. 
+
+The services vary, and so the approaches for replication must also vary. We chose an approach that we trust has bright future beyond - 
 
 Goals
 - stworzenie JPaxos, replikacja maszyny stanowej crash recovery
