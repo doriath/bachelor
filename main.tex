@@ -4,6 +4,8 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[OT4]{fontenc}
+\usepackage{amsfonts}
+\usepackage{amsmath}
 
 % Authors here.
 \author{%
@@ -15,21 +17,14 @@
 \ppsupervisor{dr hab. inż. Paweł T. Wojciechowski} % Your supervisor comes here.
 \ppyear{2011}                                         % Year of final submission (not graduation!)
 
-\begin{document}
 
-% Front matter starts here
-\frontmatter\pagestyle{empty}%
-\maketitle\cleardoublepage%
-
-% Blank info page for "karta dyplomowa"
-\thispagestyle{empty}\vspace*{\fill}%
-\begin{center}Tutaj przychodzi karta pracy dyplomowej;\\oryginał wstawiamy do wersji dla archiwum PP, w pozostałych kopiach wstawiamy ksero.\end{center}%
-\vfill\cleardoublepage%
-
-% Table of contents.
-\pagenumbering{Roman}\pagestyle{ppfcmthesis}%
-\tableofcontents* \cleardoublepage%
-
+% commands here
+\newenvironment{TODO}
+{\begin{center}\par\noindent
+{\huge \vspace{-3em} \par\noindent  \rule{0.85\textwidth}{0.1em}  \\ \vspace{-1em} \nointerlineskip
+    \[ \mathbf{T} \, _\mathcal{O} \:\: \mathfrak{D} \, _\mathbb{O} \] }
+    \begin{minipage}{0.8\textwidth}
+}{\end{minipage} {\huge \vspace{-0.5em} \rule{0.85\textwidth}{0.1em}} \par\noindent \end{center} \par}
 
 % Custom commands
 \newcommand{\paragraphNewline}[1]
@@ -49,6 +44,25 @@
 \newcommand{\proposer}{\textsc{Proposer}}
 \newcommand{\acceptor}{\textsc{Acceptor}}
 \newcommand{\learner}{\textsc{Learner}}
+
+
+\begin{document}
+
+% Front matter starts here
+\frontmatter\pagestyle{empty}%
+\maketitle\cleardoublepage%
+
+% Blank info page for "karta dyplomowa"
+\thispagestyle{empty}\vspace*{\fill}%
+\begin{center}Tutaj przychodzi karta pracy dyplomowej;\\oryginał wstawiamy do wersji dla archiwum PP, w pozostałych kopiach wstawiamy ksero.\end{center}%
+\vfill\cleardoublepage%
+
+% abstract is already on ``karta dyplomowa''
+
+% Table of contents.
+\pagenumbering{Roman}\pagestyle{ppfcmthesis}%
+\tableofcontents* \cleardoublepage%
+
 
 % Main content of your thesis starts here.
 \mainmatter%
