@@ -1,13 +1,89 @@
 \chapter{Recovery}
 
+In this chapter we describe the recovery of process from crash. We present 3 different algorithms implemented in JPaxos with different performance and fault tolerance. We will start from short overview of recovery and then present 4 different algorithms - crash-stop, crash-recovery with stable storage, epoch based recovery and view based recovery. After that we will summarize and compare all algorithms.
+
+\section{Overview}
+
+The crash of the process is a permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc. Such process also losses all information not saved to stable storage.
+
+So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories - the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category non stable storage. Writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
+
+In following sections, we use following TODO oznaczenia?: 
+\begin{itemize}
+  \item $n$ - number of processes
+  \item $f$ - number of faulty process
+\end{itemize}
+
 \section{Crash stop}
 \label{sec:crash_stop}
+
+Let's start from the easiest scenario - crash-stop model. In this model crashed process will never be up again.
+Because of that there is no recovery phase and we don't need a stable storage. Because process does not do any synchronous writes to stable storage the performance is very high. 
+
+But there is one big drawback. In previous chapters we said that Paxos algorithm can decide on the value (can continue working) if majority of processes are correct. If majority of processes will crash in this model, the algorithm will never decide again and our replicated service will stop forever. Because of that using this model is not very practical and below we present 3 algorithms which allows for process recovering.
 
 \section{Crash-recovery with stable storage}
 \label{sec:full_ss}
 
-\section{View based recovery}
-\label{sec:view_ss}
+First algorithm with ability to recover a process is crash recovery with stable storage. In this algorithm, we want to save all necessary data to stable storage. After crash the process can load all information from stable storage and join the Paxos protocol. To increase the performance the process should write as little as possible and as rare as possible to stable storage.
+
+To keep the correctness it is required to make a synchronous write:
+\begin{itemize}
+  \item when view has changed,
+  \item new value for consensus instance is received,
+  \item new snapshot is received.
+\end{itemize}
+
+On recovery the algorithm reads the view, values for all consensus instances and last snapshot from stable storage and can join a Paxos protocol (the process cannot respond to any message until it loads everything from stable storage).
+
+This synchronous writes are made on critical path, so the performance of this algorithm will be much lower comparing to crash-stop model. But the crash recovery with stable storage algorithm tolerates catastrophic failures - the failure when all processes crashed. Of course when all processes crashed, the replicated service will be unavailable. But we can start all processes again and they will recover to state from before the crash.
+
+As we can see, this algorithm is more practical than crash-stop when there is a lot of crashes. But because the performance is much lower, we will introduce two more algorithms. These algorithms will not tolerate catastrophic failures but their performance should be close to performance of crash-stop model.
 
 \section{Epoch based recovery}
 \label{sec:epoch_ss}
+
+\section{View based recovery}
+\label{sec:view_ss}
+
+\begin{TODO}
+Every time view is changed, write it to stable storage
+
+Recovery
+- read last view
+- learn highest instance from leader
+- download all instances from any process
+- join paxos
+\end{TODO}
+
+
+\section{Conclusions}
+
+\begin{TODO}
+Crash stop
+\end{TODO}
+
+Advantages:
+\begin{itemize}
+  \item high performance
+  \item no synchronous writes to stable storage on critical path
+\end{itemize}
+
+Disadvantages:
+\begin{itemize}
+  \item tolerates only $f < \frac{n}{2}$ faulty processes
+  \item faulty process cannot recovery 
+  \item not very practical
+\end{itemize}
+
+Crash recovery with stable storage
+Advantages:
+\begin{itemize}
+  \item tolerates catastrophic failures - $f = n$ 
+\end{itemize}
+
+Disadvantages:
+\begin{itemize}
+  \item synchronous writes to stable storage on critical path
+  \item low performance
+\end{itemize}
