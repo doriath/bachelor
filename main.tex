@@ -10,7 +10,28 @@
 \usepackage{algorithm}
 \usepackage[noend]{algorithmicplus}
 
-\renewcommand{\tt}{}
+\renewcommand{\tt}{\ttfamily}
+
+\newcounter{tightListCounter}
+
+% no extra spacing between lines
+\newenvironment{tightList}[1][]
+{
+  \begin{list}{
+                  \arabic{tightListCounter}.
+              }
+              {
+                  \usecounter{tightListCounter}
+                  \setlength{\topsep}{0.0em}
+                  \setlength{\itemsep}{0.0em}
+                  \setlength{\parsep}{0.0em}
+                  \setlength{\listparindent}{0.0em}
+                  #1
+              }
+}
+{
+  \end{list}
+}
 
 % Authors here.
 \author{%

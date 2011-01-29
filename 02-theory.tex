@@ -68,6 +68,12 @@ defines how the crashed processes may behave.
  \item[\textbf{Crash-Recovery}] assumes that a crashed process may recover (i.e. start working again)
 \end{list}
 
+\paragraph{Stable storage}
+is the memory that survives crashes. Usually this means that stable storage denotates hard drive.
+Sometimes also \textbf{unstable storage} name is used, to name memory that does not survive crashes, like the RAM memory usually used for program data.
+
+However, the writes to the stable storage must be permanent, so if a hard drive is used, the writes must be synchronous.
+
 \begin{TODO}
  Poprawić definicje, sprawdzić poprawność. Jeśli sa, to dodać źródła.
 \end{TODO}

@@ -6,42 +6,55 @@ In this chapter we describe the recovery of process from crash. We present 3 dif
 
 The crash of the process is a permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc. Such process also losses all information not saved to stable storage.
 
-So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories - the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category non stable storage. Writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
+So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories - the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category non stable storage.
+
+Usually operating system buffers the data before writing it to stable storages such as disks. Such writes are called asynchronous. They do not provide guarantee that if crash occurs, all data will be on the storage instead of beeing lost with the rest of system bufffer.
+
+Another option is to force the operating system to write the data to stable storage. Such operatin is called \emph{synchronising} the buffers with storage. If we cal write and synchronise, we can say that the write is synchronous -- the data won't be lost due to crash. But writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
 
 In following sections, we will use below variables: 
-\begin{itemize}
-  \item $n$ - number of processes
-  \item $f$ - number of faulty process
-  \item $p$ - the id of local process
-\end{itemize}
+\begin{tightList}
+  \item[$n$] -- number of processes
+  \item[$f$] -- number of faulty process
+  \item[$p$] -- the id of local process
+\end{tightList}
 
 \section{Crash stop}
 \label{sec:crash_stop}
 
-Let's start from the easiest scenario - crash-stop model. In this model crashed process will never be up again.
+Let's start from the easiest scenario -- the crash-stop model. In this model crashed process will never be up again.
 Because of that there is no recovery phase and we don't need a stable storage. Because process does not do any synchronous writes to stable storage the performance is very high. 
 
 But there is one big drawback. In previous chapters we said that Paxos algorithm can decide on the value (can continue working) if majority of processes are correct. If majority of processes will crash in this model, the algorithm will never decide again and our replicated service will stop forever. Because of that using this model is not very practical and below we present 3 algorithms which allows for process recovering.
+
+For performance tests and for theoretical purposes this model is very important -- it is the fastest model, used as comparison point with others. It is easier also to analize correctness of this model and prove that the algorithms implementing recovery models are correct taking under consideration only the changes in the code.
+
+\section{Recovery phase}
+
+A recovery phase is the state of JPaxos replica after starting the process. It must be decided, if this is the first run of this replica or recovery from crash.
+
+Of course, if this is the first start, the process can just go to normal state. Otherwise the process must stay in the Recovery phase as long as it does not fuilfill requirements of the recovery model.
+
+The process cannot join the Paxos protocol until the recovery phase is finished. So recovering process cannot respond to any message received, like \propose, \accept, \prepare and \prepareOK. However, these messages may be received and procesed, so the process can passively join the protocol. The moment when the process joins Paxos protocol is also a moment when the process is considered as correct.
+
 
 \section{Crash-recovery with stable storage}
 \label{sec:full_ss}
 
 First algorithm with ability to recover a process is crash recovery with stable storage. In this algorithm, we want to save all necessary data to stable storage. After crash the process can load all information from stable storage and join the Paxos protocol. To increase the performance the process should write as little as possible and as rare as possible to stable storage.
 
-The process cannot join the Paxos protocol until the recovery phase is finished. So recovering process cannot respond to any message received, like \propose, \accept, \prepare and \prepareOK. The moment when the process joins Paxos protocol is also a moment when the process is considered as correct.
-
 Description of variables used in algorithm below:
-\begin{itemize}
-  \item $log_p$ - the array of consecutive instances - $id \rightarrow <view, value>$
-  \item $view_p$ - the current view number
-  \item $state_p$ - the last snapshot made by service or received from catch-up
-\end{itemize}
+\begin{tightList}[\setlength{\labelwidth}{20em} \setlength{\leftmargin}{2\leftmargin}]
+  \item[$log_p$] -- the array of consecutive instances -- $id \rightarrow <view, value>$
+  \item[$view_p$] -- the current view number
+  \item[$state_p$] -- the last snapshot made by service or received from catch-up
+\end{tightList}
 
 \begin{algorithmic}[1]
   \INIT{}
     \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
     \STATE $view_p \leftarrow 0$
-    \IF{$view_p \mod n \equiv p$}
+    \IF{$view_p \mod n = p$}
       \STATE $view_p \leftarrow 1$
     \ENDIF
     \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
@@ -80,7 +93,7 @@ On recovery the algorithm reads the view, values for all consensus instances and
 
 This synchronous writes are made on critical path, so the performance of this algorithm will be much lower comparing to crash-stop model. But the crash recovery with stable storage algorithm tolerates catastrophic failures - the failure when all processes crashed. Of course when all processes are crashed, the replicated service will be unavailable. But we can start all processes again and they will recover to state from before the crash.
 
-As we can see, this algorithm is more practical than crash-stop when there is a lot of crashes. But because the performance is much lower, we will introduce two more algorithms. These algorithms will not tolerate catastrophic failures but their performance should be close to performance of crash-stop model.
+As we can see, this algorithm is already deployable in enviornment with crashes. But because the performance is really low, we will introduce two more algorithms. These algorithms will not tolerate catastrophic failures but their performance should be close to performance of crash-stop model.
 
 \section{Epoch based recovery}
 \label{sec:epoch_ss}
@@ -88,18 +101,18 @@ As we can see, this algorithm is more practical than crash-stop when there is a 
 In this section, we will describe the algorithm based on epoch numbers. This algorithm is making only one synchronous write to stable storage on process startup, but the recovery phase is more complicated comparing to previous algorithm.
 
 We will use following variables in the pseudocode:
-\begin{itemize}
-  \item $epoch_p$ - vector of epoch numbers
-  \item $e$ - epoch number of single process
-  \item $highestId$ - the id of highest known consensus instance
-\end{itemize}
+\begin{tightList}[\setlength{\labelwidth}{20em} \setlength{\leftmargin}{3\leftmargin}]
+  \item[$epoch_p$] -- vector of epoch numbers
+  \item[$e$] -- epoch number of single process
+  \item[$highestId$] -- the id of highest known consensus instance
+\end{tightList}
 
 The pseudocode below should explain this algorithm:
 \begin{algorithmic}[1]
   \INIT{}
     \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
     \STATE $view_p \leftarrow 0$
-    \IF{$view_p \mod n \equiv p$}
+    \IF{$view_p \mod n = p$}
       \STATE $view_p \leftarrow 1$
     \ENDIF
     \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
@@ -109,7 +122,7 @@ The pseudocode below should explain this algorithm:
       \STATE $epoch_p[p] \leftarrow$ last epoch number written to stable storage
       \STATE $epoch_p[p] \leftarrow epoch_p[p] + 1$
       \STATE send $<\recovery, epoch_p[p]>$ to all except $p$
-      \STATE wait for $f+1 <\recoveryAnswer, epoch, view, highestId>$ messages including from primary of highest view received
+      \STATE wait for $n-f <\recoveryAnswer, epoch, view, highestId>$ messages including from primary of highest view received
       \STATE $\forall s \in \Pi : epoch_p[s] \leftarrow \max\{{epoch[s] \; \mathrm{ received}}\}$
       \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
       \STATE download all instance up to $highestId$ using catch-up module
@@ -145,7 +158,9 @@ The pseudocode below should explain this algorithm:
   \ENDUPON
 \end{algorithmic}
 
-Epoch based recovery algorithms tolerates $f < \frac{n}{2}$ crashed processes. It is required that at least majority of processes are always correct - otherwise the algorithm will not be able to continue. In recovery phase the process is downloading all information from other replicas using catch-up mechanism. When all necessary information is transfered, the replica can join the Paxos protocol and is considered as correct.
+Epoch based recovery algorithms tolerates $f = \left\lfloor \frac{n-1}{2} \right\rfloor $ crashed processes. It is required that at least majority of processes are always correct - otherwise the algorithm will not be able to continue.
+
+In recovery phase the process first notifies the majority of other replicas about it's recovery. As the process must know when it's state will be correct, it must wait for recovery answer from the leader, who has the most recent state. Once it gets the acknowledges, it is downloading all information from other replicas using catch-up mechanism.  When all necessary information is transfered, the replica can join the Paxos protocol and is considered as correct.
 
 On normal execution this algorithm should be as fast as crash-stop model. The size of \prepareOK message is increased by epoch vector which contains $n$ numbers but it shouldn't have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
 
