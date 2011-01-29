@@ -184,46 +184,46 @@ Notice the number 13 - it's the first we have no idea of existing, as mentioned 
 
 Catch-up works as follows:
 
-%\begin{algorithmic}[1]
-%  \REPEAT
-%    \STATE \label{alg_1_a} Choosing target replica
-%    \STATE Creating list of missing instances
-%    \STATE Send a \catchUpQuery
-%    \STATE \label{alg_1_b} Wait for timeout or for response
-%  \UNTIL{\label{alg_1_c} catch-up succeeds}
-%  
-%  \vspace{1em}
-%  
-%  \STATE \textbf{upon} receiving \catchUpQuery \textit{query}
-%    \IF{\textit{query} has snapshot flag set}
-%      \STATE Get last snapshot
-%      \STATE Prepare \catchUpSnapshot message
-%      \STATE Send the message
-%    \ELSIF{requested instances already not in log}
-%      \STATE Send \catchUpResponse with \textit{snapshot} flag
-%    \ELSE
-%      \STATE Gather all decided instances
-%      \STATE Send \catchUpResponse
-%    \ENDIF
-%
-%  \vspace{1em}
-%  \STATE \textbf{upon} receiving \catchUpResponse \textit{response}
-%    \IF{\textit{response} has \textit{snapshot} flag set}
-%      \STATE Prepare \catchUpQuery with snapshot flag
-%      \STATE Send the query
-%    \ELSE
-%      \STATE Merge received log (if any)
-%      \STATE Wake up the Catch-up loop (line \ref{alg_1_b})
-%    \ENDIF
-%  
-%  \vspace{1em}
-%  \STATE \textbf{upon} receiving \catchUpSnapshot \textit{snapshot}
-%  \STATE Check if \textit{snapshot} is newer than current one
-%  \STATE Replace the current snapshot with \textit{snapshot}
-%  \STATE Truncate logs (to stop catch-up)
-%  \STATE Wake up the Catch-up loop (line \ref{alg_1_b})
-%
-%\end{algorithmic}
+\begin{algorithmic}[1]
+  \REPEAT
+    \STATE \label{alg_1_a} Choosing target replica
+    \STATE Creating list of missing instances
+    \STATE Send a \catchUpQuery
+    \STATE \label{alg_1_b} Wait for timeout or for response
+  \UNTIL{\label{alg_1_c} catch-up succeeds}
+  
+  \vspace{1em}
+  
+  \STATE \textbf{upon} receiving \catchUpQuery \textit{query}
+    \IF{\textit{query} has snapshot flag set}
+      \STATE Get last snapshot
+      \STATE Prepare \catchUpSnapshot message
+      \STATE Send the message
+    \ELSIF{requested instances already not in log}
+      \STATE Send \catchUpResponse with \textit{snapshot} flag
+    \ELSE
+      \STATE Gather all decided instances
+      \STATE Send \catchUpResponse
+    \ENDIF
+
+  \vspace{1em}
+  \STATE \textbf{upon} receiving \catchUpResponse \textit{response}
+    \IF{\textit{response} has \textit{snapshot} flag set}
+      \STATE Prepare \catchUpQuery with snapshot flag
+      \STATE Send the query
+    \ELSE
+      \STATE Merge received log (if any)
+      \STATE Wake up the Catch-up loop (line \ref{alg_1_b})
+    \ENDIF
+  
+  \vspace{1em}
+  \STATE \textbf{upon} receiving \catchUpSnapshot \textit{snapshot}
+  \STATE Check if \textit{snapshot} is newer than current one
+  \STATE Replace the current snapshot with \textit{snapshot}
+  \STATE Truncate logs (to stop catch-up)
+  \STATE Wake up the Catch-up loop (line \ref{alg_1_b})
+
+\end{algorithmic}
 
 \vspace{1em}
 
