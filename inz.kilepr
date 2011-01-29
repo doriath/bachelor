@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.0
-lastDocument=01-introduction.tex
+lastDocument=architecture/architecture.tex
 masterDocument=
 name=inz
 pkg_extIsRegExp=false
@@ -17,10 +17,10 @@ QuickBuild=
 
 [item:01-introduction.tex]
 archive=true
-column=126
+column=0
 encoding=UTF-8
 highlight=LaTeX
-line=50
+line=64
 open=true
 order=1
 
@@ -29,27 +29,27 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=13
-open=false
-order=3
+line=73
+open=true
+order=4
 
 [item:03-jpaxos.tex]
 archive=true
 column=0
-encoding=
-highlight=
+encoding=UTF-8
+highlight=LaTeX
 line=0
-open=false
-order=-1
+open=true
+order=3
 
 [item:04-conclusions.tex]
 archive=true
 column=14
-encoding=
-highlight=
+encoding=UTF-8
+highlight=LaTeX
 line=0
-open=false
-order=-1
+open=true
+order=2
 
 [item:0a-zalacznik.tex]
 archive=true
@@ -57,8 +57,8 @@ column=0
 encoding=UTF-8
 highlight=LaTeX
 line=0
-open=false
-order=2
+open=true
+order=5
 
 [item:0b-pisanie-w-latexu.tex]
 archive=true
@@ -69,21 +69,30 @@ line=0
 open=false
 order=3
 
+[item:architecture/architecture.tex]
+archive=true
+column=0
+encoding=UTF-8
+highlight=LaTeX
+line=10
+open=true
+order=7
+
 [item:bibliography.bib]
 archive=true
-column=15
+column=0
 encoding=UTF-8
 highlight=BibTeX
-line=0
-open=false
-order=0
+line=77
+open=true
+order=6
 
 [item:main.tex]
 archive=true
-column=48
+column=44
 encoding=UTF-8
 highlight=LaTeX
-line=2
+line=59
 open=true
 order=0
 

@@ -1,14 +1,63 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.0"
    width="578.88141"
    height="346.53696"
-   id="svg2895">
+   id="svg2895"
+   sodipodi:version="0.32"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="replica_architecture.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <metadata
+     id="metadata49">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:window-height="935"
+     inkscape:window-width="1272"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     showgrid="false"
+     inkscape:zoom="1.3289979"
+     inkscape:cx="300.5439"
+     inkscape:cy="206.85777"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:current-layer="g2869"
+     inkscape:window-maximized="1" />
   <defs
-     id="defs2897" />
+     id="defs2897">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 173.26848 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="578.88141 : 173.26848 : 1"
+       inkscape:persp3d-origin="289.4407 : 115.51232 : 1"
+       id="perspective51" />
+  </defs>
   <g
      transform="translate(-21.987881,-21.95084)"
      id="layer1">
@@ -35,9 +84,9 @@
        x="38.526485"
        y="240.10086"
        id="text2796"
-       style="font-size:18.02480507px;font-weight:normal;fill:#1f1a17;fill-rule:evenodd;font-family:Arial">GenericNetwork</text>
+       style="font-size:18.02480507px;font-weight:normal;fill:#1f1a17;fill-rule:evenodd;font-family:Arial">Network</text>
     <rect
-       width="170.31245"
+       width="131.18521"
        height="54.738636"
        x="42.833065"
        y="254.16867"
@@ -49,90 +98,79 @@
        id="text2800"
        style="font-size:18.02480507px;font-weight:normal;fill:#1f1a17;fill-rule:evenodd;font-family:Arial">TcpNetwork</text>
     <rect
-       width="170.31245"
-       height="54.738636"
-       x="232.39505"
+       style="fill:#ffffff;fill-rule:evenodd;stroke:#1f1a17;stroke-width:0.42578116"
+       id="rect2863"
        y="254.16867"
-       id="rect2802"
-       style="fill:#ffffff;fill-rule:evenodd;stroke:#1f1a17;stroke-width:0.42578116" />
+       x="183.91681"
+       height="54.738636"
+       width="131.18521" />
     <text
-       x="242.82248"
+       x="184.28966"
        y="276.40298"
        id="text2804"
-       style="font-size:18.02480507px;font-weight:normal;fill:#1f1a17;fill-rule:evenodd;font-family:Arial">UdpNetwork</text>
+       style="font-size:18.02480507px;font-weight:normal;fill:#1f1a17;fill-rule:evenodd;font-family:Arial">GenericNetwork</text>
     <g
        transform="matrix(2.1289057,0,0,2.1289057,15.706543,8.4461471)"
        id="_250368400"
        style="fill-rule:evenodd">
-   <rect
-   width="82.891502"
-   height="71.050003"
-   x="7.9565001"
-   y="22.988001"
-   id="_250370872"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-   <text
-   x="12.3876"
-   y="34.197899"
-   id="_250266120"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Paxos</text>
-
-   <g
-   id="g2809">
-    <rect
-   width="66.9786"
-   height="15.022"
-   x="14.2579"
-   y="41.57"
-   id="_156807296"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-    <text
-   x="17.546"
-   y="51.313999"
-   id="_158268128"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Proposer</text>
-
-   </g>
-
-   <g
-   id="g2813">
-    <rect
-   width="66.9786"
-   height="15.022"
-   x="14.2579"
-   y="58.013"
-   id="_157228104"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-    <text
-   x="17.558701"
-   y="67.707001"
-   id="_250266672"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Acceptor</text>
-
-   </g>
-
-   <g
-   id="g2817">
-    <rect
-   width="66.9786"
-   height="15.022"
-   x="14.2579"
-   y="74.456001"
-   id="_156807128"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-    <text
-   x="17.546"
-   y="84.099998"
-   id="_158268416"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Learner</text>
-
-   </g>
-
-  </g>
+      <rect
+         width="82.891502"
+         height="71.050003"
+         x="7.9565001"
+         y="22.988001"
+         id="_250370872"
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+      <text
+         x="12.3876"
+         y="34.197899"
+         id="_250266120"
+         style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Paxos</text>
+      <g
+         id="g2809">
+        <rect
+           width="66.9786"
+           height="15.022"
+           x="14.2579"
+           y="41.57"
+           id="_156807296"
+           style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+        <text
+           x="17.546"
+           y="51.313999"
+           id="_158268128"
+           style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Proposer</text>
+      </g>
+      <g
+         id="g2813">
+        <rect
+           width="66.9786"
+           height="15.022"
+           x="14.2579"
+           y="58.013"
+           id="_157228104"
+           style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+        <text
+           x="17.558701"
+           y="67.707001"
+           id="_250266672"
+           style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Acceptor</text>
+      </g>
+      <g
+         id="g2817">
+        <rect
+           width="66.9786"
+           height="15.022"
+           x="14.2579"
+           y="74.456001"
+           id="_156807128"
+           style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+        <text
+           x="17.546"
+           y="84.099998"
+           id="_158268416"
+           style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Learner</text>
+      </g>
+    </g>
     <rect
        width="116.6851"
        height="87.821617"
@@ -149,128 +187,160 @@
        transform="matrix(2.1289057,0,0,2.1289057,15.706543,8.4461471)"
        id="_251186392"
        style="fill-rule:evenodd">
-   <rect
-   width="68.704803"
-   height="42.630001"
-   x="141.507"
-   y="22.988001"
-   id="_156808664"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-   <text
-   x="145.664"
-   y="33.617699"
-   id="_156807824"
-   style="font-size:8.46660042px;font-weight:normal;fill:#1f1a17;font-family:Arial">Snapshot</text>
-
-  </g>
+      <rect
+         width="68.704803"
+         height="20.886797"
+         x="141.507"
+         y="22.988001"
+         id="_156808664"
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+      <text
+         x="145.664"
+         y="33.617699"
+         id="_156807824"
+         style="font-size:8.46660042px;font-weight:normal;fill:#1f1a17;font-family:Arial">Snapshot</text>
+    </g>
     <g
        transform="matrix(2.1289057,0,0,2.1289057,15.706543,8.4461471)"
        id="_251184544"
        style="fill-rule:evenodd">
-   <rect
-   width="40"
-   height="47.908001"
-   x="96.2873"
-   y="46.130001"
-   id="_157555624"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-   <text
-   x="98.606003"
-   y="56.084801"
-   id="_158268704"
-   style="font-size:8.46660042px;font-weight:normal;fill:#1f1a17;font-family:Arial">Catch-up</text>
-
-  </g>
+      <rect
+         width="40"
+         height="47.908001"
+         x="96.2873"
+         y="46.130001"
+         id="_157555624"
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+      <text
+         x="98.606003"
+         y="56.084801"
+         id="_158268704"
+         style="font-size:8.46660042px;font-weight:normal;fill:#1f1a17;font-family:Arial">Catch-up</text>
+    </g>
     <g
        transform="matrix(2.1289057,0,0,2.1289057,15.706543,8.4461471)"
        id="_251183488"
        style="fill-rule:evenodd">
-   <text
-   x="99.330597"
-   y="33.617802"
-   id="_157555576"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Storage</text>
-
-   <rect
-   width="40"
-   height="19.08"
-   x="96.185898"
-   y="22.988001"
-   id="_158268560"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-  </g>
+      <text
+         x="99.330597"
+         y="33.617802"
+         id="_157555576"
+         style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Storage</text>
+      <rect
+         width="40"
+         height="19.08"
+         x="96.185898"
+         y="22.988001"
+         id="_158268560"
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+    </g>
     <g
        transform="matrix(2.1289057,0,0,2.1289057,15.706543,8.4461471)"
        id="_251186296"
        style="fill-rule:evenodd">
-   <text
-   x="221.144"
-   y="33.617802"
-   id="_250268904"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Service</text>
-
-   <rect
-   width="54.810001"
-   height="71.050003"
-   x="215.52"
-   y="22.988001"
-   id="_158267792"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-  </g>
+      <text
+         x="221.144"
+         y="33.617802"
+         id="_250268904"
+         style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Service</text>
+      <rect
+         width="54.810001"
+         height="54.084743"
+         x="215.52"
+         y="22.988001"
+         id="_158267792"
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+    </g>
     <g
        transform="matrix(2.1289057,0,0,2.1289057,15.706543,8.4461471)"
        id="_251185168"
        style="fill-rule:evenodd">
-   <text
-   x="144.32201"
-   y="79.828003"
-   id="_158268248"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">FailureDetectore</text>
-
-   <rect
-   width="69.531502"
-   height="23.548"
-   x="141.086"
-   y="70.489998"
-   id="_156807344"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-  </g>
+      <text
+         x="144.32201"
+         y="79.828003"
+         id="_158268248"
+         style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">FailureDetector</text>
+      <rect
+         width="69.531502"
+         height="23.548"
+         x="141.086"
+         y="70.489998"
+         id="_156807344"
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+    </g>
     <g
        transform="matrix(2.1289057,0,0,2.1289057,15.706543,8.4461471)"
        id="_158267888"
        style="fill-rule:evenodd">
-   <text
-   x="70.368301"
-   y="159.33299"
-   id="_158268200"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Other replicas</text>
-
-   <path
-   d="M 69.0584,155.395 C 58.6995,152.5348 66.4687,147.768 74.238,148.7214 C 74.238,145.8612 87.1869,144.9079 92.3665,147.768 C 92.3665,143.9546 107.9053,143.9546 107.9053,147.768 C 115.6746,144.9079 128.6234,148.7214 123.444,151.5815 C 131.2131,152.5348 128.6234,157.3018 123.444,157.3018 C 131.2131,158.2552 128.6234,163.0221 123.444,163.0221 C 128.6234,165.8822 115.6746,169.6956 107.9053,165.8822 C 105.3155,169.6956 89.7767,169.6956 89.7767,165.8822 C 84.5971,168.7423 74.238,167.789 76.8278,164.9288 C 69.0584,165.8822 63.879,162.0687 69.0584,160.1619 C 63.879,160.1619 61.2893,155.395 69.0584,155.395 L 69.0584,155.395 z"
-   id="_251185288"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-  </g>
+      <text
+         x="70.368301"
+         y="159.33299"
+         id="_158268200"
+         style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Other replicas</text>
+      <path
+         d="M 69.0584,155.395 C 58.6995,152.5348 66.4687,147.768 74.238,148.7214 C 74.238,145.8612 87.1869,144.9079 92.3665,147.768 C 92.3665,143.9546 107.9053,143.9546 107.9053,147.768 C 115.6746,144.9079 128.6234,148.7214 123.444,151.5815 C 131.2131,152.5348 128.6234,157.3018 123.444,157.3018 C 131.2131,158.2552 128.6234,163.0221 123.444,163.0221 C 128.6234,165.8822 115.6746,169.6956 107.9053,165.8822 C 105.3155,169.6956 89.7767,169.6956 89.7767,165.8822 C 84.5971,168.7423 74.238,167.789 76.8278,164.9288 C 69.0584,165.8822 63.879,162.0687 69.0584,160.1619 C 63.879,160.1619 61.2893,155.395 69.0584,155.395 L 69.0584,155.395 z"
+         id="_251185288"
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+    </g>
     <g
        transform="matrix(2.1289057,0,0,2.1289057,15.706543,8.4461471)"
        id="_251183368"
        style="fill-rule:evenodd">
-   <path
-   d="M 218.012,156.128 C 210.2529,153.3654 216.0722,148.761 221.8916,149.6818 C 221.8916,146.9192 231.5906,145.9983 235.4702,148.761 C 235.4702,145.0774 247.1092,145.0774 247.1092,148.761 C 252.9286,145.9983 262.6275,149.6818 258.748,152.4445 C 264.5673,153.3654 262.6275,157.9699 258.748,157.9699 C 264.5673,158.8908 262.6275,163.4952 258.748,163.4952 C 262.6275,166.2579 252.9286,169.9414 247.1092,166.2579 C 245.1693,169.9414 233.5304,169.9414 233.5304,166.2579 C 229.6508,169.0206 221.8916,168.0997 223.8314,165.337 C 218.012,166.2579 214.1324,162.5744 218.012,160.7326 C 214.1324,160.7326 212.1927,156.128 218.012,156.128 L 218.012,156.128 z"
-   id="_251184808"
-   style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
-
-   <text
-   x="225.323"
-   y="160.444"
-   id="_156808592"
-   style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Clients</text>
-
-  </g>
+      <path
+         d="M 218.012,156.128 C 210.2529,153.3654 216.0722,148.761 221.8916,149.6818 C 221.8916,146.9192 231.5906,145.9983 235.4702,148.761 C 235.4702,145.0774 247.1092,145.0774 247.1092,148.761 C 252.9286,145.9983 262.6275,149.6818 258.748,152.4445 C 264.5673,153.3654 262.6275,157.9699 258.748,157.9699 C 264.5673,158.8908 262.6275,163.4952 258.748,163.4952 C 262.6275,166.2579 252.9286,169.9414 247.1092,166.2579 C 245.1693,169.9414 233.5304,169.9414 233.5304,166.2579 C 229.6508,169.0206 221.8916,168.0997 223.8314,165.337 C 218.012,166.2579 214.1324,162.5744 218.012,160.7326 C 214.1324,160.7326 212.1927,156.128 218.012,156.128 L 218.012,156.128 z"
+         id="_251184808"
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2" />
+      <text
+         x="225.323"
+         y="160.444"
+         id="_156808592"
+         style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial">Clients</text>
+    </g>
+    <g
+       style="fill-rule:evenodd"
+       id="g2855"
+       transform="matrix(2.1289057,0,0,2.1289057,15.706543,58.414155)">
+      <rect
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2"
+         id="rect2857"
+         y="22.988001"
+         x="141.507"
+         height="20.886797"
+         width="68.704803" />
+      <text
+         style="font-size:8.46660042px;font-weight:normal;fill:#1f1a17;font-family:Arial"
+         id="text2859"
+         y="33.617699"
+         x="145.664">Recovery</text>
+    </g>
+    <rect
+       width="131.18521"
+       height="54.738636"
+       x="323.49567"
+       y="254.16867"
+       id="rect2865"
+       style="fill:#ffffff;fill-rule:evenodd;stroke:#1f1a17;stroke-width:0.42578116" />
+    <text
+       style="font-size:18.02480507px;font-weight:normal;fill:#1f1a17;fill-rule:evenodd;font-family:Arial"
+       id="text2867"
+       y="276.40298"
+       x="333.8685">UdpNetwork</text>
+    <g
+       style="fill-rule:evenodd"
+       id="g2869"
+       transform="matrix(2.1289057,0,0,2.1289057,15.706543,127.33272)">
+      <text
+         style="font-size:8.4666996px;font-weight:normal;fill:#1f1a17;font-family:Arial"
+         id="text2871"
+         y="33.617802"
+         x="218.32564">ServiceProxy</text>
+      <rect
+         style="fill:none;stroke:#1f1a17;stroke-width:0.2"
+         id="rect2873"
+         y="22.988001"
+         x="215.52"
+         height="15.206023"
+         width="54.810001" />
+    </g>
   </g>
 </svg>

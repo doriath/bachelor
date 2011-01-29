@@ -1,32 +1,105 @@
 \chapter{Architecture}
 
+This chapter describes the architecture of JPaxos.
+First the general architecture of the library is presented, consecutively focusing on its parts in detail.
+Later the most significant data structures and threading architecture details are presented.
+
 \section{Architecture overview}
 \indent\par
-Easiest way to understand the architecture of \paxosJava is to analyze the diagram below:
+Easiest way to understand the architecture of JPaxos is to analyze it's architecture in top-down approach.
+
+\subsection{Processes and their communication}
+
+For JPaxos there are two possible approaches of building replicated services. The first, recommended by us, requires from the service client application using a \texttt{Client} module. The other approach incorporates client module with replica, but it places the responsibility for finding a working replica on the user. The possible approaches are visualised on firure \ref{fig:jpaxos_processes}.
+
+\begin{figure}[h]
+ \begin{tabular}{ccc}
+  \includegraphics[width=0.44\textwidth]{architecture/userArchitecture1.pdf}
+  &
+  \hspace{0.02\textwidth}
+  &
+  \includegraphics[width=0.44\textwidth]{architecture/userArchitecture2.pdf}
+  \\ 
+  \scriptsize a) JPaxos client integrated with service client
+  & & 
+  \scriptsize b) JPaxos client integrated with the replica\\
+ \end{tabular}
+ \fcmfcaption{Two models of JPaxos}\label{fig:jpaxos_processes}
+\end{figure}
+
+The JPaxos \texttt{Client} is responsible for connecting to replicas, providing availability of service as the replica connected with client crashes and ensures that the request will be eventually answered.
+
+Integrating the \texttt{Client} module with service client provides full transparency of replication for the clients.
+The service client contacts with the JPaxos \texttt{Client} module as if it would contact with the service -- i.e. it executes requests and gets answers for them.
+
+If one chooses the second approach -- integrating \texttt{Client} in the replica -- the transparency is lost, and the programmer using JPaxos must care for selecting a working replica himself. However, this approach enables using JPaxos in wider context -- for example, one could possibly create a REST web service, and use an usual web client as the service Client, while the service itsel woule be replicated using JPaxos.
+
+The JPaxos Replica module is responsible for global request ordering, passing the requests to the service, answering to the clients and recovering service from crash.
+
+The service itself must be integrates within JPaxos replica. It gets the requests and responds to them. However, in order to make the resource usage bounded JPaxos requires additional functionality from the service, that partialy breaks the transparency - the service must provide snapshots of it's state
+once a time, % TODO: lepsze sformuowanie
+as well as be able to recover it's state from a snapshot, possibly made by other replica.
+As we assume that the services are deterministic, recovering from snapshot originating from other replica is not an issue, however for some services creating a snapshot may present a challenge.
+
+\subsection{Client and client-replica communication}
+
+The JPaxos client module is a single smallweight module that performs several tasks:
+\begin{itemize} 
+ \item Connects to the replicated service
+ \item Reconnects to the replicated service if the connection is lost (e.g. if a replica crashed)
+ \item Retreives (or acknowledges) a Client ID for recognising the requests
+ \item Sends the requests
+ \item Waits for answer, retransmitting the request if needed
+\end{itemize}
+
+For the communication with replicas Client uses TCP protocol.
+
+\subsection{Service}
+
+Service is the core part -- in fact it's the service that uses JPaxos for replication.
+In order to connect a service with the library, it must implement an interface provided by JPaxos. The interface provides required communication between the library and the service.
+
+The interface for interconnecting JPaxos replica and service allows for:
+\begin{itemize}
+ \item Executing requests and providing answers for them
+ \item Creating Snapshots
+ \item Recovering from shansphots
+\end{itemize}
+
+\subsection{Replica}
+
+Replica is the most important part of the JPaxos. It consists of numerous modules as depicted on the figure \ref{fig:replica_architecture}.
 
 \begin{figure}[h]
  \centering
  \includegraphics[keepaspectratio, width=0.75\textwidth]{architecture/replica_architecture.pdf}
- \caption{Block diagram of \paxosJava modules}
+ \caption{Block diagram of JPaxos modules}
  \label{fig:replica_architecture}
 \end{figure}
 
-Here comes the description for all modules but client and service (for these, see section \ref{sec:client_service}):
+Short description of the modules of JPaxos goes as follows:
 
 \begin{description}
-  \item[ClientManager ] gets new requests from clients
-  \item[Replica ] executes decisions
+  \item[Replica ] interconnects other modules - especially the ClientManager, Paxos ans ServiceProxy
+  \item[ClientManager ] maintains connection to clients, receives requests from them and forwards the answers
   \item[Paxos ] implements Paxos consensus algorithm
   \begin{description}
     \item[Proposer ] sends new proposes
     \item[Acceptor ] receives proposes and accepts them
     \item[Learner ] collects accepts and decides
   \end{description}
-  \item[CatchUp ] takes care for lost ballots
+  \item[CatchUp ] takes care for lost ballots as well as retreives the state from othrs by recovery
   \item[SnapshotMaintainer ] controls snapshot mechanism
-  \item[Storage ] keeps less significant data
-  \item[Stable Storage ] keeps the data needed for disk recovery
+  \item[Recovery ] chooses proper recovery method and does the actual recovery processes
+  \item[Storage ] keeps all the data that do not need to survive crash
+  \item[Stable Storage ] keeps the data needed for recovery
+  \item[Service Proxy ] as only module contacts with the Service, provides as much transparency as possbible for the service
 \end{description}
+
+\begin{TODO}
+ Stuff below
+\end{TODO}
+
 
 \section{Storage and data structures}
 \label{sec:storage_and_data_structures}
