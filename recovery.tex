@@ -8,10 +8,11 @@ The crash of the process is a permanent lack of activity from a program. It may 
 
 So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories - the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category non stable storage. Writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
 
-In following sections, we use following TODO oznaczenia?: 
+In following sections, we will use below variables: 
 \begin{itemize}
   \item $n$ - number of processes
   \item $f$ - number of faulty process
+  \item $p$ - the id of local process
 \end{itemize}
 
 \section{Crash stop}
@@ -27,24 +28,135 @@ But there is one big drawback. In previous chapters we said that Paxos algorithm
 
 First algorithm with ability to recover a process is crash recovery with stable storage. In this algorithm, we want to save all necessary data to stable storage. After crash the process can load all information from stable storage and join the Paxos protocol. To increase the performance the process should write as little as possible and as rare as possible to stable storage.
 
-To keep the correctness it is required to make a synchronous write:
+The process cannot join the Paxos protocol until the recovery phase is finished. So recovering process cannot respond to any message received, like \propose, \accept, \prepare and \prepareOK. The moment when the process joins Paxos protocol is also a moment when the process is considered as correct.
+
+Description of variables used in algorithm below:
 \begin{itemize}
-  \item when view has changed,
-  \item new value for consensus instance is received,
-  \item new snapshot is received.
+  \item $log_p$ - the array of consecutive instances - $id \rightarrow <view, value>$
+  \item $view_p$ - the current view number
+  \item $state_p$ - the last snapshot made by service or received from catch-up
 \end{itemize}
+
+\begin{algorithmic}[1]
+  \INIT{}
+    \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
+    \STATE $view_p \leftarrow 0$
+    \IF{$view_p \mod n \equiv p$}
+      \STATE $view_p \leftarrow 1$
+    \ENDIF
+    \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
+    \STATE
+    \IF{recovery after crash}
+      \STATE $view_p \leftarrow$ last view number written to stable storage
+      \FOR{$<id, view, value>$ from stable storage}
+        \STATE $log_p[id] \leftarrow <view, value>$
+      \ENDFOR
+      \STATE $state_p \leftarrow$ last snapshot saved to stable storage
+    \ENDIF
+    \STATE
+    \STATE join Paxos protocol
+  \ENDINIT
+
+  \vspace{1em}
+  \PROCEDURE{advanceView(view)}
+    \STATE write $view$ to stable storage
+    \STATE $view_p \leftarrow view$
+  \ENDPROC
+
+  \vspace{1em}
+  \PROCEDURE{updateValue(id, view, value)}
+    \STATE $log_p[id] \leftarrow <view, value>$
+    \STATE write $<id, view, value>$ to stable storage
+  \ENDPROC
+
+  \vspace{1em}
+  \PROCEDURE{newSnapshot(snapshot)}
+    \STATE write $snapshot$ to stable storage
+    \STATE $state_p \leftarrow snapshot$ 
+  \ENDPROC
+\end{algorithmic}
 
 On recovery the algorithm reads the view, values for all consensus instances and last snapshot from stable storage and can join a Paxos protocol (the process cannot respond to any message until it loads everything from stable storage).
 
-This synchronous writes are made on critical path, so the performance of this algorithm will be much lower comparing to crash-stop model. But the crash recovery with stable storage algorithm tolerates catastrophic failures - the failure when all processes crashed. Of course when all processes crashed, the replicated service will be unavailable. But we can start all processes again and they will recover to state from before the crash.
+This synchronous writes are made on critical path, so the performance of this algorithm will be much lower comparing to crash-stop model. But the crash recovery with stable storage algorithm tolerates catastrophic failures - the failure when all processes crashed. Of course when all processes are crashed, the replicated service will be unavailable. But we can start all processes again and they will recover to state from before the crash.
 
 As we can see, this algorithm is more practical than crash-stop when there is a lot of crashes. But because the performance is much lower, we will introduce two more algorithms. These algorithms will not tolerate catastrophic failures but their performance should be close to performance of crash-stop model.
 
 \section{Epoch based recovery}
 \label{sec:epoch_ss}
 
+In this section, we will describe the algorithm based on epoch numbers. This algorithm is making only one synchronous write to stable storage on process startup, but the recovery phase is more complicated comparing to previous algorithm.
+
+We will use following variables in the pseudocode:
+\begin{itemize}
+  \item $epoch_p$ - vector of epoch numbers
+  \item $e$ - epoch number of single process
+  \item $highestId$ - the id of highest known consensus instance
+\end{itemize}
+
+The pseudocode below should explain this algorithm:
+\begin{algorithmic}[1]
+  \INIT{}
+    \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
+    \STATE $view_p \leftarrow 0$
+    \IF{$view_p \mod n \equiv p$}
+      \STATE $view_p \leftarrow 1$
+    \ENDIF
+    \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
+    \STATE $\forall q : epoch_p[q] \leftarrow 0$
+    \STATE
+    \IF{recovery after crash}
+      \STATE $epoch_p[p] \leftarrow$ last epoch number written to stable storage
+      \STATE $epoch_p[p] \leftarrow epoch_p[p] + 1$
+      \STATE send $<\recovery, epoch_p[p]>$ to all except $p$
+      \STATE wait for $f+1 <\recoveryAnswer, epoch, view, highestId>$ messages including from primary of highest view received
+      \STATE $\forall s \in \Pi : epoch_p[s] \leftarrow \max\{{epoch[s] \; \mathrm{ received}}\}$
+      \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
+      \STATE download all instance up to $highestId$ using catch-up module
+    \ENDIF
+      \STATE write $epoch_p[p]$ to stable storage
+    \STATE
+    \STATE join Paxos protocol
+  \ENDINIT
+
+  \vspace{1em}
+  \UPON{receive $<\recovery, e>$ from $q$}
+    \IF{$q$ is primary of $view_p$}
+      \STATE change to a higher view where $q$ is not primary
+      \STATE wait until view change is complete
+    \ENDIF
+    \STATE $epoch_p[q] \leftarrow e$
+    \STATE send $<\recoveryAnswer, epoch_p, view_p, highestId_p>$ to $q$
+  \ENDUPON
+
+  \vspace{1em}
+  \UPON{$<\prepareOK, epoch, v, log, i>$ from $q$}
+    \IF{$v > view_p$}
+      \STATE $view_p \leftarrow v$
+      \STATE send $<\prepare, view_p>$ to all
+    \ELSE
+      \STATE $\forall q : epoch_p[q] \leftarrow \max\{{epoch[q], epoch_q[q]}\}$
+      \FORALL{$s \in \Pi$}
+        \STATE $e^{max} \leftarrow \max\{{epoch[s] : <\prepareOK, epoch, view_p, -, -> \mathrm{received \; from}\; s}\}$
+        \STATE discard all messages $<\prepareOK, epoch, view_p, -, ->$ where $epoch[s] < e^{max}$
+      \ENDFOR
+      \STATE execute normal handler 
+    \ENDIF
+  \ENDUPON
+\end{algorithmic}
+
+Epoch based recovery algorithms tolerates $f < \frac{n}{2}$ crashed processes. It is required that at least majority of processes are always correct - otherwise the algorithm will not be able to continue. In recovery phase the process is downloading all information from other replicas using catch-up mechanism. When all necessary information is transfered, the replica can join the Paxos protocol and is considered as correct.
+
+On normal execution this algorithm should be as fast as crash-stop model. The size of \prepareOK message is increased by epoch vector which contains $n$ numbers but it shouldn't have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
+
+\begin{TODO}
+Let's analyze one example to better understand this algorithm. Assume that we replicate service on $n = 3$ replicas.
+\end{TODO}
+
 \section{View based recovery}
 \label{sec:view_ss}
+
+The next algorithm is view based recovery.
 
 \begin{TODO}
 Every time view is changed, write it to stable storage
@@ -87,3 +199,9 @@ Disadvantages:
   \item synchronous writes to stable storage on critical path
   \item low performance
 \end{itemize}
+
+
+Proofs of all above algorithms can be found in TODO nuno draft.
+\begin{TODO}
+  reference to Nuno draft PaxosRecovery
+\end{TODO}
