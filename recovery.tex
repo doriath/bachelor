@@ -8,9 +8,9 @@ The crash of the process is a permanent lack of activity from a program. It may 
 
 So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories - the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category non stable storage.
 
-Usually operating system buffers the data before writing it to stable storages such as disks. Such writes are called asynchronous. They do not provide guarantee that if crash occurs, all data will be on the storage instead of beeing lost with the rest of system bufffer.
+Usually operating system buffers the data before writing it to stable storages such as disks. Such writes are called asynchronous. They do not provide guarantee that if crash occurs, all data will be on the storage instead of being lost with the rest of system buffer.
 
-Another option is to force the operating system to write the data to stable storage. Such operatin is called \emph{synchronising} the buffers with storage. If we cal write and synchronise, we can say that the write is synchronous -- the data won't be lost due to crash. But writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
+Another option is to force the operating system to write the data to stable storage. Such operating is called \emph{synchronising} the buffers with storage. If we cal write and synchronise, we can say that the write is synchronous -- the data won't be lost due to crash. But writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
 
 In following sections, we will use below variables: 
 \begin{tightList}
@@ -27,15 +27,15 @@ Because of that there is no recovery phase and we don't need a stable storage. B
 
 But there is one big drawback. In previous chapters we said that Paxos algorithm can decide on the value (can continue working) if majority of processes are correct. If majority of processes will crash in this model, the algorithm will never decide again and our replicated service will stop forever. Because of that using this model is not very practical and below we present 3 algorithms which allows for process recovering.
 
-For performance tests and for theoretical purposes this model is very important -- it is the fastest model, used as comparison point with others. It is easier also to analize correctness of this model and prove that the algorithms implementing recovery models are correct taking under consideration only the changes in the code.
+For performance tests and for theoretical purposes this model is very important -- it is the fastest model, used as comparison point with others. It is easier also to analyze correctness of this model and prove that the algorithms implementing recovery models are correct taking under consideration only the changes in the code.
 
 \section{Recovery phase}
 
 A recovery phase is the state of JPaxos replica after starting the process. It must be decided, if this is the first run of this replica or recovery from crash.
 
-Of course, if this is the first start, the process can just go to normal state. Otherwise the process must stay in the Recovery phase as long as it does not fuilfill requirements of the recovery model.
+Of course, if this is the first start, the process can just go to normal state. Otherwise the process must stay in the Recovery phase as long as it does not fulfill requirements of the recovery model.
 
-The process cannot join the Paxos protocol until the recovery phase is finished. So recovering process cannot respond to any message received, like \propose, \accept, \prepare and \prepareOK. However, these messages may be received and procesed, so the process can passively join the protocol. The moment when the process joins Paxos protocol is also a moment when the process is considered as correct.
+The process cannot join the Paxos protocol until the recovery phase is finished. So recovering process cannot respond to any message received, like \propose, \accept, \prepare and \prepareOK. However, these messages may be received and processed, so the process can passively join the protocol. The moment when the process joins Paxos protocol is also a moment when the process is considered as correct.
 
 
 \section{Crash-recovery with stable storage}
@@ -93,7 +93,7 @@ On recovery the algorithm reads the view, values for all consensus instances and
 
 This synchronous writes are made on critical path, so the performance of this algorithm will be much lower comparing to crash-stop model. But the crash recovery with stable storage algorithm tolerates catastrophic failures - the failure when all processes crashed. Of course when all processes are crashed, the replicated service will be unavailable. But we can start all processes again and they will recover to state from before the crash.
 
-As we can see, this algorithm is already deployable in enviornment with crashes. But because the performance is really low, we will introduce two more algorithms. These algorithms will not tolerate catastrophic failures but their performance should be close to performance of crash-stop model.
+As we can see, this algorithm is already deployable in environment with crashes. But because the performance is really low, we will introduce two more algorithms. These algorithms will not tolerate catastrophic failures but their performance should be close to performance of crash-stop model.
 
 \section{Epoch based recovery}
 \label{sec:epoch_ss}
