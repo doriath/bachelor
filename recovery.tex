@@ -178,15 +178,18 @@ TODO dodac rysunek przedstawiajacy przyklad
 \section{View based recovery}
 \label{sec:view_ss}
 
-The next algorithm is view based recovery.
+The next algorithm is view based recovery. It has very similar properties as epoch based recovery. In every moment majority of processes is required to be correct but instead of using epoch numbers, the view number is written to table storage on every change. 
+
+The pseudocode of this algorithm is presented below: 
+
 \begin{algorithmic}[1]
   \INIT{}
-    \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
+    \STATE $log_p \leftarrow \bot$
     \STATE $view_p \leftarrow 0$
     \IF{$view_p \mod n = p$}
       \STATE $view_p \leftarrow view_p + 1$
     \ENDIF
-    \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
+    \STATE $state_p \leftarrow \bot$
     \STATE
     \IF{recovery after crash}
       \STATE $view_p \leftarrow$ last view number written to stable storage
@@ -221,16 +224,9 @@ The next algorithm is view based recovery.
   \ENDUPON
 \end{algorithmic}
 
-\begin{TODO}
-Every time view is changed, write it to stable storage
+This algorithm makes synchronous write to stable storage on every view change. If the network is stable and the leader doesn't crash, performance of the algorithm should be the same as in crash-stop model. If the view is change often because of message loss or leader crash, the performance can decrease.
 
-Recovery
-- read last view
-- learn highest instance from leader
-- download all instances from any process
-- join paxos
-\end{TODO}
-
+The recovery phase is quite similar to the epoch based recovery. Recovering process is sending \recovery message to all and waits for majority of \recoveryAnswer to get $heighestId$ value from leader. Then catch-up mechanism is used to retrieve missing instances from correct processes. This algorithm is easier than based on epoch, because it doesn't introduce any changes in handling \prepareOK message.
 
 \section{Conclusions}
 
