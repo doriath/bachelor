@@ -150,8 +150,7 @@ The pseudocode below should explain this algorithm:
     \ELSE
       \STATE $\forall q : epoch_p[q] \leftarrow \max\{{epoch[q], epoch_q[q]}\}$
       \FORALL{$s \in \Pi$}
-        \STATE $e^{max} \leftarrow \max\{{epoch[s] : <\prepareOK, epoch, view_p, -, -> \mathrm{received \; from}\; s}\}$
-        \STATE discard all messages $<\prepareOK, epoch, view_p, -, ->$ where $epoch[s] < e^{max}$
+        \STATE discard all messages $<\prepareOK, epoch, view_p, -, ->$ from $s$ where $epoch[s] < epoch_q[p]$
       \ENDFOR
       \STATE execute normal handler 
     \ENDIF
@@ -164,8 +163,16 @@ In recovery phase the process first notifies the majority of other replicas abou
 
 On normal execution this algorithm should be as fast as crash-stop model. The size of \prepareOK message is increased by epoch vector which contains $n$ numbers but it shouldn't have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
 
+\subsection{Example}
+
+Let's analyze one example to better understand this algorithm. Assume that we replicate service on $n = 5$ replicas. All processes are numbered from 0 to 4, have initial epoch vector $[0, 0, 0, 0, 0]$, are initially correct and are in view 4 (where process 4 is a leader).
+
+Process 0 is suspecting a leader and changing view to 5 by sending \prepare message to all. Process 1 receives \prepare and respond with $<$\prepareOK, [0, 0, 0, 0, 0], 5, -$>$. The process 0 receives the response and process 1 crashes. After crash process 1 is recovering, increases epoch number to 1 and sends $<$\recovery, 1$>$ message to all. Processes [2, 3, 4] receives \recovery message, updates epoch vector to [0, 1, 0, 0, 0] and responds with \recoveryAnswer and view 4. After receiving three \recoveryAnswer messages with view 4 (also from leader of view 4), process 1 joins the protocol with view 4. Now process 2 receives the \prepare from process 0 and responds with $<$\prepareOK, [0, 1, 0, 0, 0], 5, -$>$.
+
+Process 0 already received 3 \prepareOK responses, from [0, 1, 2]. But message from process 1 will be discarded because it was sent when process 1 was in epoch 0 and now from process 2 we know that process 1 is in epoch 1. If we wouldn't discard this message, process 0 would be prepared leader in view 5 but processes [1, 3, 4] would be in view 4 and that would cause violation of Paxos protocol.
+
 \begin{TODO}
-Let's analyze one example to better understand this algorithm. Assume that we replicate service on $n = 3$ replicas.
+TODO dodac rysunek przedstawiajacy przyklad
 \end{TODO}
 
 \section{View based recovery}
