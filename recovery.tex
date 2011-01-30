@@ -113,7 +113,7 @@ The pseudocode below should explain this algorithm:
     \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
     \STATE $view_p \leftarrow 0$
     \IF{$view_p \mod n = p$}
-      \STATE $view_p \leftarrow 1$
+      \STATE $view_p \leftarrow view_p + 1$
     \ENDIF
     \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
     \STATE $\forall q : epoch_p[q] \leftarrow 0$
@@ -125,7 +125,7 @@ The pseudocode below should explain this algorithm:
       \STATE wait for $n-f <\recoveryAnswer, epoch, view, highestId>$ messages including from primary of highest view received
       \STATE $\forall s \in \Pi : epoch_p[s] \leftarrow \max\{{epoch[s] \; \mathrm{ received}}\}$
       \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
-      \STATE download all instance up to $highestId$ using catch-up module
+      \STATE download all instance up to $highestId$ from leader using catch-up module
     \ENDIF
       \STATE write $epoch_p[p]$ to stable storage
     \STATE
@@ -143,9 +143,9 @@ The pseudocode below should explain this algorithm:
   \ENDUPON
 
   \vspace{1em}
-  \UPON{$<\prepareOK, epoch, v, log, i>$ from $q$}
-    \IF{$v > view_p$}
-      \STATE $view_p \leftarrow v$
+  \UPON{$<\prepareOK, epoch, view, highestId>$ from $q$}
+    \IF{$view > view_p$}
+      \STATE $view_p \leftarrow view$
       \STATE send $<\prepare, view_p>$ to all
     \ELSE
       \STATE $\forall q : epoch_p[q] \leftarrow \max\{{epoch[q], epoch_q[q]}\}$
@@ -172,6 +172,47 @@ Let's analyze one example to better understand this algorithm. Assume that we re
 \label{sec:view_ss}
 
 The next algorithm is view based recovery.
+\begin{algorithmic}[1]
+  \INIT{}
+    \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
+    \STATE $view_p \leftarrow 0$
+    \IF{$view_p \mod n = p$}
+      \STATE $view_p \leftarrow view_p + 1$
+    \ENDIF
+    \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
+    \STATE
+    \IF{recovery after crash}
+      \STATE $view_p \leftarrow$ last view number written to stable storage
+      \IF{$view_p \mod n = p$}
+        \STATE $view_p \leftarrow view_p + 1$
+      \ENDIF
+      \STATE send $<\recovery, view_p>$ to all except $p$
+      \STATE wait for $n-f <\recoveryAnswer, view, highestId>$ messages including from primary of highest view received
+      \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
+      \STATE download all instance up to $highestId$ from leader using catch-up module
+    \ENDIF
+    \STATE
+    \STATE join Paxos protocol
+  \ENDINIT
+
+  \vspace{1em}
+  \PROCEDURE{advanceView($view$)}
+    \STATE write $view$ to stable storage
+    \STATE $view_p \leftarrow view$
+  \ENDPROC
+
+  \vspace{1em}
+  \UPON{receive $<\recovery, view>$ from $q$}
+    \IF{$q$ is primary of $view_p$}
+      \STATE change to a higher view where $q$ is not primary
+      \STATE wait until view change is complete
+    \ENDIF
+    \IF{$view > view_p$}
+      \STATE advanceView(view)
+    \ENDIF
+    \STATE send $<\recoveryAnswer, view_p, highestId_p>$ to $q$
+  \ENDUPON
+\end{algorithmic}
 
 \begin{TODO}
 Every time view is changed, write it to stable storage
