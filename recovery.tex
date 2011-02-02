@@ -228,36 +228,34 @@ This algorithm makes synchronous write to stable storage on every view change. I
 
 The recovery phase is quite similar to the epoch based recovery. Recovering process is sending \recovery message to all and waits for majority of \recoveryAnswer to get $heighestId$ value from leader. Then catch-up mechanism is used to retrieve missing instances from correct processes. This algorithm is easier than based on epoch, because it doesn't introduce any changes in handling \prepareOK message.
 
-\section{Conclusions}
+\section{Comparison}
 
-\begin{TODO}
-Crash stop
-\end{TODO}
+We presented 4 different algorithms implemented to JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table below we present the comparison of all algorithms by comparing:
+\begin{table}[h]
+  \footnotesize
+  \begin{tabular}{l|ccccc}
+                        & Crash-stop & Full stable storage & View based      & Epoch based \\ \hline
+    Always correct      & majority   & 0                   & majority        & majority \\
+    Process can recover & no         & yes                 & yes             & yes \\
+    Stable storage use  & no         & per round           & per view change & on recovery \\
+    Additional messages & no         & no                  & \recovery       & \recovery \\
+    State transfer      & no         & no                  & yes             & yes \\
+    Increased msg size  & no         & no                  & no              & \prepareOK ($n$)\\ \hline
+  \end{tabular}
+  \caption{Comparison of recovery algorithms.}
+\end{table}
 
-Advantages:
-\begin{itemize}
-  \item high performance
-  \item no synchronous writes to stable storage on critical path
-\end{itemize}
+\begin{figure}[h]
+ \centering
+ \includegraphics[keepaspectratio, width=0.75\textwidth]{recovery_algorithms.pdf}
+ \caption{Comparison of recovery algorithms}
+ \label{fig:recovery_algorithms}
+\end{figure}
 
-Disadvantages:
-\begin{itemize}
-  \item tolerates only $f < \frac{n}{2}$ faulty processes
-  \item faulty process cannot recovery 
-  \item not very practical
-\end{itemize}
+Crash recovery with full stable storage is an algorithm with the best fault tolerance because it tolerates catastrophic failures. But to achieve that it makes a synchronous writes to stable storage on every round (on every view and value change) what decreases the performance.
 
-Crash recovery with stable storage
-Advantages:
-\begin{itemize}
-  \item tolerates catastrophic failures - $f = n$ 
-\end{itemize}
+Crash stop doesn't provide any recovery (crashed processes will never be correct again) and all the time majority of processes have to be correct. But no synchronous writes to stable storage are made so it provides the best performance.
 
-Disadvantages:
-\begin{itemize}
-  \item synchronous writes to stable storage on critical path
-  \item low performance
-\end{itemize}
+The compromise between crash recovery with stable storage and crash stop are view based and epoch based recovery. They support recovery of crashed process and their performance should be close to crash-stop model. If service doesn't have to tolerate catastrophic failures, it is the best to use them in production environment.
 
-
-Proofs of all above algorithms can be found in TODO Nuno Santos technical report \cite{Nun10}.
+Proofs of all algorithms presented in this chapter can be found in \cite{Nun10}. 
