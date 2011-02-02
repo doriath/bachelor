@@ -21,17 +21,17 @@ column=0
 encoding=UTF-8
 highlight=LaTeX
 line=64
-open=true
+open=false
 order=1
 
 [item:02-theory.tex]
 archive=true
-column=0
+column=145
 encoding=UTF-8
 highlight=LaTeX
-line=73
+line=72
 open=true
-order=4
+order=2
 
 [item:03-jpaxos.tex]
 archive=true
@@ -40,7 +40,7 @@ encoding=UTF-8
 highlight=LaTeX
 line=0
 open=true
-order=3
+order=1
 
 [item:04-conclusions.tex]
 archive=true
@@ -48,7 +48,7 @@ column=14
 encoding=UTF-8
 highlight=LaTeX
 line=0
-open=true
+open=false
 order=2
 
 [item:0a-zalacznik.tex]
@@ -57,15 +57,15 @@ column=0
 encoding=UTF-8
 highlight=LaTeX
 line=0
-open=true
+open=false
 order=5
 
 [item:0b-pisanie-w-latexu.tex]
 archive=true
-column=0
+column=60
 encoding=UTF-8
 highlight=LaTeX
-line=0
+line=133
 open=false
 order=3
 
@@ -74,9 +74,9 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=10
+line=121
 open=true
-order=7
+order=3
 
 [item:bibliography.bib]
 archive=true
@@ -84,23 +84,32 @@ column=0
 encoding=UTF-8
 highlight=BibTeX
 line=77
-open=true
+open=false
 order=6
 
 [item:main.tex]
 archive=true
-column=44
+column=1
 encoding=UTF-8
 highlight=LaTeX
-line=59
+line=18
 open=true
 order=0
 
 [item:ppfcmthesis.cls]
 archive=true
-column=2147418232
-encoding=
-highlight=
-line=0
+column=26
+encoding=UTF-8
+highlight=LaTeX
+line=29
 open=false
 order=-1
+
+[item:recovery.tex]
+archive=true
+column=85
+encoding=UTF-8
+highlight=LaTeX
+line=46
+open=true
+order=4
