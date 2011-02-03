@@ -1,17 +1,14 @@
 \chapter{Implemented Features}
 
-\section{Leader Election}
-\label{sec:leader_election}
-\indent\par
-Only the failure of the leader needs to be detected.
+\section{Granting unique request IDs}
 
-In \paxosJava this is done using heartbeats sent periodically by the leader to all replicas.
-The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it hasn't sent any message during the last $\tau_0$ time.
-
-When a replica does not receive a message from the leader for more than $\tau_1$ time, it suspects the leader and tries to become the primary. It advances to the next view where it is the leader and sends a prepare message to all.
-
-If several replicas try to do this at the same time, the one with the highest view will win and become the leader.
-
+The client ID has to be unique for two different clients. To guarantee this, replicas must be responsible for granting ID's to clients, because a client has no knowledge of other client's ID.
+\subsection{Based on number of replicas}
+Each replica can grant numbers incremented by number of replicas, starting from ID of local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, ... and replica with ID 2 can grant 2, 5, 8, ... . It guarantees that two different replicas will not grant the same ID. This solution works with crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't now what was last granted ID.
+\subsection{Time based}
+This is improved version of previous approach. To each client ID we are adding also information when replica was started (as milliseconds). It assumes that system timer is not set back into past and also that replica will not recover in the same millisecond. If these assumptions are fulfilled, then they guarantee unique IDs in crash-recovery model without stable storage. \textbf{This approach is currently implemented in our library.}
+\subsection{View based}
+Because time based assumptions sometimes cannot be guaranteed, another approach for crash-recovery model may be considered. Instead of adding information about start time, we can add current view number. In each view, there is exactly one leader -- so after the prepare phase this replica can grant clients IDs as pair (view, sequence\_number). Two different replicas cannot start the same view. Important implementation note: replica cannot become a leader from received message (it happens when replica crashed as the leader, but recovered so fast that message from the same view was received). Also we have to guarantee that only leader replica after prepare phase can grant new client IDs.
 
 \section{Catch-up}
 \label{sec:catch_up}
