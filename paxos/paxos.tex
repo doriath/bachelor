@@ -1,25 +1,42 @@
 \chapter{Paxos}
 
-In this chapter we provide some background for Paxos and MultiPaxos algorithm. We start with introduction to Paxos and MultiPaxos protocol. Then we describe the problems we encounter while implementing them and performance improvement we made.
+In this chapter we provide some background for Paxos and MultiPaxos algorithm. We start with introduction to Paxos and MultiPaxos protocol. Then we describe the problems we encounter while implementing them and performance improvements we made.
 
 \section{Overview}
-Paxos algorithm is used to solve consensus problem in distributed system. $n$ processes tries to decide upon the same value, which was proposed by one of them. Paxos is a leader based algorithm so there is always one process, known as leader for majority of processes. The phase of electing the leader is described in following section. When the leader is elected, it starts proposing new values from clients. The MultiPaxos is extension which allows to decide multiple values in specified order instead of just one.
+Paxos algorithm is used to solve consensus problem in distributed system. $n$ processes tries to decide upon the same value, which was proposed by one of them. Paxos does not need a coordinator, however a processes may consider himself a leader for a certain time for specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guatanteed.
+
+In order to simplify the Paxos as well as for increased preformance, MultiPaxos improvements proposed in \cite{Lam01} introduces one leader for all ballots.
+
+The phase of electing the leader is described in following section. When the leader is elected, it starts proposing new values from clients.
 
 \section{Leader Election}
 \label{sec:leader_election}
 \indent\par
 
-To decide who is a current leader, our algorithm is using $view$ number. This number is sent in every message and processes keep track of the highest $view$ received. The current leader is a process for which $view \mod n = local\_id$. For example, if $view = 5$ and we have $n = 3$ processes then processes with $local\_id = 2$ is a current leader.
+To decide who is the current leader, our algorithm is using $view$ number. This number is sent in every message and processes keep track of the highest $view$ received. The current leader is a process for which $view \mod n = local~id$. For example, if $view = 5$ and we have $n = 3$ processes then processes with $local~id = 2$ is a current leader.
 
-To detect if a leader is correct, failure detector is used. In JPaxos this is done using heartbeats sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it hasn't sent any message during the last $\tau_0$ time.
+To detect if a leader is correct, failure detector is used. In JPaxos this is done using heartbeats sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it didn't sent any message during the last $\tau_0$ time.
 
-When a replica does not receive a message from the leader for more than $\tau_1$ time, it suspects the leader and tries to become the new leader. It advances to the next view where it is the leader and sends a \prepare message to all. For example, if $view = 5$, $n = 3$ and we are process with $local\_id = 1$, we will advance $view$ to number 7 - first view where process 1 is a leader.
+When a replica does not receive a message from the leader for more than $\tau_1$ time, it suspects the leader and tries to become the new leader. This phase is called \textbf{prepare phase}. Process advances to the next view where it is the leader and sends a \prepare message to all. For example, if $view = 5$, $n = 3$ and we are process with $local\_id = 1$, we will advance $view$ to number 7 -- first view where process 1 is a leader.
 
-To become a leader, process need to prepare the view. It sends the \prepare message to all processes with it's new $view$. Every process which received this message, advances its $view$ and responds with \prepareOK. When a process receives majority of \prepareOK message, it becomes a leader.
+To become a leader, process needs to prepare the view. It sends the \prepare message to all processes with it's new $view$. Every process which received this message, advances its $view$ and responds with \prepareOK. When a process receives majority of \prepareOK message, it becomes a leader. Each \prepareOK message is a promise that the sender will drop all messages with lower view -- that means from old leaders or processes which do not know about the new leader.
 
 \section{Propose Phase}
 
-Every process keeps track of already proposed / decided values in a log. A log is ordered list of consensus instances - triple $<$id, view, value$>$. When a process is a leader, it can start a propose phase for new value. To propose a value, leader creates new consensus instance with first available id, current view and value to propose. Then it is send to all processes in \propose message. Every process when receives the \propose message, saves it to local log and sends \accept message to all. When process receives the majority of \accept message, it will decided the proposed message (and value decided can be later executed on state machine). 
+Every process keeps track of already proposed as well as decided values in a log. A log is ordered list of consensus instances - triple $<id, view, value>$. When a process is a leader, it can start a propose phase for new value. To propose a value, leader creates new consensus instance with first available id, current view and value to propose. Then it is send to all processes in \propose message. Every process when receives the \propose message, saves it to local log and sends \accept message to all. When any process receives the majority of \accept message, it marks the proposed message as decided. The value is then passed to upper layers, in JPaxos executed on the state machine.
+
+\section{Division of responsibility}
+
+As introduced in \cite{Lam01}, the Paxos protocol tasks can eaisly be divided into three groups:
+\begin{description}
+ \item[Proposer] is responsible for proposing the values in correct order. In JPaxos it takes the requests from Replica and proposes them.
+ 
+ \item[Acceptor] is a part of JPaxos that receives the \propose messages and responds to them according to the Paxos protocol -- that means responds if the view is not lower than current view.
+ 
+ \item[Learner] gathers the \accept messages and if it gets the response from majority of acceptors, it marks them as decided. In JPaxos, it informs the Replica that a decision has been taken.
+\end{description}
+
+Our implementation also uses this division in order to make the code more readable. Every process acts as acceptor and learner, and the leader also as proposer.
 
 \section{Concurrent instances}
 \label{subsec:concurrent_instances}
@@ -74,91 +91,62 @@ In full-duplex networks, concurrent instances will improve network utilisation, 
 
 As already mentioned, this solution will improve latency and throughput. Carefulness is required in order to avoid network saturation, especially the link of the leader which has to carry $2n$ messages for each instance (as opposed to 2 messages for every other link).
 
+\paragraph{Batching} is another method for improving performance and network usage. It is preferred over incereasing the concurrent instances count, however the benchmarks show that joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
+
 \section{No operation command}
-\paragraph{Scenario}
-Three replica $R1$, $R2$ and $R3$. Replica $R1$ is the leader and propose {1:A} and {2:B}. Value {2:B} was decided by all replicas, but {1:A} propose was lost. $R1$ fails and $R2$ becomes new leader. After preparing $R2$ has a gap in log because no information about instance 1 was received. 
+
+The best method to understand the problem is to analize the scenario below:
+
+We have three replicas $R1$, $R2$ and $R3$. Replica $R1$ is the leader and proposes {1:A} and {2:B}. Value {2:B} was decided by all replicas, but {1:A} propose was lost. $R1$ fails and $R2$ becomes new leader. After preparing $R2$ has a gap in log because no information about instance 1 was received. 
 
 As we can see after prepare phase, leader can have a gap in the log. Without filling this gap, replica cannot execute and propose new values. Because of that new value has to be proposed in this place.
 
 With crash-stop or crash-recovery without stable storage the value may be lost forever. That happens when decision $n+1$ is already decided, and decision $n$ is unknown to all but leader, and the leader fails. As only he got the value, and it has been lost -- either because he is not allowed to recover, or he is recovering without stable storage.
 
-On the other hand, the leader change may happen due to lost \alive message. In this case someone has the value, and it could be used back in the voting. The problem is, how to detect this situation.
+On the other hand, the leader change may happen due to lost \alive message. In this case someone has the value, and it could be used back in the voting. But there is no simple and fast method to detect this situation.
 
 The easiest solution is to create new request type called no-op, which is null operation and will be ignored by the replica. It fills the gaps, but is not executed on state machine.
 
-It may be worth considering that the leader can use the gap for some other requests. 
-
 \section{Log handling}
 
-\begin{TODO}
-  Do something with crash-model here.
-\end{TODO}
+The replicated log cannot be allowed to grow forever, it must be bounded in any practical system. After a replica executes some command, it no longer needs the corresponding log entry locally. But other replicas may not have learnt the decision yet. In this case, these late replicas need to learn the decision by asking the corresponding log entry from a replica that still has it.
 
-The replicated log cannot be allowed to grow forever, it must be bounded in any practical system. After a replica executes some command, it no longer needs the corresponding log entry locally. But other replicas may not have learnt the decision during the normal protocol. In this case, these late replicas need to learn the decision by asking the corresponding log entry from a replica that still has it. This is required for view change and, on the crash-recovery model, for recovery. Snapshotting should also be implemented, as it allows faster recovery and filling missing instances. Also for preserving theoretical correctness by log truncating with limited memory either the snapshot mechanism or determining global commit point is needed. Process of getting lost requests is called ``catch-up'', and is described in section \ref{sec:catch_up}.
+In JPaxos the Paxos protocol is not used for getting lost requests -- from performance reasons we use the process called ``catch-up'', which is described in section \ref{sec:catch_up}.
 
-As log handling differs a lot by different assumptions about post-crash behaviour, we are going to discuss different cases separately.
-We start by studying the problem on the crash-stop model.
+So having the old log is needed for view change and, in the crash-recovery model, for recovery.
 
-\subsection{Crash-stop model}
-\label{subsec:crash_stop_model}
-In this model, there is no need to preserve the contents of the log on stable storage, since the nodes don't survive a crash.
+Especially the latter is problematic. The view change requires always bounded number of instances in log. But if we assume recovery with minimal or no stable storage (as the Epoch based or View based ones), after the recovery a replica needs to recover the state from scratch. For this, it needs whole log -- or the state itself.
 
-In particular, the log is kept only on volatile memory and it will be there until the process crashes. Therefore, once a command is written on the log of a replica, it is never lost by the replica. A command can be deleted from the log after being executed by all replicas. The highest instance executed by all replicas is called \emph{global commit point}.
+\paragraphNewline{Global Commit Point}
 
-The above rule is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for an arbitrarily long time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime, which are an unbounded number. If one replica crashes, the other replicas have no way of knowing that it is a crash (therefore permanent) and not a disconnection, so they would have to keep the logs forever.
+A command can be deleted from the log after being executed by all replicas in Crash-stop and Crash-recovery with stable storage models. The highest instance executed by all replicas is called \emph{global commit point}.
 
-Also, some additional mechanisms need to be implemented in order to know the global commit point.
+But the rule above is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for some time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime. If one replica crashes, the other replicas have no way of knowing that it is a crash and not a disconnection, so they would have to keep the logs forever. And the replica can stay crashed for arbitrarily long time.
 
-There are several ways of dealing with the problem. One is to block the system when the log limit is reached until all the replicas are back on-line and the logs can once again be deleted. This will likely require human intervention to recover a failed replica.
+Therefore using snapshotting is the only acceptable solution in JPaxos.
 
-There is a better alternative for services whose state can be transferred. We totally abandon global commit point, and introduce the snapshots.
+\paragraphNewline{Snapshotting}
 
-Upon reaching the limit of the log, new snapshot with full state is created and the old logs are truncated even if some replicas don't have them yet. When a replica that is missing old logs rejoins, first last snapshot is transferred, later all the decisions from the top of the log that were not yet applied to the state.
+In order to be able to remove stale log entries, snapshotting should be implemented. It also speeds up the recovery and filling missing instances.
 
-The second solution is preferable if transferring the state is practical as it doesn't block the system in case of crashes.
+Upon reaching the limit of the log, new snapshot with full state is created and the old logs are truncated even if some other replica doesn't have them yet. When a replica that is missing old logs rejoins, most recent snapshot is transferred first, later all the decisions from the top of the log that were not yet applied to the state.
 
-\subsection{Crash-recovery model}
-\paragraphNewline{Recovery without stable storage}
-Let us remind You one assumption: to guarantee correctness in crash-recovery model without using stable storage, for every moment there has to be at least majority of replicas up-to-date. With this assumption fulfilled, it is possible for replica to recover from other running replicas after crashing. Otherwise, if all replicas, which decided on some instance crash, then information about the instance will be lost and cannot be recovered.
+The size of snapshot is bounded, as the state machine must be implemented with the assumption of bounded memory, and the snapshot may be just the processes memory image. The size of the log is bounded as well -- we create new snapshot as log size reaches some limit.
 
-After crashing, replica has to recover only from others. It can either get all decisions, or the current state from other replica.
-It is easy to show that this situation is identical to crash-stop approach. Let's take a look on two scenarios:
+The problematic part here is the Service -- if the JPaxos library user will not implement creating snapshots or will nor provide them often enough, the log will grow forever.
 
-%\begin{list}{×}{}
-%  \item We do not use the global commit point method. For keeping bounded logs, we use snapshots. All replicas start at the same time. One of them, however, is unable to connect to any other replica for a long time $t$. During this period other replicas take decisions normally. After time $t$ the connection is established.
-%  
-%  Let's see the state now: no replica has ever crashed, and one replica has empty log. The majority of replicas are up-to-date. No history about the replica's activity is held. From the crash-stop model assumptions we know, that the system must be correct.
-%  
-%  \item All replicas start at the same time, and decide together. After time $t-1$ one replica crashes, and at time $t$ recovers. The recovered replica has just been started, it does not know it has to recover. It's log is of course empty.
-%  
-%  One replica has crashed and started again, while others work continuously. We assumed that for every moment there has to be at least majority of replicas up-to-date. Again, there is no history of the run. The situation seen by replicas now is the same as the one above.
-%\end{list}
-
-So the crash-recovery model without stable storage is identical to crash-stop as long as the majority is up to date and we assume we must use snapshots, and not global commit point as log truncating method.
-
-\paragraphNewline{Recovery with stable storage}
-
-In this model a processes while recovering must read and apply the stable storage contents before it is allowed to take part in the consensus again.
-
-Keeping all instances in stable storage guarantees correctness in crash-recovery model even if all replicas will crash. After crashing, replica has to load and apply saved logs. Then it can rejoin system and execute catch-up mechanism to learn new instances decided after crash.
-
-As we have to keep all instances, the log stays unbounded. We cannot use global commit point for log truncating, as a replica may crash and has to recover from it's logs afterthen.
-
-Snapshotting is a solution again: keeping all actual (not truncated) instances and snapshot in stable storage guarantees correctness in crash-recovery model even if all replicas will crash. While recovering the replica has to load state from snapshot data (saved in stable storage) and apply saved logs not applied yet. Later it rejoins the system and executes catch-up mechanism.
-
-The size of snapshot is bounded, as the state machine must be implemented with the assumption of bounded memory, and the snapshot may be just the processes memory image. The size of the log is bounded as well - we create new snapshot as log size reaches some limit.
-
+Snapshotting is described in details in the section \ref{sec:snapshotting}.
 
 \section{Skipping redundant messages}
 Reducing number of messages is one of the most efficient optimisation. In JPaxos we do not send messages to self, also the proposer doesn't send \accept messages.
 
-It has been proven for Paxos consensus algorithm that it minimises the count of messages carrying value (client request in our case). Still, there is nothing said about the additional messages. Some of them may be easily skipped without violating guarantees or adding assumptions.
+It has been proven for Paxos consensus algorithm that it minimises the count of messages carrying value (client request in our case). The value is sent only once to each replica (not counting retransmission due to message loss). As for additional messages, their count varies among the certain implementations. Some of messages proposed in the typical implementation may be easily skipped without violating guarantees or adding assumptions.
 
 \paragraphNewline{Sending to self}
 
-Many papers concerning Paxos divide the functions into three groups: proposer, acceptor and learner. Processes or some of their parts act as one of them. In order to communicate they must send messages to each other.
+As stated before, the Paxos can be divided into Proposer, Acceptors and Learners. Processes or some of their parts act as one of them. In order to communicate they must send messages to each other.
 
-In our program every node consists of a proposer, acceptor as well as learner. In this case there is no need to send messages to self. Especially all send-to-all commands may be replaced by send to others command, as long as the communication with self will be done internally. This skips one \accept and one \propose sent by the leader, and one \accept by all other processes.
+In our program every node consists of a (probable) proposer, acceptor as well as learner. In this case there is no need to send messages to self. Especially all send-to-all commands may be replaced by send to others command, as long as the communication with self will be done internally. This skips one \accept and one \propose sent by the leader, and one \accept by all other processes.
 
 This does not influence the performance much, however it is recommended as it decreases system -- especially networking stack -- usage. It also skips a few system calls.
 
@@ -169,3 +157,27 @@ More important optimisation is merging the role of \accept and \textsc{Propose}.
 So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- he knows that the leader and he himself accept the message. Normally the leader process has to send \propose to all first, later \accept to all. By this optimisation we are required to send the half of messages only.
 
 This is a serious gain, clearly visible during benchmarks.
+
+\paragraphNewline{Minimizing messages with value}
+
+Most of the articles about Paxos state that the \accept message carries the value. This can be easily omitted.
+
+Each processes in JPaxos waits not only for the majority of accepts, but before it sends the \accept message, it must receive a \propose with the value. So if a process accepts an instance, it already knows the value.
+
+Waiting for another message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. Also ususally the \propose will be delivered before any \accept message.
+
+\paragraphNewline{Best-case messages}
+
+So, in normal operation in JPaxos:
+
+\begin{tabular}{lllll}
+          & Processes & Count & Message  & Value  \\
+ Proposer & $1$       & $n$   & \propose & yes    \\
+ Acceptor & $n-1$     & $n-1$ & \accept  & no
+\end{tabular}
+
+We can see that in order to decide we need to send once the \propose, and later each not-leader process sends the \accept to others.
+
+Other implementations consider using bounded learner count -- so that a acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by Learners to all as the ballot nas finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
+
+Interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP multicast is used for all broadcasts, what masively increases the scalability and performance.
