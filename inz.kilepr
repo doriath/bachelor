@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.0
-lastDocument=architecture/architecture.tex
+lastDocument=recovery.tex
 masterDocument=
 name=inz
 pkg_extIsRegExp=false
@@ -26,7 +26,7 @@ order=1
 
 [item:02-theory.tex]
 archive=true
-column=145
+column=26
 encoding=UTF-8
 highlight=LaTeX
 line=72
@@ -74,7 +74,7 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=121
+line=15
 open=true
 order=3
 
@@ -89,10 +89,10 @@ order=6
 
 [item:main.tex]
 archive=true
-column=1
+column=59
 encoding=UTF-8
 highlight=LaTeX
-line=18
+line=73
 open=true
 order=0
 
@@ -107,9 +107,9 @@ order=-1
 
 [item:recovery.tex]
 archive=true
-column=85
+column=15
 encoding=UTF-8
 highlight=LaTeX
-line=46
+line=237
 open=true
 order=4

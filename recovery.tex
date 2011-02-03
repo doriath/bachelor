@@ -1,16 +1,16 @@
 \chapter{Recovery}
 
-In this chapter we describe the recovery of process from crash. We present 3 different algorithms implemented in JPaxos with different performance and fault tolerance. We will start from short overview of recovery and then present 4 different algorithms - crash-stop, crash-recovery with stable storage, epoch based recovery and view based recovery. After that we will summarize and compare all algorithms.
+In this chapter we describe the recovery of process from crash. We present 3 different algorithms implemented in JPaxos with different performance and fault tolerance. We will start from short overview of recovery and then present 4 different algorithms -- crash-stop, crash-recovery with stable storage, epoch based recovery and view based recovery. After that we will summarize and compare all algorithms.
 
 \section{Overview}
 
 The crash of the process is a permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc. Such process also losses all information not saved to stable storage.
 
-So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories - the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category non stable storage.
+So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories - the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category volatile storage.
 
-Usually operating system buffers the data before writing it to stable storages such as disks. Such writes are called asynchronous. They do not provide guarantee that if crash occurs, all data will be on the storage instead of being lost with the rest of system buffer.
+Usually operating system buffers the data before writing it to stable storages. Such writes are called asynchronous. They do not provide guarantee that if crash occurs, all data will be on the storage instead of being lost with the rest of system buffer.
 
-Another option is to force the operating system to write the data to stable storage. Such operating is called \emph{synchronising} the buffers with storage. If we cal write and synchronise, we can say that the write is synchronous -- the data won't be lost due to crash. But writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
+Another option is to force the operating system to write the data to stable storage. Such operating is called \emph{synchronising} the buffers with storage. If we call write and synchronise, we can say that the write is synchronous -- the data won't be lost due to crash. But writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
 
 In following sections, we will use below variables: 
 \begin{tightList}
@@ -25,7 +25,7 @@ In following sections, we will use below variables:
 Let's start from the easiest scenario -- the crash-stop model. In this model crashed process will never be up again.
 Because of that there is no recovery phase and we don't need a stable storage. Because process does not do any synchronous writes to stable storage the performance is very high. 
 
-But there is one big drawback. In previous chapters we said that Paxos algorithm can decide on the value (can continue working) if majority of processes are correct. If majority of processes will crash in this model, the algorithm will never decide again and our replicated service will stop forever. Because of that using this model is not very practical and below we present 3 algorithms which allows for process recovering.
+But there is one big drawback. In previous chapters we said that Paxos algorithm can decide on the value (can continue working) if majority of processes are correct. If majority of processes will crash in this model, the algorithm will never decide again and our replicated service will stop forever. Because of that using this model is not very practical. Below we present 3 algorithms which allow for process recovering.
 
 For performance tests and for theoretical purposes this model is very important -- it is the fastest model, used as comparison point with others. It is easier also to analyze correctness of this model and prove that the algorithms implementing recovery models are correct taking under consideration only the changes in the code.
 
@@ -35,7 +35,7 @@ A recovery phase is the state of JPaxos replica after starting the process. It m
 
 Of course, if this is the first start, the process can just go to normal state. Otherwise the process must stay in the Recovery phase as long as it does not fulfill requirements of the recovery model.
 
-The process cannot join the Paxos protocol until the recovery phase is finished. So recovering process cannot respond to any message received, like \propose, \accept, \prepare and \prepareOK. However, these messages may be received and processed, so the process can passively join the protocol. The moment when the process joins Paxos protocol is also a moment when the process is considered as correct.
+The process cannot join the Paxos protocol until the recovery phase is finished. So recovering process cannot respond to any message received, like \propose[], \accept[], \prepare and \prepareOK[]. However, these messages may be received and processed, so the process can passively join the protocol. The moment when the process joins (actively) Paxos protocol is also a moment when the process is considered as correct.
 
 
 \section{Crash-recovery with stable storage}
@@ -91,7 +91,7 @@ Description of variables used in algorithm below:
 
 On recovery the algorithm reads the view, values for all consensus instances and last snapshot from stable storage and can join a Paxos protocol (the process cannot respond to any message until it loads everything from stable storage).
 
-This synchronous writes are made on critical path, so the performance of this algorithm will be much lower comparing to crash-stop model. But the crash recovery with stable storage algorithm tolerates catastrophic failures - the failure when all processes crashed. Of course when all processes are crashed, the replicated service will be unavailable. But we can start all processes again and they will recover to state from before the crash.
+This synchronous writes are made on critical path, so the performance of this algorithm will be much lower comparing to crash-stop model. But the crash recovery with stable storage algorithm tolerates catastrophic failures -- the failure when all processes crashed. Of course when the majority of the processes will be crashed, the replicated service will be unavailable. But we can start all processes again and they will recover to state from before the crash.
 
 As we can see, this algorithm is already deployable in environment with crashes. But because the performance is really low, we will introduce two more algorithms. These algorithms will not tolerate catastrophic failures but their performance should be close to performance of crash-stop model.
 
@@ -167,7 +167,7 @@ On normal execution this algorithm should be as fast as crash-stop model. The si
 
 Let's analyze one example to better understand this algorithm. Assume that we replicate service on $n = 5$ replicas. All processes are numbered from 0 to 4, have initial epoch vector $[0, 0, 0, 0, 0]$, are initially correct and are in view 4 (where process 4 is a leader).
 
-Process 0 is suspecting a leader and changing view to 5 by sending \prepare message to all. Process 1 receives \prepare and respond with $<$\prepareOK, [0, 0, 0, 0, 0], 5, -$>$. The process 0 receives the response and process 1 crashes. After crash process 1 is recovering, increases epoch number to 1 and sends $<$\recovery, 1$>$ message to all. Processes [2, 3, 4] receives \recovery message, updates epoch vector to [0, 1, 0, 0, 0] and responds with \recoveryAnswer and view 4. After receiving three \recoveryAnswer messages with view 4 (also from leader of view 4), process 1 joins the protocol with view 4. Now process 2 receives the \prepare from process 0 and responds with $<$\prepareOK, [0, 1, 0, 0, 0], 5, -$>$.
+Process 0 is suspecting a leader and changing view to 5 by sending \prepare message to all. Process 1 receives \prepare and respond with $<$\prepareOK[], [0, 0, 0, 0, 0], 5, -$>$. The process 0 receives the response and process 1 crashes. After crash process 1 is recovering, increases epoch number to 1 and sends $<$\recovery[], 1$>$ message to all. Processes [2, 3, 4] receives \recovery message, updates epoch vector to [0, 1, 0, 0, 0] and responds with \recoveryAnswer and view 4. After receiving three \recoveryAnswer messages with view 4 (also from leader of view 4), process 1 joins the protocol with view 4. Now process 2 receives the \prepare from process 0 and responds with $<$\prepareOK[], [0, 1, 0, 0, 0], 5, -$>$.
 
 Process 0 already received 3 \prepareOK responses, from [0, 1, 2]. But message from process 1 will be discarded because it was sent when process 1 was in epoch 0 and now from process 2 we know that process 1 is in epoch 1. If we wouldn't discard this message, process 0 would be prepared leader in view 5 but processes [1, 3, 4] would be in view 4 and that would cause violation of Paxos protocol.
 
@@ -181,7 +181,7 @@ Process 0 already received 3 \prepareOK responses, from [0, 1, 2]. But message f
 \section{View based recovery}
 \label{sec:view_ss}
 
-The next algorithm is view based recovery. It has very similar properties as epoch based recovery. In every moment majority of processes is required to be correct but instead of using epoch numbers, the view number is written to table storage on every change. 
+The next algorithm is view based recovery. It has similar properties to epoch based recovery. In every moment majority of processes is required to be correct but instead of using epoch numbers, the view number is written to table storage on every change. 
 
 The pseudocode of this algorithm is presented below: 
 
@@ -199,8 +199,8 @@ The pseudocode of this algorithm is presented below:
       \IF{$view_p \mod n = p$}
         \STATE $view_p \leftarrow view_p + 1$
       \ENDIF
-      \STATE send $<\recovery, view_p>$ to all except $p$
-      \STATE wait for $n-f <\recoveryAnswer, view, highestId>$ messages including from primary of highest view received
+      \STATE send $<\recovery[], view_p>$ to all except $p$
+      \STATE wait for $n-f <\recoveryAnswer[], view, highestId>$ messages including from primary of highest view received
       \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
       \STATE download all instance up to $highestId$ from leader using catch-up module
     \ENDIF
@@ -215,7 +215,7 @@ The pseudocode of this algorithm is presented below:
   \ENDPROC
 
   \vspace{1em}
-  \UPON{receive $<\recovery, view>$ from $q$}
+  \UPON{receive $<\recovery[], view>$ from $q$}
     \IF{$q$ is primary of $view_p$}
       \STATE change to a higher view where $q$ is not primary
       \STATE wait until view change is complete
@@ -223,7 +223,7 @@ The pseudocode of this algorithm is presented below:
     \IF{$view > view_p$}
       \STATE advanceView(view)
     \ENDIF
-    \STATE send $<\recoveryAnswer, view_p, highestId_p>$ to $q$
+    \STATE send $<\recoveryAnswer[], view_p, highestId_p>$ to $q$
   \ENDUPON
 \end{algorithmic}
 
@@ -236,16 +236,18 @@ The recovery phase is quite similar to the epoch based recovery. Recovering proc
 We presented 4 different algorithms implemented to JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table below we present the comparison of all algorithms by comparing:
 \begin{table}[h]
   \footnotesize
-  \begin{tabular}{l|ccccc}
-                        & Crash-stop & Full stable storage & View based      & Epoch based \\ \hline
-    Always correct      & majority   & 0                   & majority        & majority \\
-    Process can recover & no         & yes                 & yes             & yes \\
+  \begin{tabular}{lccccc}
+                        & Crash-stop & Full stable storage & View based      & Epoch based \vspace{0.2em} \\
+    Decides by          & $2f+1$     & $2f+1$              & $2f+1$          & $2f+1$      \\
+    Fault tolerance     & $2f+1$     & $f$                 & $2f+1$          & $2f+1$      \\
+    Process can recover & no         & yes                 & yes             & yes         \\
     Stable storage use  & no         & per round           & per view change & on recovery \\
-    Additional messages & no         & no                  & \recovery       & \recovery \\
-    State transfer      & no         & no                  & yes             & yes \\
-    Increased msg size  & no         & no                  & no              & \prepareOK ($n$)\\ \hline
+    Additional messages & ---        & ---                 & \recovery       & \recovery   \\
+    State transfer      & no         & if needed           & yes             & yes         \\
+    Increased msg size  & ---        & ---                 & ---             & \prepareOK by $n$\\
   \end{tabular}
   \caption{Comparison of recovery algorithms.}
+  \scriptsize
 \end{table}
 
 \begin{figure}[h]

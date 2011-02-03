@@ -9,8 +9,11 @@
 
 \usepackage{algorithm}
 \usepackage[noend]{algorithmicplus}
+\usepackage{listings}
 
 \renewcommand{\tt}{\ttfamily}
+\newcommand{\code}[1]{{\ttfamily #1}}
+\newcommand{\PYG}[2]{#2}
 
 \newcounter{tightListCounter}
 
@@ -114,8 +117,7 @@
 
 % All appendices and extra material, if you have any.
 \cleardoublepage\appendix%
-\input{0a-zalacznik.tex}
-\input{0b-pisanie-w-latexu.tex}
+\input{user_guide/JPaxos.tex}
 
 % Bibliography (books, articles) starts here.
 \scalebox{0.001}{
