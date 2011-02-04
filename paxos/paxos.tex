@@ -167,13 +167,14 @@ Each processes in JPaxos waits not only for the majority of accepts, but before 
 Waiting for another message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. Also ususally the \propose will be delivered before any \accept message.
 
 \paragraphNewline{Best-case messages}
+\label{par:bestCaseMessages}
 
 So, in normal operation in JPaxos:
 
-\begin{tabular}{lllll}
-          & Processes & Count & Message  & Value  \\
- Proposer & $1$       & $n$   & \propose & yes    \\
- Acceptor & $n-1$     & $n-1$ & \accept  & no
+\begin{tabular}{llllll}
+          & Processes & Count & Time & Message  & Value  \\
+ Proposer & $1$       & $n$   & $n$  & \propose & yes    \\
+ Acceptor & $n-1$     & $n-1$ & 1    & \accept  & no
 \end{tabular}
 
 We can see that in order to decide we need to send once the \propose, and later each not-leader process sends the \accept to others.

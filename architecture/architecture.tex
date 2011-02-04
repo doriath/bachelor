@@ -106,15 +106,13 @@ Every application has some configurable options that stay constant during the ru
 
 During the startup JPaxos reads configuration file and initializes ProcessDescriptor with:
 \begin{tightList}[\setlength{\labelwidth}{0em}]
- %TODO references !!!
- \item[\textbf{crashModel}] the crash model
+ \item[\textbf{crashModel}] the crash model (see chapter \ref{chapter:recovery})
  \item[\textbf{logPath}] path for the stable storage
  \item[\textbf{localId}] the number of replica
  \item[\textbf{numReplicas}] count of the replicas
- \item[\textbf{windowSize}] preferred window size
- \item[\textbf{batchingLevel}] maximum size of the batch
+ \item[\textbf{windowSize}] preferred window size (see \ref{subsec:concurrent_instances})
+ \item[\textbf{batchingLevel}] maximum size of the batch (see \ref{sec:batching})
  \item[\textbf{maxBatchDelay}] delay for connecting requests for batching
-% \item[clientIDGenerator] 
  \item[\textbf{network}] network protocol to be used
  \item[\textbf{maxUdpPacketSize}] thresold for generic network
 \end{tightList}
@@ -137,12 +135,12 @@ holds the data as follows:
   \item[\textbf{windowSize}] current size of the window used for multiple instances
   \item[\textbf{acceptors}] list of processes acting as acceptors
   \item[\textbf{snapshot}] most recent snapshot
-  \item[\textbf{epoch}] current epoch vector (see section \ref{sec:epoch_ss})%TODO: ref on epochss
+  \item[\textbf{epoch}] current epoch vector (see section \ref{sec:epoch_ss})
 \end{tightList}
 
 \strut
 
-The \texttt{Storage} implementation must be chosen according to the Recovery Model needs. % TODO: ref on recovery model needs
+The \texttt{Storage} implementation must be chosen according to the Recovery Model needs.
 The implementation decides which elements must be kept on the Stable Storage and which may be placed in the volatile memory.
 
 \subsection{The Paxos Log}
@@ -164,7 +162,7 @@ In our program responsible for that is interface \texttt{lsr.paxos.Log} and clas
   \item[\textbf{accepts}] set of known replicas which accepted (view, value) pair.
 \end{tightList}
 
-Theoretically \texttt{Log} should contain all instances from the first up to the current one. Of course, the implementation cannot provide this. The log must however contain all instances between the oldest still needed and current one. Only method that guarantees bounding the log (i.e. that count of needed instances will stay finite) is the ability to record a state of the Service periodically -- we call this functionality snapshotting. % TODO: reference on snapshotting
+Theoretically \texttt{Log} should contain all instances from the first up to the current one. Of course, the implementation cannot provide this. The log must however contain all instances between the oldest still needed and current one. Only method that guarantees bounding the log (i.e. that count of needed instances will stay finite) is the ability to record a state of the Service periodically -- we call this functionality snapshotting (see \ref{sec:snapshotting}).
 
 \texttt{Log} implementation keeps always all instances with id between \textbf{lowestAvailableId}(inclusive) and \textbf{nextId} (exclusive). Instances below \textbf{lowestAvailableId} have already been truncated and instances above \textbf{nextId} are yet unknown.
 
