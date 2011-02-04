@@ -1,33 +1,31 @@
 
 \chapter{Introduction}
 
-With the increase of usage and importance of Internet services in everyday life comes demand on reliability and constant availability.
+With the increase of usage and importance of Internet services in everyday life increases also demand on reliability and constant availability.
 Providing these features to the services is a complex matter, often requiring various trade-offs between user satisfaction and service resource demands.
 
-Most common and effective method of providing reliable services is replication. Applying the replication requires only minor changes between non-replicated services and the replicated ones, what makes it usable both for creating new services in the typical way % TODO: poprawić zwrot
-as well as transforming existing services into replicated ones.
+Most common and effective method of providing reliable services is replication. Applying the replication requires only minor changes for the non-replicated service to become a replicated ones, what makes it usable both for creating new services following the well known good patterns as well as transforming existing services into replicated ones.
 
-Each replication approach relies on certain group communication mechanism - usually providing strong guarantees. Total-order (atomic) broadcast is a very useful for interconnecting replicas - it simplifies the design and implementation of replicated protocols, as it allows for dividing the system into two main modules with clearly visible responsibilities.
+Each replication approach relies on certain group communication mechanism -- usually providing strong guarantees. Total-order (atomic) broadcast is a very useful for interconnecting replicas -- it simplifies the design and implementation of replicated protocols, as it allows for dividing the system into two main modules with clearly visible responsibilities.
 
 The services vary, and so the approaches for replication must also vary. A library able to replicate every service would not only be hard to implement, but also could be too complicated for the user.
 
-We chose to implement one of the replication approach - an approach we trust to have bright future.
+We chose to implement one of the replication approaches -- an approach we trust to have bright future.
+We implement active replication of services -- each copy does the same work. The replicas must work identically, therefore we require the service to behave deterministically.
 
-We implement active replication of services - that means each copy does the same work. The replicas must work identically, therefore we require the service to behave deterministically.
-
-Every library for replicating services should address it's main purpose -- guarantee high availability of service as well as durability of the service work results -- while having minimum requirements for the environment.
+Every library for replicating services should address its main purpose -- guarantee high availability of service as well as durability of the service work results -- while having minimum requirements for the environment.
 
 Our software design goal is to work well in real networks, survive temporary network crashes and be able to recover from replica crashes as well.
 
 {
 \bfseries
-The goal of this bachelor's thesis is to create Java library implementing state machine replication primitive. The library should support the crash-recovery model of failure and should tolerate message loss and communication delays.
+The goal of this bachelor's thesis is to create Java library implementing state machine replication primitive. The library should support the crash-recovery model of failures and should tolerate message loss and communication delays.
 }
 
 \section{Thesis organisation}
 Second part of this chapter characterizes shortly articles concerning Paxos and present most significant definitions as well as theoretical results concerning Paxos.
 
-The third chapter gathers the description of Paxos algorith used by us with the modifications and impelemtation details we used.
+The third chapter provides description of Paxos algorith used by us, including the modifications and impelemtation details we used.
 
 In chapter 4 we describe the design of JPaxos -- its architecture, modules, important data structures and threading approach.
 
@@ -35,37 +33,37 @@ Implemented features, chapter 5, is devoted to the implementation work related t
 
 Fith chapter describes the recovery related issues, both for Paxos and for state machine replication.
 
-Last chapter concludes the thesis %TODO: finish as this will be written
+Last chapter concludes the thesis. %TODO: finish as this will be written
 
 \section{Related work}
 
-The Paxos and MultiPaxos algorithm has been first described by L. Lamport in \cite{Lam98}. Since the article presented the algorithm in quite specific form, the Paxos protocol has been described again by Lamport in \cite{Lam01}.
+The Paxos and MultiPaxos algorithm have been first described by L. Lamport in \textit{The Part-Time Parliament}~\cite{Lam98}. Since the article presented the algorithm in quite specific form, the Paxos protocol has been described again by Lamport in \textit{Paxos Made Simple}~\cite{Lam01}.
 
 Since then, for over 7 years, the Paxos protocol has been described from theoretical point of view. Improvements and their proofs of correctness were presented as well as behaviour with byzantine crashes has been characterised.
 
-First Paxos protocol uses has been described in 2006 and 2007 (``Paxos made live'' (\cite{CGR07})). The articles describe certain implementation issues concerning the Paxos algorithm in Google Chubby distributed filesystem.
+First Paxos protocol uses has been described in 2006 and 2007 (\textit{Paxos made live}~\cite{CGR07}). The articles describe certain implementation issues concerning the Paxos algorithm in Google Chubby distributed filesystem.
 
-Year later, in ``Paxos for system builders'' (\cite{AK08}), the Paxos protocol has been described from programmer point of view.
+Year later, in \textit{Paxos for system builders}~\cite{AK08}, the Paxos protocol has been described from programmer point of view.
 
-In 2009, and subsequetly in 2010, M. Primi et alii released two implementations of Paxos designed to achieve good performance. Both of these are released as open-source. The first -- libPaxos$^2$ -- is described in his master thesis, the latter -- RingPaxos -- is described in \cite{Mar10}.
+In 2009, and subsequetly in 2010, M. Primi et alii released two implementations of Paxos designed to achieve good performance. Both of these are released as open-source. The first -- libPaxos$^2$ -- is described in his master thesis, the latter -- RingPaxos -- is described in \textit{Ring Paxos: A High-Throughput Atomic Broadcast Protocol}~\cite{Mar10}.
 
-The crash-recovery has been also the subject among the articles. The \cite{rodriguez2000atomic} provides definitions concerning recovery as well as shows method to transform any crash-stop consensus protocol to crash-recovery one.
+The crash-recovery has been also the subject among the articles. The \textit{Atomic Broadcast in Asynchronous Crash-Recovery Distributed Systems}~\cite{rodriguez2000atomic} provides definitions concerning recovery as well as shows method to transform any crash-stop consensus protocol to crash-recovery one.
 
-A summary of the crash-recovery approaches for Paxos algorithm has been written by N. Santos recently (\cite{Nun10}). All algorithms implemented by us are described there.
+A summary of the crash-recovery approaches for Paxos algorithm, \textit{Recovery on the Paxos Protocol}~\cite{Nun10}, has been written by N. Santos recently. All algorithms implemented by us are described there.
 
 \section{Quid quis scripsit}
-\begin{TODO}Change the title to something. No idea what.\end{TODO}
+%FIXME:  ^^^^ ^^^^ ^^^^^^^^
 
 Jan Kończak for the purpose of this thesis has prepared design and implementation of:
-\begin{tightList}[\setlength{\leftmargin}{2\leftmargin}]
+\begin{tightList}
   \item[\textbullet] catch-up module (Section \ref{sec:catch_up}),
   \item[\textbullet] snapshotting module (Section \ref{sec:snapshotting}),
   \item[\textbullet] service proxy  (Section \ref{sec:serviceProxy}),
   \item[\textbullet] benchmark project.
 \end{tightList}
 
-Tomasz Żurkowski has prepared design and implementation of:
-\begin{tightList}[\setlength{\leftmargin}{2\leftmargin}]
+\noindent Tomasz Żurkowski has prepared design and implementation of:
+\begin{tightList}
   \item[\textbullet] unit tests for JPaxos project,
   \item[\textbullet] client manager module, 
   \item[\textbullet] network module for communication between replicas,
@@ -73,4 +71,4 @@ Tomasz Żurkowski has prepared design and implementation of:
   \item[\textbullet] disc writers for full stable storage recovery.
 \end{tightList}
 
-The remaining modules were result of our common work, and later division of work is just infeasible.
+\noindent The remaining modules were result of our common work, and later division of work is just infeasible.

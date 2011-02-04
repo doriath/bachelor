@@ -17,19 +17,19 @@ QuickBuild=
 
 [item:01-introduction.tex]
 archive=true
-column=0
+column=268
 encoding=UTF-8
 highlight=LaTeX
-line=64
+line=6
 open=false
 order=1
 
 [item:02-theory.tex]
 archive=true
-column=26
+column=13
 encoding=UTF-8
 highlight=LaTeX
-line=72
+line=19
 open=false
 order=2
 
@@ -71,29 +71,29 @@ order=3
 
 [item:architecture/architecture.tex]
 archive=true
-column=0
+column=98
 encoding=UTF-8
 highlight=LaTeX
-line=15
-open=false
-order=3
+line=166
+open=true
+order=1
 
 [item:bibliography.bib]
 archive=true
-column=14
+column=17
 encoding=UTF-8
 highlight=BibTeX
-line=13
-open=true
+line=26
+open=false
 order=3
 
 [item:features/features.tex]
 archive=true
-column=7
+column=26
 encoding=UTF-8
 highlight=LaTeX
-line=316
-open=true
+line=334
+open=false
 order=1
 
 [item:main.tex]
@@ -101,16 +101,16 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=110
+line=3
 open=true
 order=0
 
 [item:paxos/paxos.tex]
 archive=true
-column=69
+column=36
 encoding=UTF-8
 highlight=LaTeX
-line=182
+line=175
 open=true
 order=2
 
@@ -125,10 +125,10 @@ order=-1
 
 [item:recovery.tex]
 archive=true
-column=96
+column=9
 encoding=UTF-8
 highlight=LaTeX
-line=246
+line=234
 open=false
 order=4
 
