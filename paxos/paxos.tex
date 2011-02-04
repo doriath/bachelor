@@ -27,7 +27,7 @@ Every process keeps track of already proposed as well as decided values in a log
 
 \section{Division of responsibility}
 
-As introduced in \cite{Lam01}, the Paxos protocol tasks can eaisly be divided into three groups:
+As introduced in \cite{Lam01}, the Paxos protocol tasks can easily be divided into three groups:
 \begin{description}
  \item[Proposer] is responsible for proposing the values in correct order. In JPaxos it takes the requests from Replica and proposes them.
  
@@ -95,7 +95,7 @@ As already mentioned, this solution will improve latency and throughput. Careful
 
 \section{No operation command}
 
-The best method to understand the problem is to analize the scenario below:
+The best method to understand the problem is to analyze the scenario below:
 
 We have three replicas $R1$, $R2$ and $R3$. Replica $R1$ is the leader and proposes {1:A} and {2:B}. Value {2:B} was decided by all replicas, but {1:A} propose was lost. $R1$ fails and $R2$ becomes new leader. After preparing $R2$ has a gap in log because no information about instance 1 was received. 
 
@@ -164,7 +164,7 @@ Most of the articles about Paxos state that the \accept message carries the valu
 
 Each processes in JPaxos waits not only for the majority of accepts, but before it sends the \accept message, it must receive a \propose with the value. So if a process accepts an instance, it already knows the value.
 
-Waiting for another message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. Also ususally the \propose will be delivered before any \accept message.
+Waiting for another message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. Also usually the \propose will be delivered before any \accept message.
 
 \paragraphNewline{Best-case messages}
 \label{par:bestCaseMessages}
@@ -179,6 +179,6 @@ So, in normal operation in JPaxos:
 
 We can see that in order to decide we need to send once the \propose, and later each not-leader process sends the \accept to others.
 
-Other implementations consider using bounded learner count -- so that a acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by Learners to all as the ballot nas finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
+Other implementations consider using bounded learner count -- so that a acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by Learners to all as the ballot has finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
 
-Interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP multicast is used for all broadcasts, what masively increases the scalability and performance.
+Interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP multicast is used for all broadcasts, what massively increases the scalability and performance.

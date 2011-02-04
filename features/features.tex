@@ -4,7 +4,7 @@ In this chapter we present the implementation details of some non-trivial module
 
 \section{Granting unique request IDs}
 
-A request must be different for each request. Only this guarantees that we will be able to say if a request is retransmitted, or it's a new one. A common method is to split the request identificator in two parts: the client ID and sequential number. As far as assigning sequential number is trivial, method providing unique client ID's must be carefully chosen, especially taking under consideration the crash-recovery model.
+A request must be different for each request. Only this guarantees that we will be able to say if a request is retransmitted, or it's a new one. A common method is to split the request identification in two parts: the client ID and sequential number. As far as assigning sequential number is trivial, method providing unique client ID's must be carefully chosen, especially taking under consideration the crash-recovery model.
 
 The client ID has to be unique for two different clients. To guarantee this, replicas must be responsible for granting ID's to clients, because a client has no knowledge of other client's ID.
 
