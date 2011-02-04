@@ -1,4 +1,4 @@
-\chapter{Theory}
+%\chapter{Theory}
 
 %Rozdział teoretyczny --- przegląd literatury naświetlający stan wiedzy na dany temat. 
 %
@@ -24,12 +24,14 @@ terms we use.
 \paragraph{Consensus}
 is a problem in distributed computing that encapsulates the task of group agreement in the presence of faults.
 
-\begin{description}
-    \item[Validity] any value decided is a value proposed by some process,
-    \item[Agreement] no two processes decide differently,
-    \item[Termination] every correct process eventually decides,
-    \item[Integrity] no process decides twice
-\end{description}
+Consensus guatantees:
+
+\begin{tightList}[\setlength{\leftmargin}{2\leftmargin}]
+    \item[\textbf{Validity}] any value decided is a value proposed by some process,
+    \item[\textbf{Agreement}] no two processes decide differently,
+    \item[\textbf{Termination}] every correct process eventually decides,
+    \item[\textbf{Integrity}] no process decides twice
+\end{tightList}
 
 \paragraph{State machine}
 is any program, algorithm or protocol that can be described by it's state and that can transit to other state only by receiving a command.
@@ -49,14 +51,16 @@ is a service, that will respond from given state and given command always with t
 \paragraph{Client}
 is the program sending requests to the service
 
-\paragraph{Atomic -- or total order -- broadcast}
+\paragraph{Atomic (total order) broadcast}
 is a networking primitive providing send-to-all communication for which holds:
 \begin{itemize}
  \item a message reaches all targets
  \item each two messages are delivered in the same order at every receiver
 \end{itemize}
 
-\paragraph{Failure}
+Consensus is highly related with atomic broadcast. If one can be solved, then the other also can be solved.
+
+\paragraph{Failure (crash)}
 is permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc.
 
 We do not consider byzantine crashes, i.e. a process may not misbehave in any way.
@@ -72,13 +76,9 @@ defines how the crashed processes may behave.
 
 \paragraph{Stable storage}
 is the memory that survives crashes. Usually this means that stable storage denotates hard drive.
-Sometimes also \textbf{unstable storage} name is used, to name memory that does not survive crashes, like the RAM memory usually used for program data.
+Sometimes also \textbf{volatile storage} name is used, to name memory that does not survive crashes, like the RAM memory usually used for program data.
 
 However, the writes to the stable storage must be permanent, so if a hard drive is used, the writes must be synchronous.
-
-\begin{TODO}
- Poprawić definicje, sprawdzić poprawność. Jeśli sa, to dodać źródła.
-\end{TODO}
 
 \section{Theoretical limitations}
 
@@ -98,10 +98,4 @@ Our implementation, as described in % TODO: reference needed
 However, with TCP and simple UDP it is not possible to use either multicast or broadcast primitive; this prelongs the real time needed for sending a message, as in the lowest network module \emph{broadcast} is translated to $n$ identical $unicast$ messages.
 
 Please note that no other Paxos implementation uses multicast for reducing communication. Only current implementation using multicast is the RingPaxos\cite{Mar10}, but the ring topology used for further message passing increases the time.
-
-
-\begin{TODO}
- This problem is related with atomic broadcast. If one can be solved, then the other also can be solved.
-\end{TODO}
-
 

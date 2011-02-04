@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.0
-lastDocument=recovery.tex
+lastDocument=main.tex
 masterDocument=
 name=inz
 pkg_extIsRegExp=false
@@ -30,7 +30,7 @@ column=26
 encoding=UTF-8
 highlight=LaTeX
 line=72
-open=true
+open=false
 order=2
 
 [item:03-jpaxos.tex]
@@ -39,7 +39,7 @@ column=0
 encoding=UTF-8
 highlight=LaTeX
 line=0
-open=true
+open=false
 order=1
 
 [item:04-conclusions.tex]
@@ -75,26 +75,44 @@ column=0
 encoding=UTF-8
 highlight=LaTeX
 line=15
-open=true
+open=false
 order=3
 
 [item:bibliography.bib]
 archive=true
-column=0
+column=14
 encoding=UTF-8
 highlight=BibTeX
-line=77
-open=false
-order=6
+line=13
+open=true
+order=3
+
+[item:features/features.tex]
+archive=true
+column=7
+encoding=UTF-8
+highlight=LaTeX
+line=316
+open=true
+order=1
 
 [item:main.tex]
 archive=true
-column=59
+column=0
 encoding=UTF-8
 highlight=LaTeX
-line=73
+line=110
 open=true
 order=0
+
+[item:paxos/paxos.tex]
+archive=true
+column=69
+encoding=UTF-8
+highlight=LaTeX
+line=182
+open=true
+order=2
 
 [item:ppfcmthesis.cls]
 archive=true
@@ -107,9 +125,18 @@ order=-1
 
 [item:recovery.tex]
 archive=true
-column=15
+column=96
 encoding=UTF-8
 highlight=LaTeX
-line=237
-open=true
+line=246
+open=false
 order=4
+
+[item:user_guide/JPaxos.tex]
+archive=true
+column=0
+encoding=UTF-8
+highlight=LaTeX
+line=489
+open=false
+order=-1
