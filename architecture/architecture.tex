@@ -164,7 +164,7 @@ In our program responsible for that is interface \texttt{lsr.paxos.Log} and clas
 
 Theoretically \texttt{Log} should contain all instances from the first up to the current one. Of course, the implementation cannot provide this. The log must however contain all instances between the oldest still needed and current one. Only method that guarantees bounding the log (i.e. that count of needed instances will stay finite) is the ability to record a state of the Service periodically -- we call this functionality snapshotting (see \ref{sec:snapshotting}).
 
-\texttt{Log} implementation keeps always all instances with id between \textbf{lowestAvailableId}(inclusive) and \textbf{nextId} (exclusive). Instances below \textbf{lowestAvailableId} have already been truncated and instances above \textbf{nextId} are yet unknown.
+\texttt{Log} implementation keeps always all instances with id between \textbf{lowestAvailableId} (inclusive) and \textbf{nextId} (exclusive). Instances below \textbf{lowestAvailableId} have already been truncated and instances above \textbf{nextId} are yet unknown.
 
 New instances can be appended to log and after this operation \textbf{nextId} value is increased by 1. \\Log allows also to retrieve instances from it. There are 3 possible cases when retrieving instance with specified id:
 \begin{itemize}
