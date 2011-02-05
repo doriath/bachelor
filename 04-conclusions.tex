@@ -18,13 +18,13 @@ We first presented the Paxos algorithm with theoretical background. Then we
 focused on problems which occurs when transforming one page pseudocode of
 distributed algorithm to few thousands line of production code. We presented
 the architecture of our library with short description of every module and data
-structures used. The library have to handle unreliable network with message
+structures used. The library has to handle unreliable network with message
 loss and delays, so we presented the catch-up mechanism which guarantees that
 eventually every correct replica will be up to date. By introducing snapshot
 mechanism, we solve a problem with infinite grow of log. To make the library
 very efficient, we implemented several performance improvements like concurrent
 instances, skipping redundant message and batching. To tolerate crash-recovery
-model, four different recovery algorithms has been implemented and described in
+model, four different recovery algorithms have been implemented and described in
 this paper.
 
 To test the library we implemented replicated hash map as an example of
