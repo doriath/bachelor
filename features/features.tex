@@ -9,10 +9,10 @@ A request must be different for each request. Only this guarantees that we will 
 The client ID has to be unique for two different clients. To guarantee this, replicas must be responsible for granting ID's to clients, because a client has no knowledge of other client's ID.
 
 \paragraphNewline{Based on number of replicas}
-Each replica can grant numbers incremented by number of replicas, starting from ID of local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, ... and replica with ID 2 can grant 2, 5, 8, ... . It guarantees that two different replicas will not grant the same ID. This solution works with crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't now what was the last granted ID.
+Each replica can grant numbers incremented by number of replicas, starting from ID of local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, ... and replica with ID 2 can grant 2, 5, 8, ... . It guarantees that two different replicas will not grant the same ID. This solution works with crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't know what was the last granted ID.
 
 \paragraphNewline{Time based}
-This is different approach -- we use system time as the source if unique numbers. To each client ID we are adding also information when replica was started (in milliseconds).
+This is different approach -- we use system time as the source of unique numbers. To each client ID we are adding also information when replica was started (in milliseconds).
 
 If replica started at time $t$, it will grant ID's $(t + localId)$, $(t + localId + n)$, $(t + localId + 2n)$...
 
@@ -32,7 +32,7 @@ This approach will also work by using the Epoch numbers -- if a leader crashes, 
 
 Paxos must guarantee that every valid replica will eventually decide. Most papers about Paxos state that if a replica notices lack of activity for some instance, it will send new proposal and eventually decide. But by using view for all instances, this would mean often view changes -- and this contradicts performance.
 
-Therefore a different approach is used by us: as we know that if the leader is correct, it will decide, otherwise a new leader will be elected. If the leader is correct, and no activity about an instance is noticed, that means the value is already decided and the replica is in the minority that does not know  about the decision.
+Therefore a different approach is used by us: as we know, if the leader is correct, it will decide, otherwise a new leader will be elected. If the leader is correct, and no activity about an instance is noticed, that means the value is already decided and the replica is in the minority that does not know  about the decision.
 
 In such case, instead of forcing a new proposal, we use the Catch-up module.
 The Catch-up has to download all missing decisions. This solution is faster than new ballot if the instance is already decided and it does not need a view change.
