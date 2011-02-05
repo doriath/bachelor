@@ -6,11 +6,11 @@ Later the most significant data structures and threading architecture details ar
 
 \section{Architecture overview}
 \indent\par
-Easiest way to understand the architecture of JPaxos is to analyze it's architecture in top-down approach.
+Easiest way to understand the architecture of JPaxos is to analyze its architecture in top-down approach.
 
 \subsection{Processes and their communication}
 
-For JPaxos there are two possible approaches of building replicated services. The first, recommended by us, requires from the service client application using a \texttt{Client} module. The other approach incorporates client module with replica, but it places the responsibility for finding a working replica on the user. The possible approaches are visualised on figure \ref{fig:jpaxos_processes}.
+For JPaxos there are two possible approaches of building replicated services. The first, recommended by us, requires from the service client application using a \texttt{Client} module. The other approach incorporates client module within replica, but it places the responsibility for finding a working replica on the user. The possible approaches are visualised on figure \ref{fig:jpaxos_processes}.
 
 \begin{figure}[h]
  \begin{tabular}{ccc}
@@ -27,44 +27,43 @@ For JPaxos there are two possible approaches of building replicated services. Th
  \fcmfcaption{Two models of JPaxos}\label{fig:jpaxos_processes}
 \end{figure}
 
-The JPaxos \texttt{Client} is responsible for connecting to replicas, providing availability of service as the replica connected with client crashes and ensures that the request will be eventually answered.
+The JPaxos \texttt{Client} is responsible for connecting to replicas, providing availability of service as the replica connected with client crashes and ensuring that the request will be eventually answered.
 
 Integrating the \texttt{Client} module with service client provides full transparency of replication for the clients.
-The service client contacts with the JPaxos \texttt{Client} module as if it would contact with the service -- i.e. it executes requests and gets answers for them.
+The service client contacts with the JPaxos \texttt{Client} module as if it would contact the service -- id est it executes requests and gets answers for them.
 
-If one chooses the second approach -- integrating \texttt{Client} in the replica -- the transparency is lost, and the programmer using JPaxos must care for selecting a working replica himself. However, this approach enables using JPaxos in wider context -- for example, one could possibly create a REST web service, and use an usual web client as the service Client, while the service itself would be replicated using JPaxos.
+If one chooses the second approach -- integrating \texttt{Client} in the replica -- the transparency is lost, and the programmer using JPaxos must care for selecting a working replica himself. However, this approach enables using JPaxos in wider context -- for example, one could possibly create a REST web service, and use an usual web client as the service client, while the service itself would be replicated using JPaxos.
 
 The JPaxos Replica module is responsible for global request ordering, passing the requests to the service, answering to the clients and recovering service from crash.
 
-The service itself must be integrated within JPaxos replica. It gets the requests and responds to them. However, in order to make the resource usage bounded JPaxos requires additional functionality from the service, that partially breaks the transparency - the service must provide snapshots of it's state
-once a time, % TODO: lepsze sformuowanie
-as well as be able to recover it's state from a snapshot, possibly made by other replica.
+The service itself must be integrated within JPaxos replica. It gets the requests and responds to them. However, in order to make the resource usage bounded JPaxos requires additional functionality from the service, that partially breaks the transparency -- the service must provide periodically snapshots of it's state, as well as be able to recover it's state from a snapshot, possibly made by other replica.
 As we assume that the services are deterministic, recovering from snapshot originating from other replica is not an issue, however for some services creating a snapshot may present a challenge.
 
 \subsection{Client and client-replica communication}
 
 The JPaxos client module is a single, small-weight module that performs several tasks:
-\begin{itemize} 
- \item Connects to the replicated service
- \item Reconnects to the replicated service if the connection is lost (e.g. if a replica crashed)
- \item Retrieves (or acknowledges) a Client ID for recognising the requests
- \item Sends the requests
- \item Waits for answer, retransmitting the request if needed
-\end{itemize}
 
-For the communication with replicas Client uses TCP protocol.
+\begin{tightList}[\setlength{\topsep}{0pt} \setlength{\partopsep}{0pt}]
+ \item[\textbullet] Connects to the replicated service
+ \item[\textbullet] Reconnects automatically to the replicated service if the connection is lost
+ \item[\textbullet] Retrieves (or acknowledges) a Client ID for recognising the requests
+ \item[\textbullet] Sends the requests
+ \item[\textbullet] Waits for answer, retransmitting the request if needed
+\end{tightList}
+
+\noindent For the communication with replicas Client uses TCP protocol.
 
 \subsection{Service}
 
-Service is the core part -- in fact it's the service that uses JPaxos for replication.
-In order to connect a service with the library, it must implement an interface provided by JPaxos. The interface provides required communication between the library and the service.
+Service is the core part -- in fact it is the service that uses JPaxos for replication.
+In order to integrate a service with the library, it must implement an interface specified in JPaxos. The interface provides required communication between the library and the service.
 
 The interface for interconnecting JPaxos replica and service allows for:
-\begin{itemize}
- \item Executing requests and providing answers for them
- \item Creating Snapshots
- \item Recovering from snapshots
-\end{itemize}
+\begin{tightList}
+ \item[\textbullet] Executing requests and providing answers for them
+ \item[\textbullet] Creating Snapshots
+ \item[\textbullet] Recovering from snapshots
+\end{tightList}
 
 \subsection{Replica}
 
@@ -80,7 +79,7 @@ Replica is the most important part of the JPaxos. It consists of numerous module
 Short description of the modules of JPaxos goes as follows:
 
 \begin{description}
-  \item[Replica ] interconnects other modules - especially the ClientManager, Paxos ans ServiceProxy
+  \item[Replica ] interconnects other modules -- especially the ClientManager, Paxos ans ServiceProxy
   \item[ClientManager ] maintains connection to clients, receives requests from them and forwards the answers
   \item[Paxos ] implements Paxos consensus algorithm
   \begin{description}
@@ -88,11 +87,11 @@ Short description of the modules of JPaxos goes as follows:
     \item[Acceptor ] receives proposes and accepts them
     \item[Learner ] collects accepts and decides
   \end{description}
-  \item[CatchUp ] takes care for lost ballots as well as retrieves the state from others on recovery
+  \item[CatchUp ] takes care for lost ballots and retrieves the state from others on recovery
   \item[SnapshotMaintainer ] controls snapshot mechanism
   \item[Recovery ] chooses proper recovery method and does the actual recovery processes
   \item[Storage ] keeps the state of Paxos protocol - view number, log of consensus instances and snapshot
-  \item[Service Proxy ] as only module contacts with the Service, provides as much transparency as possible for the service
+  \item[Service Proxy ] as only module contacts with the Service, provides as much trans\-pa\-rency as possible for the service
 \end{description}
 
 \section{Storage and data structures}
@@ -102,9 +101,9 @@ Apart of modules and interaction among them it is important to choose proper rou
 
 \subsection{Process descriptor}
 
-Every application has some configurable options that stay constant during the run. In JPaxos all these constants are kept in the \texttt{ProcessDescriptor} class.
+Every application has some configurable options that stay unchanged during the run. In JPaxos all these constants are kept in the \texttt{ProcessDescriptor} class.
 
-During the startup JPaxos reads configuration file and initializes ProcessDescriptor with:
+During the startup JPaxos reads configuration file and initializes ProcessDescriptor with proper values for:
 \begin{tightList}[\setlength{\labelwidth}{0em}]
  \item[\textbf{crashModel}] the crash model (see chapter \ref{chapter:recovery})
  \item[\textbf{logPath}] path for the stable storage
@@ -124,7 +123,7 @@ During the startup JPaxos reads configuration file and initializes ProcessDescri
 protocol.
 
 The data is shared across various modules.
-It is very likely that various threads might want to access the Storage simultaneously. In order to prevent concurrency-related errors only one thread, dispatcher, may access these data. So if one wants to modify the \texttt{Storage}, a proper \texttt{Runnable} must be passed to the Dispatcher for execution (see subsection \ref{sec:threads}).
+It is very likely that various threads might want to access the \texttt{Storage} simultaneously. In order to prevent concurrency-related errors only one thread, the Dispatcher, may access these data. So if one wants to modify the \texttt{Storage}, a proper \texttt{Runnable} must be passed to the Dispatcher for execution (see subsection \ref{sec:threads}).
 
 \paragraph{\normalfont \ttfamily lsr.paxos.Storage}
 holds the data as follows:
@@ -147,7 +146,7 @@ The implementation decides which elements must be kept on the Stable Storage and
 \label{subsec:the_paxos_log}
 The most important for Paxos data structure, the Log, is part of the \texttt{Storage}.
 
-In our program responsible for that is interface \texttt{lsr.paxos.Log} and class \texttt{lsr.paxos.Con\-sen\-susInstance}.
+In our program responsible for that is interface \texttt{Log} and class \texttt{Con\-sen\-susInstance}.
 
 \texttt{ConsensusInstance} is class keeping all data related to single instance:
 \begin{tightList}[\setlength{\itemindent}{0pt}\setlength{\leftmargin}{2\leftmargin}]
@@ -162,7 +161,7 @@ In our program responsible for that is interface \texttt{lsr.paxos.Log} and clas
   \item[\textbf{accepts}] set of known replicas which accepted (view, value) pair.
 \end{tightList}
 
-Theoretically \texttt{Log} should contain all instances from the first up to the current one. Of course, the implementation cannot provide this. The log must however contain all instances between the oldest still needed and current one. Only method that guarantees bounding the log (i.e. that count of needed instances will stay finite) is the ability to record a state of the Service periodically -- we call this functionality snapshotting (see \ref{sec:snapshotting}).
+Theoretically \texttt{Log} should contain all instances from the first up to the current one. Of course, the implementation cannot provide this. The log must however contain all instances between the oldest still needed and current one. Only method that guarantees bounding the log (id est that count of needed instances will stay finite) is the ability to record a state of the Service periodically -- we call this functionality snapshotting (see \ref{sec:snapshotting}).
 
 \texttt{Log} implementation keeps always all instances with id between \textbf{lowestAvailableId} (inclusive) and \textbf{nextId} (exclusive). Instances below \textbf{lowestAvailableId} have already been truncated and instances above \textbf{nextId} are yet unknown.
 
@@ -174,9 +173,7 @@ New instances can be appended to log and after this operation \textbf{nextId} va
 \end{itemize}
 Old instances can be removed by truncating log and after that lowestAvailableId is increased. 
 
-Appending, retrieving and truncating instances are three main operations performed by log.
-
-Check if this is still correct:
+Appending, retrieving and truncating instances are three main operations per\-for\-med by log.
 
 \subsection{Significant data structures}
 Other noteworthy data structures include:
@@ -184,9 +181,9 @@ Other noteworthy data structures include:
   \begin{description}
     \item[pendingRequests Map\textless RequestId, ClientId\textgreater] Keeps the requests received from the client for execution that were not yet executed. After execution of request, the reply is sent to client from this structure.
     \item[lastReplies Map\textless ClientId, Reply\textgreater] For each client, keeps the last reply that was sent to it. If client retransmits message which was executed, replica responses immediately.
-    \item[decidedWaitingExecution Map\textless Integer, BatchedRequests\textgreater] Paxos might decide instan\-ce $k$ before instance $k-1$, but the replica must execute all requests in order. So it must cache instance $k$ until all previous instances are decided.
+    \item[decidedWaitingExecution Map\textless Integer, BatchedRequests\textgreater] Paxos might decide in\-stan\-ce $k$ before instance $k-1$, but the replica must execute all requests in order. So it must cache in\-stan\-ce $k$ until all previous instances are decided.
     \item[executedRequests Map\textless ClientId, Reply\textgreater] We have to save IDs of all requests which were executed on state machine to prevent executing the same request twice.
-	\item[executedDifference Map\textless Integer, ReplyList\textgreater] Used to recreate executedRequests structu\-re from moment when snapshot was made by state machine.
+	\item[executedDifference Map\textless Integer, Replies\textgreater] Used to recreate executedRequests stru\-ctu\-re for moment when snapshot was made by state machine.
   \end{description}
 
 
@@ -199,16 +196,16 @@ Proper design of multi-threaded application must contain description of the majo
 \begin{description}
   \item[Replica] \hfill
     
-    Designed as event loop -- the thread waits for new events at certain event queue and reacts on them.
+    Designed as event loop. The thread waits for new events at certain event queue and reacts on them.
 
-    The event may either be signal from Paxos about new decision, or may concern snapshotting -- new snapshot was made by service, catch-up provided new snapshot or new snapshot is requested from the service.
+    The event may either be a signal from Paxos about new decision, or may concern snapshotting -- new snapshot was made by service, catch-up provided new snapshot or new snapshot is requested from the service.
 
     For most of the time Replica thread waits for requests to be ordered. If they can not be yet executed, puts them on a list (uses for that the decidedWaitingExecution object).
     
-    As for snapshotting -- replica is a proxy ensuring linearizability in snapshot handling.
+    As for snapshotting -- the thread is a proxy ensuring linearizability in snapshot handling.
     Multiple threads (replica itself, dispatcher and catch-up) may therefore safely execute their snapshot-concerning routines.
     
-  \item[Dispatcher] \hfill
+  \item[Dispatcher] \hfill \nopagebreak
     
     Also designed as an event loop, the dispatcher executes Paxos consensus algorithm as well as provides secure access to critical data structures -- to the \texttt{Storage} (see subsection \ref{subsec:storage_interface}).
     
@@ -265,10 +262,10 @@ Proper design of multi-threaded application must contain description of the majo
 
 	\item[TcpNetwork] \hfill
 
-		For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Also there is one thread which waits for new incoming connections. Overall we have  $2 \cdot replica\_count - 1$ threads handling TCP. Each of them can be in one of three states:
+		For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Also there is one thread which waits for new incoming connections. Overall we have  $2 \cdot \text{\textit{replica count}} - 1$ threads handling TCP. Each of them can be in one of three states:
 		\begin{itemize}
 			\item connected, waiting for new messages,
 			\item not connected, trying to establish new connection,
-			\item not connected, waiting for new connection to be established by other replica.
+			\item waiting for new connection to be established by other replica.
 		\end{itemize}
 \end{description}
