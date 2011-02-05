@@ -273,9 +273,9 @@ There are two approaches to the problem who is in charge with snapshot creation.
 
 Embedding this functionality into the replica will surely provide more secure work (state machine may simply not deliver the snapshots, what means forever growing log). It is easier for replica to measure size of the messages that should be transferred in order to catch-up (or recover).
 
-However, the replica does not now anything about state machine. We can also assume, that the service is not aware of network conditions. Therefore choosing the proper moment (when cost of log-based catch-up becomes more expensive than state-based catch-up) is impossible for both. It is clearly visible, that state machine is better informed - it knows not only the size of requests, but also may estimate size of it's current state and resources needed to execute all commands from log.
+However, the replica does not know anything about state machine. We can also assume, that the service is not aware of network conditions. Therefore choosing the proper moment (when cost of log-based catch-up becomes more expensive than state-based catch-up) is impossible for both. It is clearly visible, that state machine is better informed - it knows not only the size of requests, but also may estimate size of it's current state and resources needed to execute all commands from log.
 
-The latter is most significant difference: replica has no idea how long the log execution from previous snapshot would take. It seems possible to estimate this: measuring time between request and replay might solve the problem. But such estimate can give mistaken result, especially in multi-process environment. If another process is consuming CPU, or the replica waits a long time for granting some resources (like access to a file or even a printer), the estimate surely will not reflect real value.
+The latter is most significant difference: replica has no idea how long the log execution from previous snapshot would take. It seems possible to estimate this: measuring time between request and reply might solve the problem. But such estimate can give mistaken result, especially in multi-process environment. If another process is consuming CPU, or the replica waits a long time for granting some resources (like access to a file or even a printer), the estimate surely will not reflect real value.
 
 Table below presents in compact way state of knowledge needed to select best moment for next snapshot:
 \begin{center}
@@ -349,7 +349,7 @@ Both batching size and the timeout for gathering requests in batch is configurab
 \section{Service Proxy}
 \label{sec:serviceProxy}
 
-Some operation on service require proper arguments. Should a service be responsible for that? Batching causes that the snapshot can be made after full instances, and not after each request. Should a service take care  for that?
+Some operations on service require proper arguments. Should a service be responsible for that? Batching causes that the snapshot can be made after full instances, and not after each request. Should a service take care  for that?
 
 This is not desired. We want to provide as much transparency as possible, without forcing the service to remember redundant data.
 
