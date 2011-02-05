@@ -117,15 +117,15 @@
 
 % All appendices and extra material, if you have any.
 \cleardoublepage\appendix%
+\newcounter{pageTemp}
+\setcounter{pageTemp}{\value{page}}
+\pagenumbering{roman}
 \input{user_guide/JPaxos.tex}
 
 % Bibliography (books, articles) starts here.
-\scalebox{0.001}{
-\cite{Lam98}
-\cite{Lam01}
-\cite{CGR07}
-\cite{AK08}
-\cite{Urb03}}
+\pagenumbering{arabic}
+\setcounter{page}{\value{pageTemp}}
+
 \bibliographystyle{alpha}{\raggedright\sloppy\small\bibliography{bibliography}}
 
 % Colophon is a place where you should let others know about copyrights etc.
