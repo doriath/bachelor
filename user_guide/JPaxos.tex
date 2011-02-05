@@ -71,8 +71,8 @@ For the end user JPaxos provides:
 \begin{enumerate}
 \item {} 
 \code{Service} interface -- it specifies a few methods for interfacing
-the user-defined service code with JPaxos; our library provides
-abstract classes implementing \code{Service} interface, making it easier to
+the user-defined servi\-ce code with JPaxos; our library provides
+abstract classes implementing \code{Ser\-vice} interface, making it easier to
 to create a new service (state machine);
 see {\hyperref[api:jpaxos-service]{\emph{Service interface}}} for details
 
@@ -179,7 +179,7 @@ nodes configuration and replica related options.
 \paragraphNewline{Node configuration}
 \label{config:node-configuration}
 A node is configured with a single line containing \code{hostname}, \code{replica
-port} and \code{client port}, separated with commas:
+port} and \code{cli\-ent port}, separated with commas:
 
 \begin{Verbatim}[commandchars=@\[\]]
 process.@textless[]id@textgreater[] = @textless[]hostname@textgreater[]:@textless[]replica@_port@textgreater[]:@textless[]client@_port@textgreater[]
@@ -201,7 +201,6 @@ non-volatile memory (i.e. hard drive), the location of the logs may be
 specified as well.
 
 Currently supported crash models include:
-\begin{quote}
 
 \begin{tabular}{|L|L|L|L|}
 \hline
@@ -254,7 +253,6 @@ minority
 \hline
 \end{tabular}
 
-\end{quote}
 \begin{description}
 \item[{Crash model types:}] \leavevmode\begin{itemize}
 \item {} 
@@ -387,6 +385,7 @@ and all others using TCP protocol.
 
 \paragraphNewline{Example file}
 \label{config:example-file}
+
 Below is an example configuration file:
 
 \begin{Verbatim}[commandchars=@\[\]]
@@ -435,7 +434,7 @@ The \code{Configuration} has three constructors available:
 \begin{itemize}
 \item {} 
 \code{Configuration ()}
-Default constructor, loads configuration from \code{paxos.properties} file
+Default constructor, loads configuration from \code{paxos.pro\-per\-ties} file
 located in current working directory. The structure of configuration file is
 described in ``Configuration file format'' section.
 
@@ -446,7 +445,7 @@ of the file is described in ``Configuration file format'' section.
 
 \item {} 
 \code{Configuration (List\textless{}PID\textgreater{} processess)}
-Loads configuration using only nodes configuration. The \code{PID} structure is
+Loads configuration using only no\-des configuration. The \code{PID} structure is
 described below. Replica related options are set to default.
 
 \end{itemize}
@@ -513,6 +512,8 @@ JPaxos provides several base classes and one interface to create a new Service.
 
 The \code{Service} interface, base for all services, describes methods that JPaxos requires from the service to be implemented. \code{Replica} calls all the API methods on the \code{Service} object. To launch the service, one needs to start the governing \code{Replica}.
 
+\clearpage
+
 The inheritance hierarchy is as follows:
 
 \begin{Verbatim}[commandchars=@\[\]]
@@ -524,14 +525,14 @@ interface Service
 
 Using the \code{Service} interface is discouraged in favour of \code{AbstractService}, as the latter implements methods common to all services.
 
-\code{AbstractService} provides widest range of functionality. \code{SimpleService} is the \code{AbstractSer\-vice} narrowed to the absolute minimum for the system to work. \code{SerializableService} differs from \code{SimpleService} only with data type - all client requests and service responses are serialised using Java serialisation.
+\code{AbstractService} provides widest range of functionality. \code{SimpleService} is the \code{AbstractSer\-vice} narrowed to the absolute minimum for the system to work. \code{Seria\-li\-za\-ble\-Service} differs from \code{SimpleService} only with data type - all client requests and service responses are serialised using Java serialisation.
 
 
 \paragraphNewline{\texttt{SerializableService} class}
 \label{api:serializableservice-class}
 This is the simplest class of all available.
 
-This class has minimal number of methods. One requires from the \code{SerializableService} to be able to execute client requests, be able to create a snapshot and roll back to state from a snapshot.
+This class has minimal number of methods. One requires from the \code{Serializable\-Service} to be able to execute client requests, be able to create a snapshot and roll back to state from a snapshot.
 
 \code{SerializableService} uses Java serialization for creating byte arrays from Object, therefore snapshot, request and reply classes must be serialisable.
 
@@ -548,14 +549,14 @@ Executes a command from client on this state machine. The return value is sent b
 \code{abstract Object makeSnapshot ()}
 \begin{quote}
 
-Makes snapshot of current Service state. The same data created in this method, will be used to update state from snapshot using \code{updateToSnapshot(Object)} method.
+Makes snapshot of current Service state. The same data created in this method, will be used to update state from snapshot using \code{updateTo\-Snap\-shot(Object)} method.
 \end{quote}
 
 \item {} 
 \code{abstract void updateToSnapshot (Object snapshot)}
 \begin{quote}
 
-Updates the current state of Service to state from snapshot. This method will be called after recovery to restore previous state, or if we received newer snapshot from other replica (using catch-up).
+Updates the current state of Service to state from snapshot. This me\-thod will be called after recovery to restore previous state, or if we received newer snapshot from other replica (using catch-up).
 \end{quote}
 
 \end{itemize}
@@ -565,7 +566,7 @@ Updates the current state of Service to state from snapshot. This method will be
 \label{api:simplifiedservice-class}
 This class also has minimal number of methods.
 
-Only difference between \code{SimplifiedService} and \code{SerializableService} is the type of passing the data - the \code{SimplifiedService} uses byte arrays for that.
+Only difference between \code{Simplified\-Ser\-vice} and \code{SerializableService} is the type of passing the data - the \code{SimplifiedService} uses byte arrays for that.
 
 Method summary:
 \begin{itemize}
@@ -583,7 +584,7 @@ Method summary:
 
 \paragraphNewline{\texttt{AbstractService} class}
 \label{api:abstractservice-class}
-This class supports three additional functionalities in comparison to \code{SimplifiedService} and \code{SerializableService}:
+This class supports three additional functionalities in comparison to \code{Simplified\-Ser\-vice} and \code{SerializableService}:
 \begin{itemize}
 \item {} 
 service may choose when the snapshot has to be done
@@ -636,7 +637,7 @@ If this method is called from within execute method, after the just executed req
 \end{quote}
 
 \item {} 
-\code{abstract void updateToSnapshot (int requestSeqNo, byte{[}{]} snapshot)}
+\code{abstract void updateToSnapshot (int requestSeqNo,\\ \indent \hspace{10em} byte{[}{]} snapshot)}
 \begin{quote}
 
 Updates the current state of \code{Service} to the state from the snapshot.
@@ -658,7 +659,9 @@ This implementation is an empty method. One may not override it, if the knowledg
 \label{api:service-interface}\label{api:jpaxos-service}
 The service interface describes methods that JPaxos requires from the service to be implemented.
 
-Some methods in this interface use \code{SnapshotListener} interface. This interface is very simple, it contains one method only: \code{void onSnapshotMade(int requestSeqNo, byte{[}{]} snapshot, \linebreak byte{[}{]} response)}. This method must be called by \code{Service} when a new snapshot has been made on all previously registered listeners. The parameters match exactly the ones from \code{fireSnapshot\-Made} method from \code{AbstractService} class.
+Some methods in this interface use \code{SnapshotListener} interface. This interface is very simple, it contains one method only: \code{void onSnapshotMade(int requestSeqNo,\!\linebreak byte{[}{]} snapshot, byte{[}{]} response)}.
+
+This method must be called by \code{Service} when a new snapshot has been made on all previously registered listeners. The parameters match exactly the ones from \code{fire\-Snap\-shot\-Made} method from \code{AbstractService} class.
 
 Method summary:
 \begin{itemize}
@@ -748,8 +751,8 @@ Creating a client is very simple -- each client needs only replica configuration
 The Client class has the following methods:
 \begin{itemize}
 \item {} \begin{description}
-\item[{\code{Client() throws IOException}}] \leavevmode
-\code{Client(Configuration config) throws IOException}
+\item[{\code{Client() throws IOException}}]
+\item[\code{Client(Configuration config) throws IOException}] \hfill
 
 Creates the client. The \code{Configuration} should be the same as for Replica. The first version reads default paxos.properties file, while the latter lets the user choose file location.
 
