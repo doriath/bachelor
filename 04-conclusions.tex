@@ -9,4 +9,65 @@
 %Integralną częścią pracy są również dodatki, aneksy i załączniki np.~płyty CDROM
 %zawierające stworzone w ramach pracy programy, aplikacje i projekty.
 
-%Thanks to Nuno Santos, Andre Schiper and Pawel T. Wojciechowski
+In this thesis, we have studied the problem of state machine replication based
+on Paxos algorithm defined in \cite{Lam98}. We described challenges faced in
+implementation phase to make the library ready to use in production systems
+with support of crash-recovery model, message loss and communication delays.
+
+We first presented the Paxos algorithm with theoretical background. Then we
+focused on problems which occurs when transforming one page pseudocode of
+distributed algorithm to few thousands line of production code. We presented
+the architecture of our library with short description of every module and data
+structures used. The library have to handle unreliable network with message
+loss and delays, so we presented the catch-up mechanism which guarantees that
+eventually every correct replica will be up to date. By introducing snapshot
+mechanism, we solve a problem with infinite grow of log. To make the library
+very efficient, we implemented several performance improvements like concurrent
+instances, skipping redundant message and batching. To tolerate crash-recovery
+model, four different recovery algorithms has been implemented and described in
+this paper.
+
+To test the library we implemented replicated hash map as an example of
+deterministic service. We used it to verify that our library is working
+correctly and that API we provide is user friendly. Our library is used as 
+communication layer in PaxosSTM master thesis \cite{Tad10}.
+
+Our future work includes further performance improvements to Paxos protocol and
+implementing more crash-recovery algorithms with no use of stable storage.  It
+would be also interesting to evaluate all recovery algorithm in network with
+message loss and environment when failure of replica is a common scenario.
+Finally we would like to publish the library as open source project and test it
+in production environment.
+
+%In this thesis, we have studied the problem of computing the "worthiness" of
+%data items for each peer in unstructured P2P networks where the "worthiness" of
+%an item is defined as in [SNW08]. We presented techniques for a better
+%estimation of these values.  As a result, a more eficient solution for the P2P
+%replication problem defined in [SNW08] is achieved.  
+%
+%We first studied the problem in a centralized environment, where all parameters
+%of the network are known to each individual peer, and provided a method based
+%on Chapman- Kolmogorov equations to eficiently compute the worthiness of data
+%items in a such environment. As the main result of this thesis, we have
+%presented a fast distributed algorithm to eficiently compute the "worthiness"
+%of data items in the network. Our experimental evaluations on random graphs
+%show that our algorithm converges much faster than the counting algorithm, but
+%requires messages with larger (but still accept- able) size. In our algorithm,
+%the informations regarding the query path starting from the query originator
+%and the location of requested data items on this path are maintained and
+%piggybacked the original query. Our algorithm incures O(kmn 0) space cost at
+%each peer i where k is the maximum length of random walks, m is the number of
+%data items stored in the network and n 0 is the number of peers in the
+%k-neighborhood of i. There- fore, there is a trade-of between the time need for
+%achieving a good estimation of the worthiness of items and the size of messages
+%to be issued in the network.  
+%
+%Our future work includes computing worthiness of data items in a more eficient
+%way i.e. in terms of number of messages, the size of messages to be issued in
+%the network and the storage space which is needed at each peer to maintain the
+%transition probabilities.  It would be also interesting to evaluate the
+%eficiency of the algorithm on networks with heterogeneous parameters (e.g.
+%query rates, network topologies) and with data of real P2P networks. Finally,
+%further extensions and generalizations of the algorithm and considering other
+%constraints of real P2P networks would be some directions of our future work.
+
