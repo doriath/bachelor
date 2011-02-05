@@ -60,8 +60,7 @@
 % Custom commands
 \newcommand{\paragraphNewline}[1]
 {
-  \paragraph{#1}
-  \par \noindent \par \noindent \ignorespaces
+  \paragraph{#1} \hfill
 }
 \newcommand{\paxosJava}[1][ ]{\textsc{PaxosJava#1}}
 \newcommand{\alive}[1][ ]{\textsc{Alive#1}}
@@ -69,7 +68,7 @@
 \newcommand{\prepareOK}[1][ ]{\textsc{PrepareOK#1}}
 \newcommand{\propose}[1][ ]{\textsc{Propose#1}}
 \newcommand{\accept}[1][ ]{\textsc{Accept#1}}
-\newcommand{\catchUpQuery}[1][ ]{\textsc{CatchUpQuery#1}}
+\newcommand{\catchUpQuery}[1][ ]{\textsc{Catch\-Up\-Query#1}}
 \newcommand{\catchUpResponse}[1][ ]{\textsc{Catch\-Up\-Response#1}}
 \newcommand{\catchUpSnapshot}[1][ ]{\textsc{CatchUpSnapshot#1}}
 \newcommand{\proposer}[1][ ]{\textsc{Proposer#1}}
