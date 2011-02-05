@@ -25,11 +25,11 @@ The goal of this bachelor's thesis is to create Java library implementing state 
 \section{Thesis organisation}
 Second part of this chapter characterizes shortly articles concerning Paxos and present most significant definitions as well as theoretical results concerning Paxos.
 
-The third chapter provides description of Paxos algorithm used by us, including the modifications and implementation details we used.
+The second chapter provides description of Paxos algorithm used by us, including the modifications and implementation details we used.
 
-In chapter 4 we describe the design of JPaxos -- its architecture, modules, important data structures and threading approach.
+In chapter 3 we describe the design of JPaxos -- its architecture, modules, important data structures and threading approach.
 
-Implemented features, chapter 5, is devoted to the implementation work related to the state machine replication, including the snapshotting, catch-up and proper achieving transparency for the service.
+Implemented features, chapter 4, is devoted to the implementation work related to the state machine replication, including the snapshotting, catch-up and proper achieving transparency for the service.
 
 Fifth chapter describes the recovery related issues, both for Paxos and for state machine replication.
 
@@ -45,7 +45,7 @@ First Paxos protocol uses have been described in 2006 and 2007 (\textit{Paxos ma
 
 Year later, in \textit{Paxos for system builders}~\cite{AK08}, the Paxos protocol has been described from programmer point of view.
 
-In 2009, and subsequetly in 2010, M. Primi et alii released two implementations of Paxos designed to achieve good performance. Both of these are released as open-source. The first -- libPaxos$^2$ -- is described in his master thesis, the latter -- RingPaxos -- is described in \textit{Ring Paxos: A High-Throughput Atomic Broadcast Protocol}~\cite{Mar10}.
+In 2009, and subsequently in 2010, M. Primi et alii released two implementations of Paxos designed to achieve good performance. Both of these are released as open-source. The first -- libPaxos$^2$ -- is described in his master thesis, the latter -- RingPaxos -- is described in \textit{Ring Paxos: A High-Throughput Atomic Broadcast Protocol}~\cite{Mar10}.
 
 The crash-recovery has been also the subject among the articles. The \textit{Atomic Broadcast in Asynchronous Crash-Recovery Distributed Systems}~\cite{rodriguez2000atomic} provides definitions concerning recovery as well as shows method to transform any crash-stop consensus protocol to crash-recovery one.
 

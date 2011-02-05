@@ -1,7 +1,7 @@
 \chapter{Recovery}
 \label{chapter:recovery}
 
-In this chapter we describe the recovery of process from crash. We present 3 different algorithms implemented in JPaxos with different performance and fault tolerance. We will start from short overview of recovery and then present 4 different algorithms -- crash-stop, crash-recovery with stable storage, epoch based recovery and view based recovery. After that we will summarize and compare all algorithms.
+In this chapter we describe the process recovery from crash. We will start from short overview of recovery and then present 4 different algorithms -- crash-stop, crash-recovery with stable storage, epoch based recovery and view based recovery. After that we will summarize and compare performance and fault tolerance of all algorithms.
 
 \section{Overview}
 
@@ -228,13 +228,13 @@ The pseudocode of this algorithm is presented below:
   \ENDUPON
 \end{algorithmic}
 
-This algorithm makes synchronous write to stable storage on every view change. If the network is stable and the leader doesn't crash, performance of the algorithm should be the same as in crash-stop model. If the view is change often because of message loss or leader crash, the performance can decrease.
+This algorithm makes synchronous write to stable storage on every view change. If the network is stable and the leader doesn't crash, performance of the algorithm should be the same as in crash-stop model. If the view is changed often because of message loss or leader crash, the performance can decrease.
 
 The recovery phase is quite similar to the epoch based recovery. Recovering process is sending \recovery message to all and waits for majority of \recoveryAnswer to get $heighestId$ value from leader. Then catch-up mechanism is used to retrieve missing instances from correct processes. This algorithm is easier than based on epoch, because it doesn't introduce any changes in handling \prepareOK message.
 
 \section{Comparison}
 
-We presented 4 different algorithms implemented to JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table below we present the comparison of all algorithms by comparing:
+We presented 4 different algorithms implemented to JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the stable below we present the comparison of all algorithms by comparing:
 \begin{table}[h]
   \footnotesize
   \begin{tabular}{lccccc}
