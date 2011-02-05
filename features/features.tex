@@ -11,10 +11,10 @@ The client ID has to be unique for two different clients. To guarantee this, rep
 Below we present some of the possible methods for solving this problem:
 
 \paragraphNewline{Based on number of replicas}
-Each replica can grant numbers incremented by number of replicas, starting from ID of local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, \ldots{} and replica with ID 2 can grant 2, 5, 8, \ldots{} . It guarantees that two different replicas will not grant the same ID. This solution works with crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't now what was the last granted ID.
+Each replica can grant numbers incremented by number of replicas, starting from ID of local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, \ldots{} and replica with ID 2 can grant 2, 5, 8, \ldots{} . It guarantees that two different replicas will not grant the same ID. This solution works with crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't know what was the last granted ID.
 
 \paragraphNewline{Time based}
-This is different approach -- we use system time as the source if unique numbers. To each client ID we are adding also information when replica was started (in milliseconds).
+This is different approach -- we use system time as the source of unique numbers. To each client ID we are adding also information when replica was started (in milliseconds).
 
 For example, if a replica has been started at time $t$, it will grant for new clients IDs $(t + $\textit{localId}$)$, $(t + $\textit{localId}$ + n)$, $(t + $\textit{localId}$ + 2n)$ \ldots
 
