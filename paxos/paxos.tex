@@ -3,9 +3,9 @@
 In this chapter we provide some background for Paxos and MultiPaxos algorithm. We start with introduction to Paxos and MultiPaxos protocol. Then we describe the problems we encounter while implementing them and performance improvements we made.
 
 \section{Overview}
-Paxos algorithm is used to solve consensus problem in distributed system. $n$ processes tries to decide upon the same value, which was proposed by one of them. Paxos does not need a coordinator, however a processes may consider himself a leader for a certain time for specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guatanteed.
+Paxos algorithm is used to solve consensus problem in distributed system. $n$ processes tries to decide upon the same value, which was proposed by one of them. Paxos does not need a coordinator, however a processes may consider himself a leader for a certain time for specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
 
-In order to simplify the Paxos as well as for increased preformance, MultiPaxos improvements proposed in \cite{Lam01} introduces one leader for all ballots.
+In order to simplify the Paxos as well as for increased performance, MultiPaxos improvements proposed in \cite{Lam01} introduces one leader for all ballots.
 
 The phase of electing the leader is described in following section. When the leader is elected, it starts proposing new values from clients.
 
@@ -69,7 +69,7 @@ Even if we cannot prevent from deciding request twice, we should minimise number
 \begin{itemize}
   \item We can cache last reply for each client, so after receiving the same request we can immediately response.
   \item Do not propose requests which are already decided
-  \item Current leader can save which requested was proposed by him (but not decided yet) and also discard them. Because in \prepareOK message we can receive instance values which was unknown, leader has to deserialize them first.
+  \item Current leader can save which request was proposed by him (but not decided yet) and also discard them. Because in \prepareOK message we can receive instance values which was unknown, leader has to deserialize them first.
 \end{itemize}
 
 \paragraph{Setting the window size}
@@ -90,7 +90,7 @@ In full-duplex networks, concurrent instances will improve network utilisation, 
 
 As already mentioned, this solution will improve latency and throughput. Carefulness is required in order to avoid network saturation, especially the link of the leader which has to carry $2n$ messages for each instance (as opposed to 2 messages for every other link).
 
-\paragraph{Batching} is another method for improving performance and network usage. It is preferred over incereasing the concurrent instances count, however the benchmarks show that joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
+\paragraph{Batching} is another method for improving performance and network usage. It is preferred over increasing the concurrent instances count, however the benchmarks show that joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
 
 \section{No operation command}
 
@@ -102,7 +102,7 @@ As we can see after prepare phase, leader can have a gap in the log. Without fil
 
 With crash-stop or crash-recovery without stable storage the value may be lost forever. That happens when decision $n+1$ is already decided, and decision $n$ is unknown to all but leader, and the leader fails. As only he got the value, and it has been lost -- either because he is not allowed to recover, or he is recovering without stable storage.
 
-On the other hand, the leader change may happen due to lost \alive message. In this case someone has the value, and it could be used back in the voting. But there is no simple and fast method to detect this situation.
+On the other hand, the leader change may happen due to lost of \alive message. In this case someone has the value, and it could be used back in the voting. But there is no simple and fast method to detect this situation.
 
 The easiest solution is to create new request type called no-op, which is null operation and will be ignored by the replica. It fills the gaps, but is not executed on state machine.
 
