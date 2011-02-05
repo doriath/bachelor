@@ -322,12 +322,15 @@ This optimisation does not need any changes to the Paxos algorithm, only require
 
 To achieve multiple requests in the same instance an additional activity must be taken up by proposer and later, by replica, just before execution.
 
-The proposer needs to ``stick'' together the requests, and from that moment on they are treated as one. The other part, dividing it again into requests, should be done after the decision has been taken.
-\begin{figure*}[h]
+The proposer needs to \textit{stick} together the requests, and from that moment on they are treated as one. The other part, dividing it again into requests, should be done after the decision has been taken.
+\begin{figure}[h]
 \includegraphics[keepaspectratio, width=\textwidth]{features/batching.pdf}
-\end{figure*}
+\vspace{-1em}
+\caption{The batching mechanism}
+\vspace{-1em}
+\end{figure}
 
-As the count of concurrent instances is bounded (see subsection \ref{subsec:concurrent_instances}), without batching every client needs to wait for his own instance. With batching many client requests may be ``packed'' in one instance. That, on one side, increases the throughput and decreases the delay.
+As the count of concurrent instances is bounded (see subsection \ref{subsec:concurrent_instances}), without batching every client needs to wait for his own instance. With batching many client requests may be \textit{packed} in one instance. That, on one side, increases the throughput and decreases the delay.
 On the other side, message size is getting bigger -- and that means slower voting.
 
 Here arises a question: how many requests to batch? One boundary is quite obvious -- serialized message should not be bigger than transport protocol frame size. As for UDP the size is about 65kB, but for TCP stays unbounded.
@@ -352,7 +355,7 @@ This is not desired. We want to provide as much transparency as possible, withou
 
 \texttt{ServiceProxy} is a module that translates JPaxos instances to Service requests and takes care for all the requirements concerning snapshotting. From Replica side, interaction with the Service through \texttt{ServiceProxy} is instance-oriented and convenient. From Service side, the interaction with clients is as transparent as possible.
 
-To achieve this the \texttt{ServiceProxy} keeps list of responses for all requests from the previous snapshot as well as information required later to restore proper request sequential number from a snapshot.
+To achieve this the \texttt{ServiceProxy} keeps list of responses for all requests since the previous snapshot as well as information required later to restore proper request sequential number from a snapshot.
 As the replica provides a snapshot, this module adds to the snapshot required data.
 
 Overhead caused by this proxy should be smaller than the difference in speed of the service if the service were to be aware of instances. The difference is size of the snapshot depends on the state size, but usually the state is much bigger than a few responses required to provide transparency.
