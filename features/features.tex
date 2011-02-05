@@ -70,7 +70,7 @@ State-base recovery has the following steps:
   \footnotesize
   \begin{tabular}{ll}
     Serialisation               & state is transformed into a sequence of bytes \\
-    Transfer                    & size is sent via network \\
+    Transfer                    & state is sent via network \\
     Deserialization             & state is rebuilt at destination \vspace{0.5em} \\
     Residual log-based-recovery & recovery from snapshot process is made \\
   \end{tabular}
@@ -81,7 +81,7 @@ The first three tasks may be done concurrently. Assuming that the fourth task is
 
 \paragraphNewline{Log-based recovery time}
 
-Log-based recovery consists only on sending the commands and executing them at the replica. Once again, sending and executing can be done concurrently, so the total duration is the max of the time it takes to transfer all the updates or to execute them.
+Log-based recovery is done by sending the commands and executing them at the replica. Once again, sending and executing can be done concurrently, so the total duration is the max of the time it takes to transfer all the updates or to execute them.
 
 \subsection{Conditions for starting and finishing the catch-up}
 \label{subsec:conditions_for_starting_and_finishing_the_catch_up}
