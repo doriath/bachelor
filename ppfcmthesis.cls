@@ -110,6 +110,7 @@
 \date{}
 \newcommand{\ppsupervisor}[1]{\def\@ppsupervisor{#1}}
 \newcommand{\ppyear}[1]{\def\@ppyear{#1}}
+\newcommand{\titleNoFormat}[1]{\def\@titleNoFormat{#1}}
 
 \newcommand{\authortitle}[1]{\def\@authortitle{#1}}
 
@@ -123,7 +124,7 @@
 \if@pppolish
 Politechnika Pozna\'nska\\Wydzia{\l} Informatyki i Zarz{\k{a}}dzania\\Instytut Informatyki
 \else
-Poznan University of Technology\\Faculty of Computing Science and Management\\Institute of Computing Science
+Pozna\'n University of Technology\\Faculty of Computing Science and Management\\Institute of Computing Science
 \fi\end{center}}
 
 \pretitle{\vspace{2cm}\begin{center}%
@@ -135,6 +136,7 @@ Poznan University of Technology\\Faculty of Computing Science and Management\\In
 \posttitle{\end{center}}
 
 \newcommand{\album}[1]{\unskip ,~#1}
+
 \renewcommand{\and}{\\}
 
 \renewcommand{\maketitlehookb}{\vspace{1cm}}
@@ -166,7 +168,7 @@ Supervisor\\\@ppsupervisor
 Instytut Informatyki, Wydzia{\l} Informatyki i Zarz{\k{a}}dzania\\%
 Politechnika Pozna\'nska%
 \else%
-Poznan University of Technology\\Faculty of Computing Science and Management\\Institute of Computing Science
+Pozna\'n University of Technology\\Faculty of Computing Science and Management\\Institute of Computing Science
 \fi
 
 \medskip\noindent%
@@ -181,7 +183,7 @@ Typeset using \LaTeX\ in Computer Modern.
 \tiny\texttt{%
 @mastersthesis\{ key,\\
 \hspace*{2em}author = "\@author",\\
-\hspace*{2em}title = "\{\@title\}",\\
+\hspace*{2em}title = "\{\@titleNoFormat\}",\\
 \hspace*{2em}school = "Poznan University of Technology",\\
 \hspace*{2em}address = "Pozna\{$\backslash$'n\}, Poland",\\
 \hspace*{2em}year = "\@ppyear",\\
