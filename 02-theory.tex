@@ -2,14 +2,15 @@
 
 \section{Definitions}
 
-In order to prevent misunderstandings and to clarify the subject of the thesis we open it with definitions of
+In order to prevent misunderstandings and to clarify the subject of the thesis we begin from introducing
 basic % TODO lepszy odpwoednik 
-terms we use.
+terms that we use in the reminder of this thesis.
 
+% TODO: correct process
 
 \paragraph{Consensus}
-is a problem in distributed computing that encapsulates the task of group agreement in the presence of faults.
-Consensus guarantees:
+is a problem in distributed computing that encapsulates the task of reaching distributed agreement in the group of processes in the presence of faults.
+The consensus protocol guarantees:
 
 \begin{tightList}[\setlength{\leftmargin}{2\leftmargin}]
     \item[\textbf{Validity}] any value decided is a value proposed by some process,
@@ -29,57 +30,61 @@ is a state machine that from the same state under the same command will always c
 Thanks to this property one may describe the state machine's state by the initial state and consecutive commands. 
 
 \paragraph{Service}
-is a program that receives requests -- or commands -- and executes them generating a response.
+is a program that receives requests (or commands) and executes them generating a response.
 
 \paragraph{Deterministic service}
-is a service that will respond in given state for given command always with the same response, and will always change the state to the same state.
+is a service that in a given state will always given the same response for a given command, and will always change its state to the same state.
 
 \paragraph{Client}
 is the program sending requests to the service
 
 \paragraph{Atomic (total order) broadcast}
 is a networking primitive providing send-to-all communication for which holds:
-\begin{tightList}
- \item[\textbullet] a message reaches all valid targets exactly once,
- \item[\textbullet] each two messages are delivered in the same order at every receiver.
+\begin{tightList}[\setlength{\leftmargin}{2\leftmargin}]
+ \item[\textbf{Validity}] if a process delivers a message, it was broadcast by some process
+ \item[\textbf{Agreement}] if a process delivers a message, all valid processes will deliver it
+ \item[\textbf{Integrity}] a message is delivered only if it was broadcasted previously, and it reaches all valid processes at most once
+ \item[\textbf{Total order}] each two messages are delivered in the same order at every process
 \end{tightList}
 
-\noindent Consensus is highly related with atomic broadcast. If one can be solved, then the other also can be solved.
+\noindent The atomic broadcast problem is equivalent to consensus, i.e. if one can be solved, then the other also can be solved.
 
 \paragraph{Failure (crash)}
-is permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc.
-We do not consider byzantine crashes, i.e. a process may not misbehave in any way.
+is a permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc.
+We do not consider byzantine failures, i.e. a process may not misbehave in any way.
 
-\paragraph{Catastrophic failure} is a failure of all processes in the same moment -- there is a moment when all processes are crashed.
+\paragraph{Catastrophic failure} is a failure of all processes at the same moment.
 
-\paragraph{Crash model}
-defines how the crashed processes may behave.
+\paragraph{The failure model}
+defines what type of failures can be tolerated by a system
 \begin{tightList}[ \setlength{\leftmargin}{2\leftmargin}]
  \item[\textbf{Crash-Stop}] means that if a process failed, it failed permanently and must never be up again
- \item[\textbf{Crash-Recovery}] assumes that a crashed process may recover (id est start working again)
+ \item[\textbf{Crash-Recovery}] assumes that a crashed process may recover (i.e. start working again)
 \end{tightList}
 
 \paragraph{Stable storage}
-is the memory that survives crashes. Usually stable storage denotes hard drive.
-Sometimes also \textbf{volatile storage} name is used, to name memory that does not survive crashes, like the RAM memory usually used for program data.
+is the memory that survives crashes. Usually stable storage denotes a hard drive.
+Sometimes also \textbf{volatile storage} name is used, to name memory that does not survive crashes, like the RAM memory.
 
-\noindent However, the writes to the stable storage must be permanent, so if a hard drive is used, the writes must be synchronous.
+\noindent The writes to the stable storage must be permanent contary to the volatile memory. Thus if a hard drive is used, the writes must be synchronous.
 
 \section{Theoretical limitations}
 
-\paragraphNewline{Infeasibility in asynchronous model}
+\paragraphNewline{The FLP impossibility result}
 
-The consensus problem is not solvable in asynchronous system where at least one process may crash and processes communicates by sending messages. This fact has been proved in FLP impossibility proof \cite{FLP}.
+The consensus problem is not solvable in an asynchronous system where at least one process may crash and processes communicates by sending messages. This fact has been proved in the \cite{FLP}.
 
 Therefore some assumptions concerning time must be made. In this thesis we assume that if a message is not lost, it will reach its target in finite time.
+% TODO ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 \paragraphNewline{Number of messages}
 
-In the best case no algorithm is able to solve consensus in time less than $1n+1$, that is one message with the value and one message not carrying the any dataload.
+In the best case no algorithm is able to solve consensus in time less than $1n+1$, that is one message with the value and one message not carrying the dataload, where $n$ is the time of transferring a message carrying data, and $1$ is time of transferring a protocol message without the data.
+% TODO ^^^^^^^^^^^^^^^^^^^
 
-Our implementation, as described in \ref{par:bestCaseMessages}, is theoretically able to decide messages in $n+1$ time. Moreover, assuming no network congestion and message loss the average time is equal to the best-case time.
+Our implementation, as described in section \ref{par:bestCaseMessages}, is theoretically able to decide messages in $n+1$ time. Moreover, assuming no network congestion and message loss the average time is equal to the best-case time.
 
-However, with TCP and simple UDP it is not possible to use either multicast or broadcast primitive; this prolongs the real time needed for sending a message, as in the lowest network module \emph{broadcast} is translated to $n$ identical \textit{unicast} messages.
+However, with TCP and simple UDP it is not possible to use either multicast or broadcast primitive; this prolongs the real time needed for sending a message, as in JPaxos the network module \emph{broadcast} is translated to $n$ identical \textit{unicast} messages.
 
-Other Paxos implementation do use multicast for reducing communication. As an example, the RingPaxos \cite{Mar10} uses IP multicast. Most significant gain from using multicast is the scalability -- without the multicast each additional replica diminishes the performance.
+Other Paxos implementations do use an low-level multicast protocol for reducing communication. As an example, the RingPaxos \cite{Mar10} uses IP-multicast. The most significant gain from using multicast is scalability -- without the low-level multicast each additional replica decreases the overall performance.
 

@@ -124,7 +124,7 @@
 \if@pppolish
 Politechnika Pozna\'nska\\Wydzia{\l} Informatyki i Zarz{\k{a}}dzania\\Instytut Informatyki
 \else
-Pozna\'n University of Technology\\Faculty of Computing Science and Management\\Institute of Computing Science
+Pozna\'n University of Technology\\Faculty of Computing Science\\Institute of Computing Science
 \fi\end{center}}
 
 \pretitle{\vspace{2cm}\begin{center}%
@@ -145,7 +145,8 @@ Pozna\'n University of Technology\\Faculty of Computing Science and Management\\
 \if@pppolish
 Promotor\\\@ppsupervisor
 \else
-Supervisor\\\@ppsupervisor
+%Supervisor\\\@ppsupervisor
+Thesis advisor\\\@ppsupervisor
 \fi\end{center}
 \vspace{2cm}\begin{center}Pozna\'n, \@ppyear\if@pppolish\fi\end{center}
 }
@@ -168,7 +169,7 @@ Supervisor\\\@ppsupervisor
 Instytut Informatyki, Wydzia{\l} Informatyki i Zarz{\k{a}}dzania\\%
 Politechnika Pozna\'nska%
 \else%
-Pozna\'n University of Technology\\Faculty of Computing Science and Management\\Institute of Computing Science
+Pozna\'n University of Technology\\Faculty of Computing Science\\Institute of Computing Science
 \fi
 
 \medskip\noindent%
