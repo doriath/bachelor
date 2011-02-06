@@ -11,25 +11,25 @@ The easiest way to understand the architecture of JPaxos is to analyze its archi
 \subsection{Processes and their communication}
 
 For JPaxos there are two possible approaches of building replicated services. The first, recommended by us, 
-requires from the service client application using a \texttt{Client} module. % TODO not English
+requires from the service client application using a \texttt{Client} module. % TODO TZ not English
 The other approach incorporates the client module within replica, but 
-it places the responsibility for finding a working replica on the user. % TODO rewrite
+it places the responsibility for finding a working replica on the user. % TODO TZ rewrite
 The possible approaches are visualised in figure \ref{fig:jpaxos_processes}.
 
-% TODO enlarge
+% TODO TZ enlarge
 \begin{figure}[h]
  \begin{tabular}{ccc}
-  \includegraphics[width=0.44\textwidth]{architecture/userArchitecture1.pdf}
+  \includegraphics[width=0.45\textwidth]{architecture/userArchitecture1.pdf}
   &
-  \hspace{0.02\textwidth}
+  \hspace{0.01\textwidth}
   &
-  \includegraphics[width=0.44\textwidth]{architecture/userArchitecture2.pdf}
+  \includegraphics[width=0.45\textwidth]{architecture/userArchitecture2.pdf}
   \\ 
   \scriptsize a) JPaxos client integrated with service client
   & & 
   \scriptsize b) JPaxos client integrated with the replica\\
  \end{tabular}
- \fcmfcaption{Two models of JPaxos}\label{fig:jpaxos_processes}
+ \caption{Two models of JPaxos}\label{fig:jpaxos_processes}
 \end{figure}
 
 The JPaxos \texttt{Client} is responsible for connecting to replicas, providing availability of service as the replica connected with the client crashes, and ensuring that the request will be eventually answered.
@@ -60,7 +60,8 @@ The JPaxos client module is a single, light-weight module that performs several 
 
 \subsection{Service}
 
-% TODO More information about service, service proxy, service interface, service module
+% TODO TZ More information about service, service proxy, service interface, service module
+% TODO TZ move ServiceProxy section here
 
 The Service module is the core part -- in fact it is the service that uses JPaxos for replication.
 In order to integrate a service with the library, it must implement an interface specified in JPaxos. The interface provides required communication between the library and the service.
@@ -104,7 +105,8 @@ Short description of the JPaxos modules goes as follows:
 \section{Storage and data structures}
 \label{sec:storage_and_data_structures}
 
-Apart of modules and interaction among them it is important to choose proper routines to access data. Both within modules as well as data shared across whole JPaxos.% TODO not English
+Apart of modules and interaction among them it is important to design proper routines for accessing the data.
+One should choose proper way of storing the data used in a single module, but much more challenging is to design proper structures and access methods for the data shared across JPaxos. Below we describe how we store most significant data in our library. %TODO TZ: Sprawdź proszę ten akapit
 
 \subsection{Process descriptor}
 
@@ -114,8 +116,8 @@ During the system startup, JPaxos reads a configuration file and initializes Pro
 \begin{tightList}[\setlength{\labelwidth}{0em}]
  \item[\textbf{crashModel}] the crash model (see chapter \ref{chapter:recovery})
  \item[\textbf{logPath}] path for the stable storage
- \item[\textbf{localId}] the number of replica % TODO
- \item[\textbf{numReplicas}] count of the replicas % TODO
+ \item[\textbf{localId}] the number of replica % TODO JK
+ \item[\textbf{numReplicas}] count of the replicas % TODO JK
  \item[\textbf{windowSize}] a preferred window size (see \ref{subsec:concurrent_instances})
  \item[\textbf{batchingLevel}] a maximum size of the batch (see \ref{sec:batching})
  \item[\textbf{maxBatchDelay}] delay for connecting requests for batching in milliseconds
@@ -153,10 +155,10 @@ The implementation decides which elements must be kept in the stable storage and
 The most important data structure for Paxos, the Log, is part of the \texttt{Storage}.
 In our program responsible for that is the \texttt{Log} interface and the \texttt{Con\-sen\-susInstance} class.
 
-\texttt{ConsensusInstance} is a class keeping all data related to a single instance of Paxos: % TODO
+\texttt{ConsensusInstance} is a class keeping all data related to a single instance of Paxos: % TODO TZ
 \begin{tightList}[\setlength{\itemindent}{0pt}\setlength{\leftmargin}{2\leftmargin}]
   \item[\textbf{view}] a view of the last received message related with this instance,
-  \item[\textbf{value}] the value which is held by this instance (i.e. packed requests that are received from clients and executed after deciding), %TODO deciding what
+  \item[\textbf{value}] the value which is held by this instance (i.e. packed requests that are received from clients and executed after deciding), %TODO TZ deciding what
   \item[\textbf{state}] the instance can be in one of three states:
   \item[\textbf{accepts}] set of known replicas which accepted the (view, value) pair.
   \begin{tightList}[\setlength{\itemindent}{0pt} \setlength{\labelwidth}{7em}]
@@ -166,9 +168,11 @@ In our program responsible for that is the \texttt{Log} interface and the \textt
   \end{tightList}
 \end{tightList}
 
-Theoretically \texttt{Log} should contain all instances from the first up to the current one. Of course, the implementation cannot provide this. The log must however contain all instances between the oldest still needed and current one. Only method that guarantees bounding the log (i.e. that count of needed instances will stay finite) is the ability to record a state of the Service periodically -- we call this functionality snapshotting (see \ref{sec:snapshotting}). % TODO rewrite
+\begin{TODO}
+Theoretically \texttt{Log} should contain all instances from the first up to the current one. Of course, the implementation cannot provide this. The log must however contain all instances between the oldest still needed and current one. Only method that guarantees bounding the log (i.e. that count of needed instances will stay finite) is the ability to record a state of the Service periodically -- we call this functionality snapshotting (see \ref{sec:snapshotting}). % TODO JK rewrite
+\end{TODO}
 
-The \texttt{Log} implementation always keeps all instances with id between \textbf{lowestAvailableId} (inclusive) and \textbf{nextId} (exclusive). Instances below \textbf{lowestAvailableId} have already been truncated and instances above \textbf{nextId} are yet unknown. %TODO define lowestAvailableId
+The \texttt{Log} implementation always keeps all instances with id between \textbf{lowestAvailableId} (inclusive) and \textbf{nextId} (exclusive). Instances below \textbf{lowestAvailableId} have already been truncated and instances above \textbf{nextId} are yet unknown. %TODO JK define lowestAvailableId
 
 New instances can be appended to the log and after this operation \textbf{nextId} value is increased by 1. \\Log also allows to retrieve instances from it. There are three possible cases when retrieving an instance with a specified id:
 \begin{itemize}
@@ -181,7 +185,7 @@ Old instances can be removed by truncating the log and after that lowestAvailabl
 Appending, retrieving and truncating instances are three main operations per\-for\-med by log.
 
 \subsection{Significant data structures}
-% TODO is the Thesis reader able to understand what are these?
+% TODO TZ is the Thesis reader able to understand what are these?
 % it it information for the JPaxos "user" or "developer"? Or it's documentation of JPaxos design
 
 
@@ -200,18 +204,18 @@ Other noteworthy data structures include:
 \section{Threads}
 \label{sec:threads}
 
-A proper design of a multi-threaded application % TODO what application
+A proper design of a multi-threaded application % TODO TZ what application
 must contain description of the major threads, their responsibilities and interactions. 
 
 \begin{description}
   \item[Replica] \hfill
     
-    Designed as an event loop. The thread % TODO what thread
+    Designed as an event loop. The thread % TODO TZwhat thread
     waits for new events at certain event queue and reacts on them.
 
     An event may either be a signal from Paxos about a new decision, or it may concern snapshotting, e.g. a new snapshot was made by service, the catch-up provided a new snapshot or a new snapshot has been requested from the service.
 
-    For most of the time Replica thread waits for requests to be ordered. If they can not be executed yet, it puts them on a list (it uses for that % TODO ??
+    For most of the time Replica thread waits for requests to be ordered. If they can not be executed yet, it puts them on a list (it uses for that % TODO TZ??
     the decidedWaitingExecution object).
     
     As for snapshotting -- the thread is a proxy ensuring linearizability in snapshot handling.
@@ -228,7 +232,7 @@ must contain description of the major threads, their responsibilities and intera
     Events are placed in the event queue in the following situations:
     
 
-    % TODO methods? that generate these events or what?
+    % TODO TZ methods? that generate these events or what?
     \begin{tabular}{rl}
       Recovery.NetworkListener & \begin{tabular}[t]{l}
                           received a new message \\
@@ -266,10 +270,10 @@ must contain description of the major threads, their responsibilities and intera
     \end{tabular}
 
 
-        % TODO What are these? (we should better describe what we want to present in this section and why)
+        % TODO TZ What are these? (we should better describe what we want to present in this section and why)
 	\item[NioClientManager] \hfill
 
-		By using java.nio package, we only need one thread \textsc{SelectorThread} to manage all clients connection. Every time a new event occurs (an incoming connection waits for accepting, data received from client, data ready to be sent) an appropriate action is executed. The current implementation allows easy scaling % TODO ??
+		By using java.nio package, we only need one thread \textsc{SelectorThread} to manage all clients connection. Every time a new event occurs (an incoming connection waits for accepting, data received from client, data ready to be sent) an appropriate action is executed. The current implementation allows easy scaling % TODO TZ ??
                 to more \textsc{SelectorThread}'s to balance the CPU load if one thread wouldn't cope with a large number of connections.
 
 	\item[UdpNetwork] \hfill
@@ -278,7 +282,7 @@ must contain description of the major threads, their responsibilities and intera
 
 	\item[TcpNetwork] \hfill
 
-		For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Also there is one thread which waits for new incoming connections. Overall we have  $2 \cdot \text{\textit{replica count}} - 1$ % TODO explain this in more detail
+		For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Also there is one thread which waits for new incoming connections. Overall we have  $2 \cdot \text{\textit{replica count}} - 1$ % TODO TZ explain this in more detail
                 threads handling TCP. Each of them can be in one of three states:
 		\begin{itemize}
 			\item connected, waiting for new messages,

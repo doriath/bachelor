@@ -1,4 +1,4 @@
-%TODO: introduce name JPaxos
+%TODO: JK introduce name JPaxos
 
 \chapter{Introduction}
 
@@ -15,19 +15,19 @@ We have chosen to implement one of the replication approaches -- one that we thi
 It is called active replication of services. In this approach each service replica does the same work. The replicas must behave identically, therefore we require the service to behave deterministically.
 
 Every library for replicating services should address its main purpose, i.e. to guarantee high availability of service as well as durability of the service work results
- -- while having minimum requirements for the environment. % ← TODO
+ -- while having minimum requirements for the environment. % ← TODO JK
 
-Our software design goal is to work well in real networks, % ← TODO
+Our software design goal is to work well in real networks, % ← TODO JK
 survive temporary network crashes and be able to recover from replica crashes as well.
 
 {
 \bfseries
 The goal of this bachelor's thesis is to create Java library implementing state machine replication. The library should support the crash-recovery model of failures and should tolerate message loss and communication delays.
-% TODO: ^^^^^^^^^^^^^^^
+% TODO: TZ
 }
 
 \section{Thesis organisation}
-Second part of this chapter % TODO
+Second part of this chapter % TODO TZ
 shortly characterizes articles concerning Paxos algorithm and presents the most significant definitions as well as theoretical results concerning Paxos.
 
 The second chapter provides description of Paxos algorithm used by us, including the modifications and implementation details.
@@ -38,7 +38,7 @@ Implemented features, chapter 4, is devoted to the implementation work related t
 
 Fifth chapter describes the recovery related issues, both for Paxos and for the state machine replication.
 
-The last chapter concludes the thesis. %TODO: finish as this will be written
+The last chapter concludes the thesis. %TODO: TZ finish as this will be written
 
 \section{Related work}
 
@@ -48,7 +48,7 @@ The Paxos and MultiPaxos algorithm have been proposed by L. Lamport in \textit{T
 
 Since then the Paxos protocol has been described from the theoretical point of view. Improvements and their proofs of correctness were presented as well as behaviour with byzantine crashes has been characterised.
 
-Some of the first real-world Paxos applications have been described in 2006 and 2007 (\textit{Paxos made\linebreak live}~\cite{CGR07}). The articles describe certain implementation issues concerning the Paxos algorithm in the Chubby distributed filesystem developed at Google.
+Some of the first real-world Paxos applications have been described in 2006 and 2007 (\textit{Paxos made live}~\cite{CGR07}). The articles describe certain implementation issues concerning the Paxos algorithm in the Chubby distributed filesystem developed at Google.
 
 A year later, in \textit{Paxos for system builders}~\cite{AK08}, the Paxos protocol has been described from programmer point of view.
 

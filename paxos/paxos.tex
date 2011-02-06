@@ -9,7 +9,7 @@ In order to simplify Paxos as well as for increased performance, the MultiPaxos 
 
 The phase of electing the current leader is described in the following section. When the leader is elected, it starts proposing new values submitted by clients.
 
-% TODO: jak działa Paxos
+% TODO: TZ jak działa Paxos
 
 \section{Leader Election}
 \label{sec:leader_election}
@@ -19,25 +19,25 @@ To decide who is the current leader, our algorithm is using the \textit{view} nu
 
 To detect if a leader is correct, a failure detector is used. In JPaxos this is done using heartbeats sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it has not sent any message during the last $\tau_0$ time.
 
-\begin{TODO} % TODO
+\begin{TODO} % TODO TZ
 When a replica does not receive a message from the leader for more than $\tau_1$ time, it suspects the leader and tries to become the new leader. This phase is called a \textbf{prepare phase}. The replica process advances to the next view where it is the leader and sends a \prepare message to all. For example, if \textit{view} = 5, \textit{n} = 3 and we are process with \textit{local id} = 1, we will advance \textit{view} to number 7 -- first view where process 1 is a leader.
 
 To become a leader, process needs to prepare the view. It sends the \prepare message to all processes with its new \textit{view}. Every process which received this message, advances its \textit{view} and responds with \prepareOK[]. When a process receives majority of \prepareOK message, it becomes a leader. Each \prepareOK message is a promise that the sender will drop all messages with lower view -- that means from old leaders or processes which do not know about the new leader.
 \end{TODO}
 
 
-\section{Propose Phase} % ← TODO
+\section{Propose phase} 
 
 Every process keeps track of already proposed as well as decided values in a log. A log is an ordered list of consensus instances -- triple \textit{<id, view, value>}. When a process is a leader, it can start a propose phase for a new value. To propose a value, the leader creates a new consensus instance with first available id, current view and the value to propose. Then it is sends all the data to all processes in a \propose message. Every process after receiving the \propose message saves it to its local log and sends the \accept message to all. When any process receives the majority of \accept messages, it marks the proposed value as decided. The value is then passed to the upper layers.
 
-% TODO #1
+% TODO TZ ^^^^^^
 
 \section{Division of responsibility}
 
 As introduced in \cite{Lam01}, the Paxos protocol tasks can be divided into three groups:
 \begin{description}
  \item[Proposer] is responsible for proposing the values in correct order. In JPaxos it takes the requests from the Replica and proposes them.
- % TODO #2
+ % TODO TZ ^^^^^^^^^^^^^
  
  \item[Acceptor] is a part of JPaxos that receives the \propose messages and responds to these messages according to the Paxos protocol -- i.e. when the view is not lower than current view.
  
@@ -45,7 +45,6 @@ As introduced in \cite{Lam01}, the Paxos protocol tasks can be divided into thre
 \end{description}
 
 Our implementation also uses this division in order to make the code more readable. Every process acts as Acceptor, Learner and Proposer.
-%TODO: the current leader also as.
 
 \section{Concurrent instances}
 \label{subsec:concurrent_instances}
@@ -70,7 +69,7 @@ The biggest problem connected with concurrent instances is the possibility of or
   \item [Scenario 1] $R_1$ is the leader, proposes (1:B). No other processes receives these messages and $R_2$ becomes the leader. $R_2$ proposes (1:C) and (2:B). (2:B) is decided. $R_2$ fails and $R_1$ becomes the leader again. While preparing, it learns about (2:B). It has (1:B) as a previously accepted value. The Paxos algorithm requires $R_1$ to propose (1:B) again, since its the accepted value with the highest timestamp, but this will result in the request being decided twice.
 
   \item [Scenario 2] After a view change, the new primary will know about any value that might have been decided on a previous instance but it might not know about values that were proposed, accepted by up to a minority of replicas but not decided. Suppose that in instance $i$, process $p_1$ had proposed request $R_1$ which was accepted by a minority of replicas. The new primary, $p_2$ doesn't learn about request $R_1$
-  so it proposes no-op for instance $i$. % TODO: why?
+  so it proposes no-op for instance $i$. % TODO: TZ why?
   More or less at the same time, the client resends the request $R_1$ to the new primary, which proposes it and gets it accepted as instance $i+2$, before the no-op request for instance $i$ being accepted. Process $p_2$ crashes and $p_1$ takes over again. Since $p_2$ didn't manage to get no-op accepted for instance $i$, $p_1$ proposes $R_1$ again which ends up being ordered both as instance $i$ and $i+2$.
 \end{description} 
 
@@ -99,7 +98,7 @@ As already mentioned, using the concurrent instances will improve latency and th
 
 In full-duplex networks, concurrent instances will improve network utilisation, because when the leader is waiting for replies, the network from the leader to the others is idle, so it can be used to send the next request. 
 
-% TODO: ↓ 
+% TODO: TZ ↓
 \paragraph{Batching} is another method for improving performance and network usage. It is preferred over increasing the concurrent instances count, however
 the benchmarks show % ← TODO:
 that joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
@@ -108,7 +107,7 @@ that joining these two methods is better than any of them alone. Batching is des
 
 The best method to understand the problem is to analyze the scenario below:
 
-\begin{TODO} % TODO:
+\begin{TODO} % TODO: TZ
 
 We have three replicas $R1$, $R2$ and $R3$. Replica $R1$ is the leader and proposes {1:A} and {2:B}. Value {2:B} was decided by all replicas, but {1:A} was lost. $R1$ crashes and $R2$ becomes a new leader. After preparing $R2$ has a gap in log because no information about instance 1 was received.
 
@@ -136,22 +135,23 @@ Especially the latter is problematic. The view change always requires a bounded 
 
 A command can be deleted from the log after being executed by all replicas in crash-stop and crash-recovery models with stable storage. The highest instance executed by all replicas is called a \emph{global commit point}.
 
-But the rule above % TODO what rule
+But the rule above % TODO JK what rule
 is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for some time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime. If one replica crashes, the other replicas have no way of knowing that it is a crash and not a disconnection, so they would have to keep the logs forever. And the replica can stay crashed for arbitrary long time.
 
 Therefore using snapshotting is the only acceptable solution in JPaxos.
 
 \paragraphNewline{Snapshotting} 
-% TODO what is snapshotting (write one - two sentences of introduction)
+% TODO JK what is snapshotting (write one - two sentences of introduction)
 
 In order to be able to remove stale log entries snapshotting has to be implemented. It also speeds up the recovery and process of filling missing instances.
 
-% TODO rewrite
+\begin{TODO} % TODO JK rewrite
 The size of a snapshot is bounded, as the state machine must be implemented with the assumption of bounded memory, and the snapshot may be just the processes memory image. The size of the log is bounded as well -- we create a new snapshot as log size reaches some limit.
 
 Upon reaching the limit of the log, a new snapshot with full state is created and the old logs are truncated -- even if some other replica does not have them yet. When a replica that is missing old logs rejoins, the most recent snapshot is transferred first and later all the decisions from the top of the log that were not yet applied to the state.
 
 The problematic part here is the Service -- if the application using JPaxos library does not implement creating snapshots or does not provide them often enough, the log will grow forever.
+\end{TODO}
 
 Snapshotting is described in details in the section \ref{sec:snapshotting}.
 
@@ -164,7 +164,7 @@ It has been proven for the Paxos consensus algorithm that it minimises the numbe
 
 Another optimisation is merging the role of \accept and \textsc{Propose}. As long as acceptors and proposes do not share the log this is not allowed. But if their knowledge is identical and the leader proposed some value, then he must accept it as well. In most solutions one node acts as proposer and acceptor, and they do share the log.
 
-So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- he knows that the leader and it itself % TODO ??
+So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- he knows that the leader and it itself % TODO TZ ??
 accept the message. Normally the leader process has to first send \propose to all and later \accept to all. By this optimisation only half of messages is required to be sent.
 
 \paragraphNewline{Sending to itself}
@@ -177,21 +177,21 @@ This does not influence performance much, however it is recommended as it decrea
 
 \paragraphNewline{Minimizing the count of messages carrying the value}
 
-Most of the articles about Paxos state that the \accept message carries the value. % TODO what value
+Most of the articles about Paxos state that the \accept message carries the value proposed by proposer. %TODO: TZ
 In such case we can accept the value even without receiving a \propose message.
 
 The value usually is bigger than a normal message of JPaxos. Because of that we want to minimize number of message which contain the value.
 In JPaxos the \accept message does not carry the value. Before a process can send the \accept message it has to receive the \propose message. The process decides upon a value if it receives a \propose and majority of \accept messages.
 
-Waiting for the \propose message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. % TODO why? explain
+Waiting for the \propose message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. % TODO JK why? explain
 Also usually the \propose will be delivered before any \accept message.
 
 \paragraphNewline{Best-case messages}
 \label{par:bestCaseMessages}
 So, in the normal operation in JPaxos:
 
-% TODO Value - value to be agreed upon?
-% TODO what are the numbers inside table the number of messages sent
+% TODO JK Value - value to be agreed upon?
+% TODO JK what are the numbers inside table the number of messages sent
 \begin{tabular}{llllll}
           & Processes & Count & Time & Message  & Value  \\
  Proposer & $1$       & $n-1$ & $n$  & \propose & yes    \\
@@ -200,7 +200,7 @@ So, in the normal operation in JPaxos:
 
 We can see that in order to decide the process needs to send the \propose[] once, and later each not-leader process sends the \accept to others.
 
-Other implementations consider using bounded learner count % TODO can't understand what you mean
+Other implementations consider using bounded learner count % TODO JK can't understand what you mean
 -- so that an acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by learners to all as the ballot has finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
 
 An interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP multicast is used for all broadcasts, what significantly increases the scalability and performance.

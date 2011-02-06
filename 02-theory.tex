@@ -3,10 +3,10 @@
 \section{Definitions}
 
 In order to prevent misunderstandings and to clarify the subject of the thesis we begin from introducing
-basic % TODO lepszy odpwoednik 
+basic % TODO -- lepszy odpwoednik 
 terms that we use in the reminder of this thesis.
 
-% TODO: 
+% TODO: JK
 % 1) correct process
 % 2) snapshot
 % 3) batching (?)
@@ -78,13 +78,10 @@ Sometimes also \textbf{volatile storage} name is used, to name memory that does 
 
 The consensus problem is not solvable in an asynchronous system where at least one process may crash and processes communicates by sending messages. This fact has been proved in the \cite{FLP}.
 
-Therefore some assumptions concerning time must be made. In this thesis we assume that if a message is not lost, it will reach its target in finite time.
-% TODO ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 \paragraphNewline{Number of messages}
 
 In the best case no algorithm is able to solve consensus in time less than $1n+1$, that is one message with the value and one message not carrying the dataload, where $n$ is the time of transferring a message carrying data, and $1$ is time of transferring a protocol message without the data.
-% TODO ^^^^^^^^^^^^^^^^^^^
+% TODO JK ^^^^^^^^^^^^^^^^^^^
 
 Our implementation, as described in section \ref{par:bestCaseMessages}, is theoretically able to decide messages in $n+1$ time. Moreover, assuming no network congestion and message loss the average time is equal to the best-case time.
 

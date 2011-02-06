@@ -25,15 +25,15 @@ This method assumes that the local system timer is not set back into past and al
 Because time-based assumptions sometimes cannot be guaranteed, another approach for the crash-recovery model may be considered. Instead of adding information about start time, we can add the current view number. In each view, there is exactly one leader -- so after the prepare phase this replica can grant clients IDs as pair (view, sequence number). Two different replicas cannot start the same view.
 Also we have to guarantee that only the leader replica after prepare phase can grant new client IDs.
 
-This approach will also work by using the epoch numbers -- if a leader crashes, the view must be increased by his recovery. % TODO
+This approach will also work by using the epoch numbers -- if a leader crashes, the view must be increased by his recovery. % TODO TZ
 
 
 \section{Catch-up}
 \label{sec:catch_up}
-%TODO should it be here ?
+%TODO TZ should it be here ?
 
 \paragraphNewline{Motivation}
-% TODO rewrite - reader can't understand what catch-up is from this text 
+% TODO TZ rewrite - reader can't understand what catch-up is from this text 
 Paxos must guarantee that every valid replica will eventually decide. Most papers about Paxos state that if a replica notices the lack of activity for some instance, it must send a new proposal and eventually decide. But by using view for all instances, this would mean often view changes -- and this contradicts performance.
 
 Therefore a different approach is used by us. Notice, that if the leader is correct, it will decide. If it has crashed a new leader will be elected. If the leader is correct, and no activity about an instance is noticed, that means the value is already decided and the replica is in the minority that does not know about the decision.
@@ -111,8 +111,7 @@ The \textsc{timeout} event is caused either if problems with network occur, or i
 
 This method, as well as the method described earlier, may be used in case when operations on state machine require long processing. The risk of loosing small bandwidth for catch-up may be small enough compared to earlier arrival time of resource-consuming task.
 
-The \textsc{window} method is only one guaranteed, % TODO what means guaranteed?
-because of it's assumption: the algorithm uses a window of the maximum size $ws$. If the condition that all decisions outside the window must be decided is violated on one replica, it means that other replicas, at least the current leader, has already decided the instance. This means no new messages concerning the ballot will emerge, and catch-up is necessary.
+The \textsc{window} method is very useful because of its assumption: the algorithm uses a window of the maximum size $ws$. If the condition that all decisions outside the window must be decided is violated on one replica, it means that the other replicas, at least the current leader, have already decided the instance. This means no new messages concerning the ballot will emerge, and catch-up is necessary.
 
 A different problem is when a replica doesn't know that the instance already exists (for example, a short-time netsplit or bad luck caused all messages for the replica to be dropped). In this case, the catch-up should be started as well. 
 Either periodic requests must be sent, or additional information must be acquired. It should be emphasised, that as any newer ballot starts, the replica is informed about the existence of missing instance. 
@@ -138,7 +137,7 @@ Choice of the transport layer must take into account characteristics of this mec
 
 Both TCP and UDP may be used -- both having their pros and cons, presented in table below
 
-% TODO
+% TODO TZ
 \begin{center}
 \begin{tabular}{>{\raggedleft\hspace{0pt}}m{0.47\textwidth}m{0.47\textwidth}}
 
@@ -189,12 +188,12 @@ This ensures that the replica will catch-up eventually, even if there are no new
 There are three messages that may be sent during the algorithm: \catchUpQuery[], \catchUpResponse and \catchUpSnapshot[].
 \begin{description}
  \item[\normalfont\catchUpQuery -] a request for missing instances. It carries a list of missing ID's and may have one of two flags set: the first flag indicates if this was a periodical catch-up, second one -- 
- if we want to get the last snapshot, not the missing log fragment. % TODO ?
+ if we want to get the last snapshot, not the missing log fragment. % TODO TZ ?
  \item[\normalfont\catchUpResponse -] response sent for every received request. It has a list of decided instances for requested numbers. The list may be empty. This message may have two flags: 
- either if the query had periodical flag set % TODO ?
+ either if the query had periodical flag set % TODO TZ ?
  , or an indicator that the replica doesn't have an old enough log, and 
- state transfer is the only possibility. % TODO ?
- \item[\normalfont\catchUpSnapshot -] if another replica asked for our last snapshot, this message is sent. It contains only responders last snapshot. % TODO ?
+ state transfer is the only possibility. % TODO TZ ?
+ \item[\normalfont\catchUpSnapshot -] if another replica asked for our last snapshot, this message is sent. It contains only responders last snapshot. % TODO TZ ?
 \end{description}
 
 The list describing missing instances is constructed by replica in straightforward way: it contains all undecided instance numbers plus the (highestID+1) as the first instance, the replica has no knowledge about. The responder sends therefore all decided instances from the list and all decided instances that are higher or equal the additional number.
@@ -267,8 +266,7 @@ As for recovery, we get the best recovery result if the snapshot would be done e
 This, of course, is not the solution. It would completely decrease the throughput -- snapshot creation is resource-consuming.
 
 For the catch-up the moment when another replica requests snapshot is the best for creating one. 
-However, we should not demand creating snapshot when we want to % TODO ?
-, so it's better to rely on the service programmer.
+However some services cannot create snapshot anytime. So demanding a snapshot from the service is not acceptable.
 
 For truncating the log the snapshot should be created periodically, without any additional requirements.
 
@@ -276,15 +274,15 @@ Therefore we assume the snapshot should be made when the cost of catch-up from t
 
 Please note, that catch-up time also includes time of state/log transfer.
 
-\subsection{Replica vs state machine responsibility}
+\subsection{Replica vs. service responsibility}
 \label{subsec:replica_vs_state_machine_responsibility}
-There are two approaches to the problem who is in charge with snapshot creation. Either the replica issues a snapshot, or the state machine chooses an appropriate moment and forwards the state to replica. % TODO which replica
+There are two approaches to the problem who is in charge for the initiating of snapshot creation. Either the JPaxos \texttt{Replica} module issues a snapshot, or the service chooses an appropriate moment.
 
-Embedding this functionality into replicas will surely provide more secure work (the state machine may simply not deliver the snapshots, which means forever growing log). It is easier for a replica to measure the size of messages that should be transferred in order to catch-up (or recover).
+Embedding this functionality into JPaxos would surely provide more secure work (the service may simply not deliver the snapshots, which means forever growing log). It is easier for the \texttt{Replica} to measure the size of messages that should be transferred in order to catch-up (or recover).
 
-However, the replica does not know anything about the state machine. We can also assume, that the service is not aware of network conditions. Therefore choosing the proper moment (when the cost of log-based catch-up becomes more expensive than the state-based catch-up) is impossible for both. It is clearly visible, that state machine is better informed - it knows not only the size of requests, but also it may estimate the size of it's current state and resources that are needed to execute all commands from the log.
+However, JPaxos does not know anything about the service. We can also assume, that the service is not aware of network conditions. Therefore choosing the proper moment (when the cost of log-based catch-up becomes more expensive than the state-based catch-up) is impossible for both. It is clearly visible, that service is better informed -- it knows not only the size of requests, but also it may estimate the size of its current state and resources that are needed to execute all commands from the log.
 
-The latter is most significant difference: replica has no idea how long the log execution from previous snapshot would take. It seems possible to estimate this: measuring time between a request and reply to that request might solve the problem. But such estimate can give mistaken results, especially in a multi-process environment. If another process is consuming CPU, or the replica waits a long time for granting some resources (like an access to a file or even a printer), the estimate surely will not reflect the real value.
+The latter is most significant difference: JPaxos has no idea how long the log execution from previous snapshot would take. It seems possible to estimate this: measuring time between a request and reply to that request might solve the problem. But such estimate can give mistaken results, especially in a multi-process environment. If another process is consuming CPU, or the replica waits a long time for granting some resources (like an access to a file or even a printer), the estimate surely will not reflect the real value.
 
 Below we present a table showing in compact way the state of knowledge needed to select the best moment for a next snapshot:
 
@@ -292,14 +290,14 @@ Below we present a table showing in compact way the state of knowledge needed to
 \small \centering
 \begin{tabular}{r|c|c|}
 \cline{2-3}
- & State machine & Replica \\ \hline 
+ & Service & JPaxos \texttt{Replica} \\ \hline 
 \multicolumn{1}{|r|}{Size of requests} & known & known \\ \hline
 \multicolumn{1}{|r|}{Size of state } & known & estimate \\ \hline
 \multicolumn{1}{|r|}{Log execution time} & good estimate & poor estimate \\ \hline
 \multicolumn{1}{|r|}{Time for sending message} & unknown & estimate \\ \hline
 %\multicolumn{1}{|r|}{ × } & × & × \\ \hline
 \end{tabular}
-\caption{Comparing knowledge of the service and the replica}
+\caption{Comparing knowledge of the service and the \texttt{Replica}}
 \vspace{-1em}
 \end{table}
 
@@ -346,23 +344,20 @@ On the other side, the message size is getting bigger -- and that means slower v
 
 Here arises a question: how many requests to batch? One boundary is quite obvious -- a serialized message should not be bigger than the transport protocol frame size. As for UDP the size is about 65kB, but for TCP stays unbounded.
 
-From the benchmarks %TODO: referenc on nuno (?)
-we can see that best performance and latency is achieved as the batching size is set to the minimal size when all available bandwidth is used.
+The network bandwidth is the upper bound of peformance. Increasing the size of the instance value does not change the CPU time needed to decide on this instance. So the best performance is achieved as the batching size is set to the minimal size when all available bandwidth is used.
 
-Another problem concerns the proposer: should there be a lower limit of requests in one instance? Doing so we require waiting for new clients to come. Not waiting means sometimes severe throughput loss.
+Another problem concerns the proposer: should there be a lower limit of requests in one instance? Doing so implies waiting for new client requests to come. Not waiting means sometimes severe throughput loss.
 
-If we had a single request only, just waiting for an other % TODO ??
-would cause endless waiting. So a timeout is needed here.
+A new request may come a long time after we begun gathering the requests for batching -- and that would cause an unacceptable delay. So if we choose to wait for new client requests, we need to set up a timeout after which we stop waiting for the new requests and start deciding the requests we manged to gather. %TODO TZ: Sprawdź proszę ten akapit
 
-If we decide not to wait at all -- we're packing all the proposer got until now into a single request (if it fits, of course). Such approach guarantees good behaviour if the system state is not changing -- under load, usually we're unable to pack all requests we got, while with small amount of requests no delay by packing decreases the latency.
+If we decide not to wait at all we are packing all client requests we got until now into a single request (if it fits, of course). Such approach guarantees good behaviour if the system state is not changing. Under load  we are usually unable to pack all requests we got into single instace, while with small amount of requests no delay by packing decreases the latency.
 
 Both the batching size and the timeout for gathering requests in a batch is configurable in our library.
 
 \section{Service Proxy}
 \label{sec:serviceProxy}
 
-Some operations on services require proper arguments. Should a service be responsible for that? Batching causes that the snapshot can be made after full instances % TODO
-, and not after each request. Should a service take care  for that?
+Some operations on services require proper arguments. Should a service be responsible for that? Snapshot cannot represent the state after executing any request, but only after executing the last request in any instance. Should a service take care for that?
 
 This is not desired. We want to provide as much transparency as possible, without forcing the service to remember redundant data.
 
