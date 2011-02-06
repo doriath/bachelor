@@ -116,8 +116,8 @@ During the system startup, JPaxos reads a configuration file and initializes Pro
 \begin{tightList}[\setlength{\labelwidth}{0em}]
  \item[\textbf{crashModel}] the crash model (see chapter \ref{chapter:recovery})
  \item[\textbf{logPath}] path for the stable storage
- \item[\textbf{localId}] the number of replica % TODO JK
- \item[\textbf{numReplicas}] count of the replicas % TODO JK
+ \item[\textbf{localId}] the identification number of the replica
+ \item[\textbf{numReplicas}] count of the replicas
  \item[\textbf{windowSize}] a preferred window size (see \ref{subsec:concurrent_instances})
  \item[\textbf{batchingLevel}] a maximum size of the batch (see \ref{sec:batching})
  \item[\textbf{maxBatchDelay}] delay for connecting requests for batching in milliseconds
@@ -156,33 +156,42 @@ The most important data structure for Paxos, the Log, is part of the \texttt{Sto
 In our program responsible for that is the \texttt{Log} interface and the \texttt{Con\-sen\-susInstance} class.
 
 \texttt{ConsensusInstance} is a class keeping all data related to a single instance of Paxos: % TODO TZ
+
 \begin{tightList}[\setlength{\itemindent}{0pt}\setlength{\leftmargin}{2\leftmargin}]
   \item[\textbf{view}] a view of the last received message related with this instance,
   \item[\textbf{value}] the value which is held by this instance (i.e. packed requests that are received from clients and executed after deciding), %TODO TZ deciding what
   \item[\textbf{state}] the instance can be in one of three states:
-  \item[\textbf{accepts}] set of known replicas which accepted the (view, value) pair.
   \begin{tightList}[\setlength{\itemindent}{0pt} \setlength{\labelwidth}{7em}]
     \item[\texttt{\tiny UNKNOWN}] no information about the value of this instance,
     \item[\texttt{\tiny KNOWN}] a view and value are specified and \textbf{can} be changed later,
     \item[\texttt{\tiny DECIDED}] a value is already chosen and \textbf{cannot} be changed.
   \end{tightList}
+  \item[\textbf{accepts}] set of known replicas which accepted the (view, value) pair.
 \end{tightList}
 
-\begin{TODO}
-Theoretically \texttt{Log} should contain all instances from the first up to the current one. Of course, the implementation cannot provide this. The log must however contain all instances between the oldest still needed and current one. Only method that guarantees bounding the log (i.e. that count of needed instances will stay finite) is the ability to record a state of the Service periodically -- we call this functionality snapshotting (see \ref{sec:snapshotting}). % TODO JK rewrite
-\end{TODO}
+Theoretically \texttt{Log} should contain all instances from the first up to the current one.
+Of course such data structure cannot be implemented. The log must be bounded, however it must contain all instances that are still needed. The question is which instances are still needed and which may be truncated.
 
-The \texttt{Log} implementation always keeps all instances with id between \textbf{lowestAvailableId} (inclusive) and \textbf{nextId} (exclusive). Instances below \textbf{lowestAvailableId} have already been truncated and instances above \textbf{nextId} are yet unknown. %TODO JK define lowestAvailableId
+Without the snapshotting (see \ref{sec:snapshotting}) every instance must be kept in log. With snapshotting only the instances since the last snapshot are needed. The instance with lowest ID that is still needed is the first instance that should be executed after updating the service state to the state from the last snapshot. This instance is the lowest instance that always is present in the log -- therefore we call it the lowest availabile one. The \textit{lowestAvailableId} is the ID of this instance.
 
-New instances can be appended to the log and after this operation \textbf{nextId} value is increased by 1. \\Log also allows to retrieve instances from it. There are three possible cases when retrieving an instance with a specified id:
-\begin{itemize}
-  \item (id $<$ lowestAvailableId) -- instance has been truncated and null value is returned,
-  \item (lowestAvailableId $\leq$ id $<$ nextId) -- instance is inside log so it is returned,
-  \item (nextId $\leq$ id) -- empty instances between nextId and id are created and an empty instance is returned.
-\end{itemize}
-Old instances can be removed by truncating the log and after that lowestAvailableId is increased. 
+The smallest yet unused instance ID is called by us the \textit{nextId}, as it will be the ID assigned to the next instance.
+
+The \texttt{Log} implementation always keeps all instances with ID between \textit{lowestAvailableId} (inclusive) and \textit{nextId} (exclusive). Instances below \textit{lowestAvailableId} have already been truncated and instances above \textit{nextId} are yet unknown.
 
 Appending, retrieving and truncating instances are three main operations per\-for\-med by log.
+
+New instance can always be appended to the log and after this operation \textit{nextId} value is increased by 1. 
+
+\noindent There are three possible cases of retrieving an instance with a specified \textit{id}:
+\begin{tightList}
+  \item[\textbullet] (\textit{id} $<$ \textit{lowestAvailableId}) -- instance has been truncated and null value is returned,
+  \item[\textbullet] (\textit{lowestAvailableId} $\leq$ \textit{id} $<$ \textit{nextId}) -- instance is inside log so it is returned,
+  \item[\textbullet] (\textit{nextId} $\leq$ \textit{id}) -- empty instances between \textit{nextId} and \textit{id} are created and the empty instance with ID \textit{id} is returned.
+\end{tightList}
+
+\noindent Old instances can be removed by snapshotting only. When the replica receives a new snapshots, the log is truncated and the \textit{lowestAvailableId} is increased.
+
+
 
 \subsection{Significant data structures}
 % TODO TZ is the Thesis reader able to understand what are these?
