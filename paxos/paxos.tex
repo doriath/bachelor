@@ -110,52 +110,53 @@ The easiest solution is to create new request type called no-op, which is null o
 
 The replicated log cannot be allowed to grow forever, it must be bounded in any practical system. After any replica executes some command, it no longer needs the corresponding log entry locally. But other replicas may not have learnt the decision yet. In this case, these late replicas need to learn the decision by asking the corresponding log entry from a replica that still has it.
 
-In JPaxos the Paxos protocol is not used for getting lost requests -- from performance reasons we use the process called \textit{catch-up}, which is described in section \ref{sec:catch_up}.
+In JPaxos the Paxos protocol is not used for getting lost requests due to performance reasons. For this we use a special procedure called \textit{catch-up}, which is described in section \ref{sec:catch_up}.
 
-So having the old log is needed for view change and, in the crash-recovery model, for recovery.
+So having the old log is needed for view change and, in the crash-recovery model, for recovery. % TODO unclear, explain more
 
-Especially the latter is problematic. The view change requires always bounded number of instances in log. But if we assume recovery with minimal or no stable storage (as the Epoch based or View based ones), after the recovery a replica needs to recover the state from scratch. For this, it needs whole log -- or the state itself.
+Especially the latter is problematic. The view change always requires a bounded number of instances in the log. But if we assume recovery with minimal or no stable storage (as in the case of the epoch based or view based recovery algorithm), after the recovery a replica needs to recover the state from scratch. For this, it needs the whole log or complete state.
 
 \paragraphNewline{Global Commit Point}
 
-A command can be deleted from the log after being executed by all replicas in Crash-stop and Crash-recovery with stable storage models. The highest instance executed by all replicas is called \emph{global commit point}.
+A command can be deleted from the log after being executed by all replicas in crash-stop and crash-recovery models with stable storage. The highest instance executed by all replicas is called a \emph{global commit point}.
 
-But the rule above is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for some time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime. If one replica crashes, the other replicas have no way of knowing that it is a crash and not a disconnection, so they would have to keep the logs forever. And the replica can stay crashed for arbitrary long time.
+But the rule above % TODO what rule
+is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for some time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime. If one replica crashes, the other replicas have no way of knowing that it is a crash and not a disconnection, so they would have to keep the logs forever. And the replica can stay crashed for arbitrary long time.
 
 Therefore using snapshotting is the only acceptable solution in JPaxos.
 
-\paragraphNewline{Snapshotting}
+\paragraphNewline{Snapshotting} 
+% TODO what is snapshotting (write one - two sentences of introduction)
 
 In order to be able to remove stale log entries snapshotting has to be implemented. It also speeds up the recovery and process of filling missing instances.
 
-Upon reaching the limit of the log, new snapshot with full state is created and the old logs are truncated -- even if some other replica doesn't have them yet. When a replica that is missing old logs rejoins, most recent snapshot is transferred first, later all the decisions from the top of the log that were not yet applied to the state.
+% TODO rewrite
+The size of a snapshot is bounded, as the state machine must be implemented with the assumption of bounded memory, and the snapshot may be just the processes memory image. The size of the log is bounded as well -- we create a new snapshot as log size reaches some limit.
 
-The size of snapshot is bounded, as the state machine must be implemented with the assumption of bounded memory, and the snapshot may be just the processes memory image. The size of the log is bounded as well -- we create new snapshot as log size reaches some limit.
+Upon reaching the limit of the log, a new snapshot with full state is created and the old logs are truncated -- even if some other replica does not have them yet. When a replica that is missing old logs rejoins, the most recent snapshot is transferred first and later all the decisions from the top of the log that were not yet applied to the state.
 
-The problematic part here is the Service -- if the JPaxos library user will not implement creating snapshots or will nor provide them often enough, the log will grow forever.
+The problematic part here is the Service -- if the application using JPaxos library does not implement creating snapshots or does not provide them often enough, the log will grow forever.
 
 Snapshotting is described in details in the section \ref{sec:snapshotting}.
 
 \section{Skipping redundant messages}
-Reducing number of messages is one of the most efficient optimisation. In JPaxos we do not send messages to self, also the proposer doesn't send \accept messages.
+Reducing the number of messages is one of the most efficient optimisations. In JPaxos a process does not send messages to itself, also the proposer does not send \accept messages to anyone.
 
-It has been proven for Paxos consensus algorithm that it minimises the count of messages carrying value (client request in our case). The value is sent only once to each replica (not counting retransmission due to message loss). As for additional messages, their count varies among the certain implementations. Some of messages proposed in the typical implementation may be easily skipped without violating guarantees or adding assumptions.
+It has been proven for the Paxos consensus algorithm that it minimises the number of messages carrying a value to be agreed upon (the client request in our case). The value is sent only once to each replica (not counting retransmission due to message loss). As for additional messages, their count varies among certain implementations. Some of messages proposed in the typical implementation may be easily skipped without violating guarantees or adding any assumptions.
 
-\paragraphNewline{Sending to self}
+\paragraphNewline{Sending to itself}
 
-As stated before, the Paxos can be divided into Proposer, Acceptors and Learners. Processes or some of their parts act as one of them. In order to communicate they must send messages to each other.
+As stated before, Paxos defines three types of roles: proposers, acceptors and learners. Processes or some of their parts act as one of them. In order to communicate they must send messages to each other.
 
 In our program every node consists of a (probable) proposer, acceptor as well as learner. In this case there is no need to send messages to self. Especially all send-to-all commands may be replaced by send to others command, as long as the communication with self will be done internally. This skips one \accept and one \propose sent by the leader, and one \accept by all other processes.
 
-This does not influence the performance much, however it is recommended as it decreases system -- especially networking stack -- usage. It also skips a few system calls.
+This does not influence performance much, however it is recommended as it decreases the use of system resources (especially the networking stack). It also skips a few system calls.
 
 \paragraphNewline{Using {\normalfont\propose}as {\normalfont\accept}}
 
-More important optimisation is merging the role of \accept and \textsc{Propose}. As long as acceptors and proposes do not share the log this is not allowed. But if their knowledge is identical and the leader proposed some value, then he must accept it as well. In most solutions one node acts as proposer and acceptor, and they do share the log.
+Another optimisation is merging the role of \accept and \textsc{Propose}. As long as acceptors and proposes do not share the log this is not allowed. But if their knowledge is identical and the leader proposed some value, then he must accept it as well. In most solutions one node acts as proposer and acceptor, and they do share the log.
 
-So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- he knows that the leader and it itself accept the message. Normally the leader process has to send \propose to all first, later \accept to all. By this optimisation we are required to send the half of messages only.
-
-This is a serious gain, clearly visible during benchmarks.
+So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- he knows that the leader and it itself accept the message. Normally the leader process has to first send \propose to all and later \accept to all. By this optimisation only half of messages is required to be sent.
 
 \paragraphNewline{Minimizing messages with value}
 
@@ -163,20 +164,23 @@ Most of the articles about Paxos state that the \accept message carries the valu
 
 Each processes in JPaxos waits not only for the majority of accepts, but before it sends the \accept message, it must receive a \propose with the value. So if a process accepts an instance, it already knows the value.
 
-Waiting for another message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. Also usually the \propose will be delivered before any \accept message.
+Waiting for another message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. % TODO why? explain
+Also usually the \propose will be delivered before any \accept message.
 
 \paragraphNewline{Best-case messages}
 \label{par:bestCaseMessages}
-So, in normal operation in JPaxos:
+So, in the normal operation in JPaxos:
 
+% TODO Value - value to be agreed upon?
+% TODO what are the numbers inside table the number of messages sent
 \begin{tabular}{llllll}
           & Processes & Count & Time & Message  & Value  \\
  Proposer & $1$       & $n-1$ & $n$  & \propose & yes    \\
  Acceptor & $n-1$     & $n-1$ & 1    & \accept  & no
 \end{tabular}
 
-We can see that in order to decide we need to send once the \propose[], and later each not-leader process sends the \accept to others.
+We can see that in order to decide the process needs to send the \propose[] once, and later each not-leader process sends the \accept to others.
 
-Other implementations consider using bounded learner count -- so that a acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by learners to all as the ballot has finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
+Other implementations consider using bounded learner count -- so that an acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by learners to all as the ballot has finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
 
-Interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP multicast is used for all broadcasts, what massively increases the scalability and performance.
+An interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP multicast is used for all broadcasts, what significantly increases the scalability and performance.
