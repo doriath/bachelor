@@ -164,7 +164,7 @@ In recovery phase the process first notifies the majority of other replicas abou
 
 On normal execution this algorithm should be as fast as crash-stop model. The size of \prepareOK message is increased by epoch vector which contains $n$ numbers but it shouldn't have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
 
-\subsection{Example}
+\subsection*{Example}
 
 Let's analyze one example to better understand this algorithm. Assume that we replicate service on $n = 5$ replicas. All processes are numbered from 0 to 4, have initial epoch vector $[0, 0, 0, 0, 0]$, are initially correct and are in view 4 (where process 4 is a leader).
 
