@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.0
-lastDocument=main.tex
+lastDocument=paxos/paxos.tex
 masterDocument=
 name=inz
 pkg_extIsRegExp=false
@@ -17,19 +17,19 @@ QuickBuild=
 
 [item:01-introduction.tex]
 archive=true
-column=250
+column=28
 encoding=UTF-8
 highlight=LaTeX
-line=6
+line=0
 open=true
-order=6
+order=2
 
 [item:02-theory.tex]
 archive=true
-column=72
+column=43
 encoding=UTF-8
 highlight=LaTeX
-line=79
+line=84
 open=false
 order=2
 
@@ -48,7 +48,7 @@ column=46
 encoding=UTF-8
 highlight=LaTeX
 line=26
-open=true
+open=false
 order=5
 
 [item:0a-zalacznik.tex]
@@ -71,11 +71,11 @@ order=3
 
 [item:architecture/architecture.tex]
 archive=true
-column=3
+column=7
 encoding=UTF-8
 highlight=LaTeX
-line=17
-open=true
+line=97
+open=false
 order=3
 
 [item:bibliography.bib]
@@ -93,15 +93,15 @@ column=0
 encoding=UTF-8
 highlight=LaTeX
 line=299
-open=true
+open=false
 order=2
 
 [item:main.tex]
 archive=true
-column=54
+column=7
 encoding=UTF-8
 highlight=LaTeX
-line=0
+line=122
 open=true
 order=0
 
@@ -110,16 +110,16 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=169
+line=21
 open=true
-order=7
+order=1
 
 [item:ppfcmthesis.cls]
 archive=true
-column=11
+column=25
 encoding=UTF-8
 highlight=LaTeX
-line=163
+line=2
 open=false
 order=-1
 
@@ -129,7 +129,7 @@ column=178
 encoding=UTF-8
 highlight=LaTeX
 line=260
-open=true
+open=false
 order=4
 
 [item:user_guide/JPaxos.tex]
@@ -138,5 +138,5 @@ column=1
 encoding=UTF-8
 highlight=LaTeX
 line=180
-open=true
+open=false
 order=1

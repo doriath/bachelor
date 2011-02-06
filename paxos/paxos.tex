@@ -1,58 +1,67 @@
 \chapter{Paxos}
 
-In this chapter we provide some background for Paxos and MultiPaxos algorithm. We start with introduction to Paxos and MultiPaxos protocol. Then we describe the problems we encounter while implementing them and performance improvements we made.
+In this chapter we provide some background on the Paxos and MultiPaxos algorithm. We start with the introduction to the Paxos and MultiPaxos protocol. Then we describe the problems we encountered while implementing these protocols and performance improvements that we made.
 
 \section{Overview}
-Paxos algorithm is used to solve consensus problem in distributed system. $n$ processes tries to decide upon the same value, which was proposed by one of them. Paxos does not need a coordinator, however a processes may consider himself a leader for a certain time for specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
+The Paxos algorithm is used to solve consensus problem in a distributed system. Consider $n$ processes that try to decide upon the same value which was proposed by one of them. Paxos does not need a coordinator, however some process may consider itself a leader for a certain time for a specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
 
-In order to simplify the Paxos as well as for increased performance, MultiPaxos improvements proposed in \cite{Lam01} introduces one leader for all ballots.
+In order to simplify Paxos as well as for increased performance, the MultiPaxos protocol has been proposed \cite{Lam01}. It introduces one leader for all ballots.
 
-The phase of electing the leader is described in following section. When the leader is elected, it starts proposing new values from clients.
+The phase of electing the current leader is described in the following section. When the leader is elected, it starts proposing new values submitted by clients.
+
+% TODO: jak działa Paxos
 
 \section{Leader Election}
 \label{sec:leader_election}
 \indent\par
 
-To decide who is the current leader, our algorithm is using \textit{view} number. This number is sent in every message and processes keep track of the highest \textit{view} received. The current leader is a process for which \textit{view $\mod$ n $=$ local id}. For example, if \textit{view} = 5 and we have \textit{n} = 3 processes then processes with \textit{local id} = 2 is a current leader.
+To decide who is the current leader, our algorithm is using the \textit{view} number. This number is sent in every message and processes keep track of the highest \textit{view} received. The current leader is a process for which \textit{view $\mod$ n $=$ local id}. For example, if \textit{view} = 5 and we have \textit{n} = 3 processes then processes with \textit{local id} = 2 is the current leader.
 
-To detect if a leader is correct, failure detector is used. In JPaxos this is done using heartbeats sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it didn't sent any message during the last $\tau_0$ time.
+To detect if a leader is correct, a failure detector is used. In JPaxos this is done using heartbeats sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it has not sent any message during the last $\tau_0$ time.
 
-When a replica does not receive a message from the leader for more than $\tau_1$ time, it suspects the leader and tries to become the new leader. This phase is called \textbf{prepare phase}. Process advances to the next view where it is the leader and sends a \prepare message to all. For example, if \textit{view} = 5, \textit{n} = 3 and we are process with \textit{local id} = 1, we will advance \textit{view} to number 7 -- first view where process 1 is a leader.
+\begin{TODO} % TODO
+When a replica does not receive a message from the leader for more than $\tau_1$ time, it suspects the leader and tries to become the new leader. This phase is called a \textbf{prepare phase}. The replica process advances to the next view where it is the leader and sends a \prepare message to all. For example, if \textit{view} = 5, \textit{n} = 3 and we are process with \textit{local id} = 1, we will advance \textit{view} to number 7 -- first view where process 1 is a leader.
 
 To become a leader, process needs to prepare the view. It sends the \prepare message to all processes with its new \textit{view}. Every process which received this message, advances its \textit{view} and responds with \prepareOK[]. When a process receives majority of \prepareOK message, it becomes a leader. Each \prepareOK message is a promise that the sender will drop all messages with lower view -- that means from old leaders or processes which do not know about the new leader.
+\end{TODO}
 
-\section{Propose Phase}
 
-Every process keeps track of already proposed as well as decided values in a log. A log is ordered list of consensus instances -- triple \textit{<id, view, value>}. When a process is a leader, it can start a propose phase for new value. To propose a value, leader creates new consensus instance with first available id, current view and value to propose. Then it is send to all processes in \propose message. Every process by receiving the \propose message saves it to local log and sends \accept message to all. When any process receives the majority of \accept messages, it marks the proposed value as decided. The value is then passed to upper layers, in JPaxos it is executed on the state machine.
+\section{Propose Phase} % ← TODO
+
+Every process keeps track of already proposed as well as decided values in a log. A log is an ordered list of consensus instances -- triple \textit{<id, view, value>}. When a process is a leader, it can start a propose phase for a new value. To propose a value, the leader creates a new consensus instance with first available id, current view and the value to propose. Then it is sends all the data to all processes in a \propose message. Every process after receiving the \propose message saves it to its local log and sends the \accept message to all. When any process receives the majority of \accept messages, it marks the proposed value as decided. The value is then passed to the upper layers.
+
+% TODO #1
 
 \section{Division of responsibility}
 
-As introduced in \cite{Lam01}, the Paxos protocol tasks can easily be divided into three groups:
+As introduced in \cite{Lam01}, the Paxos protocol tasks can be divided into three groups:
 \begin{description}
- \item[Proposer] is responsible for proposing the values in correct order. In JPaxos it takes the requests from Replica and proposes them.
+ \item[Proposer] is responsible for proposing the values in correct order. In JPaxos it takes the requests from the Replica and proposes them.
+ % TODO #2
  
- \item[Acceptor] is a part of JPaxos that receives the \propose messages and responds to them according to the Paxos protocol -- that means responds if the view is not lower than current view.
+ \item[Acceptor] is a part of JPaxos that receives the \propose messages and responds to these messages according to the Paxos protocol -- i.e. when the view is not lower than current view.
  
- \item[Learner] gathers the \accept messages and if it gets the response from majority of acceptors, it marks the value as decided. In JPaxos, it informs the Replica that a decision has been taken.
+ \item[Learner] gathers the \accept messages and if it gets the response from the majority of acceptors, it marks the value as decided. In JPaxos, it informs the Replica that a decision has been taken.
 \end{description}
 
-Our implementation also uses this division in order to make the code more readable. Every process acts as acceptor and learner, and the leader also as proposer.
+Our implementation also uses this division in order to make the code more readable. Every process acts as Acceptor, Learner and Proposer.
+%TODO: the current leader also as.
 
 \section{Concurrent instances}
 \label{subsec:concurrent_instances}
-Running multiple consensus instances simultaneously is an easy way of making the MultiPaxos algorithm faster. Usually, single instance at time is not able to use available bandwidth; running more makes it possible to use the network more efficiently.
+Running multiple consensus instances simultaneously is an easy way of making the MultiPaxos algorithm faster. Usually, a single instance at time is not able to use available bandwidth; running more instances makes it possible to use the network more efficiently.
 
-Theoretically, we may have any number of concurrent instances active at the same time. We can execute some decision only after all decisions from all instances with lower number have been executed.
+Theoretically, we may have any number of concurrent instances active at the same time. We can execute some decision only after all decisions from all instances with the lower number have been executed.
 
-In practical approach, the number of instances must be bounded due to following reasons:
+In practice, the number of instances must be bounded due to following reasons:
 \begin{itemize} 
   \item after leader change, \prepareOK must contain all leader's undecided instances,
-  \item network has limited bandwidth, and conducting more instances will not increase throughput,
+  \item the network has a limited bandwidth, and conducting more instances will not increase throughput,
   \item there is no gain if we have decisions for some future instances, but the decision for an instance with lowest ID has not been taken yet (we can neither respond to the client, nor execute the taken decisions),
-  \item using UDP, more concurrent instances are causing network congestion so packets are dropped by the system and instances are decided slower.
+  \item when using UDP, more concurrent instances are causing network congestion so packets are dropped by the system and instances are decided slower.
 \end{itemize}
 
-Biggest problem connected with concurrent instances is possibility of ordering the same request twice. Example scenarios explaining the problem:
+The biggest problem connected with concurrent instances is the possibility of ordering the same request twice. Example scenarios explaining the problem are the following:
 \begin{figure*}[ht]
   \includegraphics[keepaspectratio, width=\textwidth]{paxos/duplicating_messages.pdf}
   \caption{Duplicating messages - Scenario 1}
@@ -60,51 +69,58 @@ Biggest problem connected with concurrent instances is possibility of ordering t
 \begin{description}
   \item [Scenario 1] $R_1$ is the leader, proposes (1:B). No other processes receives these messages and $R_2$ becomes the leader. $R_2$ proposes (1:C) and (2:B). (2:B) is decided. $R_2$ fails and $R_1$ becomes the leader again. While preparing, it learns about (2:B). It has (1:B) as a previously accepted value. The Paxos algorithm requires $R_1$ to propose (1:B) again, since its the accepted value with the highest timestamp, but this will result in the request being decided twice.
 
-  \item [Scenario 2] After a view change, the new primary will know about any value that might have been decided on a previous instance but it might not know about values that were proposed, accepted by up to a minority of replicas but not decided. Suppose that in instance $i$, process $p_1$ had proposed request $R_1$ which was accepted by a minority of replicas. The new primary, $p_2$ doesn't learn about request $R_1$ so it proposes no-op for instance $i$. More or less at the same time, the client resends the request $R_1$ to the new primary, which proposes it and gets it accepted as instance $i+2$, before the no-op request for instance $i$ being accepted. Process $p_2$ crashes and $p_1$ takes over again. Since $p_2$ didn't manage to get no-op accepted for instance $i$, $p_1$ proposes $R_1$ again which ends up being ordered both as instance $i$ and $i+2$.
+  \item [Scenario 2] After a view change, the new primary will know about any value that might have been decided on a previous instance but it might not know about values that were proposed, accepted by up to a minority of replicas but not decided. Suppose that in instance $i$, process $p_1$ had proposed request $R_1$ which was accepted by a minority of replicas. The new primary, $p_2$ doesn't learn about request $R_1$
+  so it proposes no-op for instance $i$. % TODO: why?
+  More or less at the same time, the client resends the request $R_1$ to the new primary, which proposes it and gets it accepted as instance $i+2$, before the no-op request for instance $i$ being accepted. Process $p_2$ crashes and $p_1$ takes over again. Since $p_2$ didn't manage to get no-op accepted for instance $i$, $p_1$ proposes $R_1$ again which ends up being ordered both as instance $i$ and $i+2$.
 \end{description} 
 
-Unfortunately we cannot prevent instances from being decided twice in two different instances. Because of that, only valid solution for this problem is to remember last executed instance for every client and not executing them second time. But this requires to keep a new structure in memory as well as by every snapshot (after recovering from snapshot, this structure has to be loaded too).
+Unfortunately we cannot prevent requests from being decided twice in two different instances. Because of that, the only valid solution for this problem is to remember the last executed instance for every client and not executing it again. But this requires to keep a new structure in memory as well as by every snapshot (after recovering from the snapshot, this structure has to be loaded too).
 
-Even if we cannot prevent from deciding request twice, we should minimise number of such situations because they slow down the algorithm (we have to send redundant data in each message). Possible solutions to decrease them are listed below:
+Even if we cannot prevent from deciding a request twice, we should minimise the number of such situations because they slow down the algorithm (we have to send redundant data in each message). Possible solutions to decrease the scale of this problem are listed below:
 \begin{itemize}
-  \item We can cache last reply for each client, so after receiving the same request we can immediately response.
-  \item Do not propose requests which are already decided
-  \item Current leader can save which request was proposed by him (but not decided yet) and also discard them. Because in \prepareOK message we can receive instance values which was unknown, leader has to deserialize them first.
+  \item We can cache the last reply for each client, so after receiving the same request we can immediately response.
+  \item Do not propose requests which have been already decided
+  \item The current leader can save which requests were proposed by him (but not decided yet) and also discard them.
 \end{itemize}
 
 \paragraph{Setting the window size}
-The windows size specifies how many concurrent instances can be started (it has very similar meaning to window size in TCP protocol). In order to use available resources and keep high responsiveness window size must be set correctly. There is no global, generic solution: every usage needs different setting.
+The windows size specifies how many concurrent instances can be started (it has very similar meaning to the window size in the TCP protocol). In order to use available resources and keep high responsiveness the window size must be set correctly. There is no global, generic solution: every usage needs different setting.
 
-Most important thing is monitoring the network: its usage should be high -- but no congestion should occur.
-That means, on one side, the window size must be enlarged as long as the links are not full, and on the other side, it must be guaranteed that no message will be delayed or dropped because of network traffic.
-
-As long as these conditions hold, a speed of a single instance remains constant (putting aside CPU time).
+The most important thing is monitoring the network: its usage should be high, but no congestion should occur.
+That means, on one side, the window size must be enlarged as long as the links are not full, and on the other side, it must be guaranteed that no message will be delayed or dropped because of the network traffic. As long as the two conditions hold, a speed of a single instance remains constant (putting aside CPU time).
 If network is overused, the overall throughput may even stay on the same level, but the latency will increase for sure.
 
-Notice that having future decisions instead of the present ones does not change decision count per time period, but causes inefficient task arrival time for state machine, especially if many of them arrive at the same time.
+If the instances would be decided out of order the JPaxos performance would not be affected much. But the state machine must get the requests in proper order, so the execution of requests with greater IDs would have to be delayed. And this causes inefficient request arrival time for the service. So the number of concurrent instances should not be increased if it does not increase the JPaxos throughput.
 
-\paragraph{Performance Gains}
-Single instance will nearly never use available bandwidth, so conducting concurrent instances will surely speed up JPaxos.
+\paragraph{Performance gains}
+A single instance will nearly never use available bandwidth, so conducting concurrent instances will surely speed up JPaxos.
 
-In full-duplex networks, concurrent instances will improve network utilisation, because when the leader is waiting for replies, the network from the leader to the followers is idle, so it can be used to send the next request. 
+As already mentioned, using the concurrent instances will improve latency and throughput. Carefulness is required in order to avoid network saturation, especially the link of the leader which has to carry $2n$ messages for each instance (as opposed to 2 messages for every other link).
 
-As already mentioned, this solution will improve latency and throughput. Carefulness is required in order to avoid network saturation, especially the link of the leader which has to carry $2n$ messages for each instance (as opposed to 2 messages for every other link).
+In full-duplex networks, concurrent instances will improve network utilisation, because when the leader is waiting for replies, the network from the leader to the others is idle, so it can be used to send the next request. 
 
-\paragraph{Batching} is another method for improving performance and network usage. It is preferred over increasing the concurrent instances count, however the benchmarks show that joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
+% TODO: ↓ 
+\paragraph{Batching} is another method for improving performance and network usage. It is preferred over increasing the concurrent instances count, however
+the benchmarks show % ← TODO:
+that joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
 
 \section{No operation command}
 
 The best method to understand the problem is to analyze the scenario below:
 
-We have three replicas $R1$, $R2$ and $R3$. Replica $R1$ is the leader and proposes {1:A} and {2:B}. Value {2:B} was decided by all replicas, but {1:A} propose was lost. $R1$ fails and $R2$ becomes new leader. After preparing $R2$ has a gap in log because no information about instance 1 was received. 
+\begin{TODO} % TODO:
 
-As we can see after prepare phase, leader can have a gap in the log. Without filling this gap, replica cannot execute and propose new values. Because of that new value has to be proposed in this place.
+We have three replicas $R1$, $R2$ and $R3$. Replica $R1$ is the leader and proposes {1:A} and {2:B}. Value {2:B} was decided by all replicas, but {1:A} was lost. $R1$ crashes and $R2$ becomes a new leader. After preparing $R2$ has a gap in log because no information about instance 1 was received.
 
-With crash-stop or crash-recovery without stable storage the value may be lost forever. That happens when decision $n+1$ is already decided, and decision $n$ is unknown to all but leader, and the leader fails. As only he got the value, and it has been lost -- either because he is not allowed to recover, or he is recovering without stable storage.
+As we can see after the prepare phase, a leader can have a gap in the log. Without filling this gap, replica cannot execute and propose new values. Because of that, a new value has to be proposed in this place.
 
-On the other hand, the leader change may happen due to lost of \alive message. In this case someone has the value, and it could be used back in the voting. But there is no simple and fast method to detect this situation.
+With crash-stop or crash-recovery without stable storage the value may be lost forever. That happens when decision $n+1$ is already decided, and decision $n$ is unknown to all but the leader, and the leader crashes. As only he got the value, and it has been lost -- either because he is not allowed to recover, or he is recovering without stable storage.
 
-The easiest solution is to create new request type called no-op, which is null operation and will be ignored by the replica. It fills the gaps, but is not executed on state machine.
+\end{TODO}
+
+On the other hand, the leader change may happen due to the lost of \alive message. In this case someone has the value, and it could be used back in the voting. But there is no simple and fast method to detect this situation.
+
+The easiest solution is to create a new request type called no-op, which is a null operation that will be ignored by the replicas. It fills the gaps but is not executed by the state machine.
 
 \section{Log handling}
 
