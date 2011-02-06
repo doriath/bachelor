@@ -160,6 +160,13 @@ Reducing the number of messages is one of the most efficient optimisations. In J
 
 It has been proven for the Paxos consensus algorithm that it minimises the number of messages carrying a value to be agreed upon (the client request in our case). The value is sent only once to each replica (not counting retransmission due to message loss). As for additional messages, their count varies among certain implementations. Some of messages proposed in the typical implementation may be easily skipped without violating guarantees or adding any assumptions.
 
+\paragraphNewline{Using {\normalfont\propose}as {\normalfont\accept}}
+
+Another optimisation is merging the role of \accept and \textsc{Propose}. As long as acceptors and proposes do not share the log this is not allowed. But if their knowledge is identical and the leader proposed some value, then he must accept it as well. In most solutions one node acts as proposer and acceptor, and they do share the log.
+
+So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- he knows that the leader and it itself % TODO ??
+accept the message. Normally the leader process has to first send \propose to all and later \accept to all. By this optimisation only half of messages is required to be sent.
+
 \paragraphNewline{Sending to itself}
 
 As stated before, Paxos defines three types of roles: proposers, acceptors and learners. Processes or some of their parts act as one of them. In order to communicate they must send messages to each other.
@@ -168,19 +175,15 @@ In our program every node consists of a (probable) proposer, acceptor as well as
 
 This does not influence performance much, however it is recommended as it decreases the use of system resources (especially the networking stack). It also skips a few system calls.
 
-\paragraphNewline{Using {\normalfont\propose}as {\normalfont\accept}}
+\paragraphNewline{Minimizing the count of messages carrying the value}
 
-Another optimisation is merging the role of \accept and \textsc{Propose}. As long as acceptors and proposes do not share the log this is not allowed. But if their knowledge is identical and the leader proposed some value, then he must accept it as well. In most solutions one node acts as proposer and acceptor, and they do share the log.
+Most of the articles about Paxos state that the \accept message carries the value. % TODO what value
+In such case we can accept the value even without receiving a \propose message.
 
-So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- he knows that the leader and it itself accept the message. Normally the leader process has to first send \propose to all and later \accept to all. By this optimisation only half of messages is required to be sent.
+The value usually is bigger than a normal message of JPaxos. Because of that we want to minimize number of message which contain the value.
+In JPaxos the \accept message does not carry the value. Before a process can send the \accept message it has to receive the \propose message. The process decides upon a value if it receives a \propose and majority of \accept messages.
 
-\paragraphNewline{Minimizing messages with value}
-
-Most of the articles about Paxos state that the \accept message carries the value. This can be easily omitted.
-
-Each processes in JPaxos waits not only for the majority of accepts, but before it sends the \accept message, it must receive a \propose with the value. So if a process accepts an instance, it already knows the value.
-
-Waiting for another message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. % TODO why? explain
+Waiting for the \propose message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. % TODO why? explain
 Also usually the \propose will be delivered before any \accept message.
 
 \paragraphNewline{Best-case messages}
@@ -197,6 +200,7 @@ So, in the normal operation in JPaxos:
 
 We can see that in order to decide the process needs to send the \propose[] once, and later each not-leader process sends the \accept to others.
 
-Other implementations consider using bounded learner count -- so that an acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by learners to all as the ballot has finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
+Other implementations consider using bounded learner count % TODO can't understand what you mean
+-- so that an acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by learners to all as the ballot has finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
 
 An interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP multicast is used for all broadcasts, what significantly increases the scalability and performance.
