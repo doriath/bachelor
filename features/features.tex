@@ -278,9 +278,9 @@ However, the replica does not know anything about state machine. We can also ass
 The latter is most significant difference: replica has no idea how long the log execution from previous snapshot would take. It seems possible to estimate this: measuring time between request and reply might solve the problem. But such estimate can give mistaken result, especially in multi-process environment. If another process is consuming CPU, or the replica waits a long time for granting some resources (like access to a file or even a printer), the estimate surely will not reflect real value.
 
 Table below presents in compact way state of knowledge needed to select best moment for next snapshot:
-\begin{center}
-% use packages: array
-\small
+
+\begin{table}[h]
+\small \centering
 \begin{tabular}{r|c|c|}
 \cline{2-3}
  & State machine & Replica \\ \hline 
@@ -290,7 +290,9 @@ Table below presents in compact way state of knowledge needed to select best mom
 \multicolumn{1}{|r|}{Time for sending message} & unknown & estimate \\ \hline
 %\multicolumn{1}{|r|}{ × } & × & × \\ \hline
 \end{tabular}
-\end{center}
+\caption{Compairing knowledge of the service and the replica}
+\vspace{-1em}
+\end{table}
 
 \subsection{Our approach to snapshotting}
 \label{subsec:our_approach_to_snapshotting}

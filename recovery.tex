@@ -1,15 +1,15 @@
 \chapter{Recovery}
 \label{chapter:recovery}
 
-In this chapter we describe the process recovery from crash. We will start from short overview of recovery and then present 4 different algorithms -- crash-stop, crash-recovery with stable storage, epoch based recovery and view based recovery. After that we will summarize and compare performance and fault tolerance of all algorithms.
+In this chapter we describe the issues concerning recovery from crash. We will start from short overview of recovery and then present 4 different algorithms -- crash-stop, crash-recovery with stable storage, epoch based recovery and view based recovery. After that we will summarize and compare performance and fault tolerance of the algorithms.
 
 \section{Overview}
 
 The crash of the process is a permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc. Such process also losses all information not saved to stable storage.
 
-So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories - the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category volatile storage.
+So what is stable storage? The process can write data to different places, it can be processor cache, RAM, hard drives, etc. We can divide them into two categories -- the one where data can survive the crash, and the other where data is lost after a crash. All memory holders from first category will be called stable storage and from second category volatile storage.
 
-Usually operating system buffers the data before writing it to stable storages. Such writes are called asynchronous. They do not provide guarantee that if crash occurs, all data will be on the storage instead of being lost with the rest of system buffer.
+Usually operating system buffers the data before writing it to stable storages. Such writes are called asynchronous. They do not provide guarantee that if crash occurs the data will be on the storage instead of being lost with the rest of system buffer.
 
 Another option is to force the operating system to write the data to stable storage. Such operating is called \emph{synchronising} the buffers with storage. If we call write and synchronise, we can say that the write is synchronous -- the data won't be lost due to crash. But writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
 
@@ -160,7 +160,7 @@ The pseudocode below should explain this algorithm:
 
 Epoch based recovery algorithms tolerates $f = \left\lfloor \frac{n-1}{2} \right\rfloor $ crashed processes. It is required that at least majority of processes are always correct - otherwise the algorithm will not be able to continue.
 
-In recovery phase the process first notifies the majority of other replicas about it's recovery. As the process must know when it's state will be correct, it must wait for recovery answer from the leader, who has the most recent state. Once it gets the acknowledges, it is downloading all information from other replicas using catch-up mechanism.  When all necessary information is transfered, the replica can join the Paxos protocol and is considered as correct.
+In recovery phase the process first notifies the majority of other replicas about its recovery. As the process must know when its state will be correct, it must wait for recovery answer from the leader, who has the most recent state. Once it gets the acknowledges, it is downloading all information from other replicas using catch-up mechanism.  When all necessary information is transfered, the replica can join the Paxos protocol and is considered as correct.
 
 On normal execution this algorithm should be as fast as crash-stop model. The size of \prepareOK message is increased by epoch vector which contains $n$ numbers but it shouldn't have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
 
@@ -258,7 +258,7 @@ We presented 4 different algorithms implemented to JPaxos library. Each algorith
  \label{fig:recovery_algorithms}
 \end{figure}
 
-Crash recovery with full stable storage is an algorithm with the best fault tolerance because it tolerates catastrophic failures. But to achieve that it makes a synchronous writes to stable storage on every round (on every view and value change) what decreases the performance.
+Crash recovery with full stable storage is an algorithm with the best fault tolerance because it tolerates catastrophic failures. But to achieve that it makes a synchronous write to stable storage on every round (on every view and value change) what decreases the performance.
 
 Crash stop doesn't provide any recovery (crashed processes will never be correct again) and all the time majority of processes have to be correct. But no synchronous writes to stable storage are made so it provides the best performance.
 
