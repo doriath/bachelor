@@ -57,6 +57,20 @@
     \begin{minipage}{0.8\textwidth}
 }{\end{minipage} {\huge \vspace{-0.5em} \rule{0.85\textwidth}{0.1em}} \par\noindent \end{center} \par}
 
+\newlength{\defaultParIndent}
+\setlength{\defaultParIndent}{\parindent}
+
+\newenvironment{minipageWithIndent}[1]
+{
+  \begin{center}
+  \begin{minipage}{#1}
+  \setlength{\parindent}{\defaultParIndent}
+}
+{
+  \end{minipage}
+  \end{center}
+}
+
 % Custom commands
 \newcommand{\paragraphNewline}[1]
 {

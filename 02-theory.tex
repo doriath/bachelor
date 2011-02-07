@@ -44,6 +44,8 @@ There are no restrictions how the state may change.
 is a state machine that from the same state under the same command will always change state in the same way.
 Thanks to this property one may describe the state machine's state by the initial state and consecutive commands. 
 
+\paragraph{State machine replication} is a method for implementing a replicated state machine, i.e. for maintaining multiple copies of identical state machine, possibly on separate network nodes, usually in order to gain availability of the state machine and durability of it's state. State machine replication includes proper client handling and guaranteeing uniform state changes in all replicas.
+
 \paragraph{Service}
 is a program that receives requests (or commands) and executes them generating a response.
 

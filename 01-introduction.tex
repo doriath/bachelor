@@ -10,39 +10,37 @@ The most common and effective method of providing reliable services is replicati
 Each replication approach relies on some group communication mechanism, usually providing strong guarantees. For example the total-order (atomic) broadcast is a very useful for interconnecting replicas -- it simplifies the design and implementation of the replication protocols, as it allows for dividing the system into two main modules with clearly visible responsibilities.
 
 We have chosen to implement one of the replication approaches -- one that we think is very promising.
-It is called active replication of services. In this approach each service replica does the same work. The replicas must behave identically, therefore we require the service to behave deterministically.
+It is called active replication. In this approach each service replica does the same work. The replicas must behave identically, therefore we require the service to behave deterministically.
 
-Every library for replicating services should address its main purpose, i.e. to guarantee high availability of service as well as durability of the service work results
- -- while having minimum requirements for the environment. % ← TODO JK
-
-% TODO JK COPY PASTE FROM WIKI (przeredagowac) i czy na pewno tutaj
-\begin{description}
-  \item[State machine replication] is a general method for implementing a fault-tolerant service by replicating it on separate machines and coordinating client interactions with these replicas (or copies). The physical isolation of machines in a distributed system ensures that failures of server replicas are independent, as required. As long as there are enough of non-faulty replicas, the service is guaranteed to be provided.
-\end{description}
+Every library for replicating services should address its main purpose, i.e. to guarantee high availability of service as well as durability of the service work results.
 
 % TODO something about Paxos - (JPaxos is using Paxos / MultiPaxos as algorithm for solving consensus problem?)
 
-The goal of this bachelor's thesis is to implement JPaxos -- Java library and runtime system for efficient state machine replication. JPaxos makes the following assumptions about the replicated service:
-\begin{itemize}
-  \item {} deterministic behaviour, i.e. multiple copies of the service begun in the start state, receiving the same inputs in the same order will arrive at the same state having generated the same outputs
-  \item {} non-Byzantine failures, i.e. a service machine can only crash
-  \item {} crash-recovery supported, i.e. after crash, the service can be restarted with the same IP address.
-  \item {} unreliable network, i.e. message loss and communication delays
-\end{itemize}
+\begin{minipageWithIndent}{0.9\textwidth}
+{
+\bfseries
 
-JPaxos can be run in one of the following two modes of operation with following guarantees:
+The goal of this bachelor's thesis is to implement JPaxos -- Java library and runtime system for efficient service replication.
+
+JPaxos requires deterministic behaviour from the service, does not accept replica misbehaviour and works with static group of replicas.
+
+JPaxos allows for replica crashes as well as recovering the crashed replicas, ensures the durability in spite of the failures, including faliure of all the replicas at once. It provides the availability of service if the majority of replicas are correct.
+}
+\end{minipageWithIndent}
+
+JPaxos can be run in one of the following two modes of operation with following guarantees:\nopagebreak
 
 Basic mode:
 \begin{tightList}
   \item [\textbullet] to be able to tolerate $f$ faulty replicas, the system must consists of at least $2f + 1$ replicas (i.e. $n \ge 2f + 1$)
-  \item [\textbullet] after replica crash, it recovers its state from other replicas
+  \item [\textbullet] after replica crashes, it recovers its state from other replicas
 \end{tightList}
 
 Extended mode:
 \begin{tightList}
   \item [\textbullet] no limit on the number of faulty processes (i.e. $f = n$)
-  \item [\textbullet] after replica crash, it recovers its state from non-volatile memory
-  \item [\textbullet] around 200 times slower than the basic mode
+  \item [\textbullet] after replica crashes, it recovers its state from non-volatile memory
+%  \item [\textbullet] around 200 times slower than the basic mode
 \end{tightList}
 
 \section{Thesis organisation}
