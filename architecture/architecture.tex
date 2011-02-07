@@ -10,13 +10,24 @@ The easiest way to understand the architecture of JPaxos is to analyze its archi
 
 \subsection{Processes and their communication}
 
-For JPaxos there are two possible approaches of building replicated services. The first, recommended by us, 
-requires from the service client application using a \texttt{Client} module. % TODO TZ not English
-The other approach incorporates the client module within replica, but 
-it places the responsibility for finding a working replica on the user. % TODO TZ rewrite
-The possible approaches are visualised in figure \ref{fig:jpaxos_processes}.
+From the perspective of JPaxos library user, we can distinguish two types of processes -- replicas and clients. The replica process is responsible for state machine replication. This process receives commands (requests) from clients, executes them on state machine in the same order on every replica, and sends the results (of commands execution) back to clients. The client process sends commands to replicated service (replicas) and waits for the results. 
 
-% TODO TZ enlarge
+The user of JPaxos library has to provide implementation of a service (that executes clients requests and generates responses) and a client application that generates requests to service and waits for responses.
+
+The JPaxos library provides two modules used to replicate a service:
+\begin{tightList}
+  \item[\textbf{JPaxos Replica}] - module of JPaxos library responsible for global request ordering, passing the requests to the service, answering to the clients and recovering service from crash.
+  \item[\textbf{JPaxos Client}] - module of JPaxos responsible for connecting and sending commands to JPaxos Replica module. It also handles crashes of replicas, and ensures that the request will be eventually executed on replicated service
+\end{tightList}
+
+There are two possible approaches of building replicated services using JPaxos.
+The first, recommended by us, is to integrates the JPaxos \texttt{Client}
+module with client application.  This approach provides full transparency of
+replication for the clients. The service client contacts with the JPaxos
+\texttt{Client} module as if it would contact the service, i.e. it executes
+requests and gets answers for them. This approach is presented on figure
+\ref{fig:jpaxos_processes}a. 
+
 \begin{figure}[h]
  \begin{tabular}{ccc}
   \includegraphics[width=0.45\textwidth]{architecture/userArchitecture1.pdf}
@@ -32,17 +43,18 @@ The possible approaches are visualised in figure \ref{fig:jpaxos_processes}.
  \caption{Two models of JPaxos}\label{fig:jpaxos_processes}
 \end{figure}
 
-The JPaxos \texttt{Client} is responsible for connecting to replicas, providing availability of service as the replica connected with the client crashes, and ensuring that the request will be eventually answered.
+The other approach incorporates the JPaxos \texttt{Client} module within
+replica. Because the client application is not using JPaxos \texttt{Client}
+module any more, the transparency is lost, and the programmer must
+take care of selecting a working (not crashed) replica himself. However, this
+approach enables using JPaxos in a wider context. For example, one could
+possibly create a REST web service, and use a usual web client as the service
+client, while the service itself would be replicated using JPaxos.  This
+approach is visualised in figure \ref{fig:jpaxos_processes}b.
 
-Integrating the \texttt{Client} module with the service client provides full transparency of replication for the clients.
-The service client contacts with the JPaxos \texttt{Client} module as if it would contact the service, i.e. it executes requests and gets answers for them.
 
-If one chooses the second approach -- i.e. integrating \texttt{Client} in the replica, the transparency is lost, and the programmer must take care for selecting a working replica himself. However, this approach enables using JPaxos in a wider context. For example, one could possibly create a REST web service, and use a usual web client as the service client, while the service itself would be replicated using JPaxos.
-
-The JPaxos Replica module is responsible for global request ordering, passing the requests to the service, answering to the clients and recovering service from crash.
-
-The service itself must be integrated within JPaxos replica. Service gets the requests and returns the response. However, in order to make the resource usage bounded, JPaxos requires additional functionality from the service. This partially breaks transparency -- the service must provide periodically snapshots of it's state, as well as be able to recover it's state from a snapshot, possibly made by other replica.
-As we assume that services are deterministic, recovering from snapshot originating from other replica is not a problem. However for some services creating a snapshot may present a challenge.
+The service itself must be integrated within JPaxos \texttt{Replica} module. Service gets the requests and returns the response. However, in order to make the resource usage bounded, JPaxos requires snapshotting functionality from the service (described in section \ref{sec:snapshotting})
+what partially breaks transparency. 
 
 \subsection{Client and client-replica communication}
 
@@ -210,7 +222,7 @@ Other noteworthy data structures include:
 
 
 
-\section{Threads}
+\section{Threading Model}
 \label{sec:threads}
 
 A proper design of a multi-threaded application % TODO TZ what application
