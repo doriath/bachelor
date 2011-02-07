@@ -1,14 +1,5 @@
 \chapter{Conclusions}
 
-%Zakończenie pracy zwane również Uwagami końcowymi lub Podsumowaniem powinno zawierać ustosunkowanie
-%się autora do zadań wskazanych we wstępie do pracy, a w szczególności do celu i zakresu pracy oraz
-%porównanie ich z faktycznymi wynikami pracy. Podejście takie umożliwia jasne określenie stopnia
-%realizacji założonych celów oraz zwrócenie uwagi na wyniki osiągnięte przez autora w ramach jego
-%samodzielnej pracy.
-%
-%Integralną częścią pracy są również dodatki, aneksy i załączniki np.~płyty CDROM
-%zawierające stworzone w ramach pracy programy, aplikacje i projekty.
-
 In this thesis, we have studied the problem of state machine replication based
 on Paxos algorithm defined in \cite{Lam98}. We described challenges faced in
 implementation phase to make the library ready to use in production systems
@@ -19,7 +10,7 @@ focused on problems which occurs when transforming one page pseudocode of
 distributed algorithm to few thousands line of production code. We presented
 the architecture of our library with short description of every module and data
 structures used. The library has to handle unreliable network with message
-loss and delays, so we presented the catch-up mechanism which guarantees that
+loss and delays, so we presented the catch-up mechanism, which guarantees that
 eventually every correct replica will be up to date. By introducing snapshot
 mechanism, we solve a problem with infinite grow of log. To make the library
 very efficient, we implemented several performance improvements like concurrent
@@ -34,9 +25,9 @@ communication layer in PaxosSTM master thesis \cite{Tad10}.
 
 Our future work includes further performance improvements to Paxos protocol and
 implementing more crash-recovery algorithms with no use of stable storage.  It
-would be also interesting to evaluate all recovery algorithm in network with
+would be also interesting to evaluate all recovery algorithms in network with
 message loss and environment when failure of replica is a common scenario.
-Finally we would like to publish the library as open source project and test it
+Finally, we would like to publish the library as open source project and test it
 in production environment.
 
 % TODO JK Acknowledgments (Wojciechowski, Nuno?, Andre?, Tadek i Maciej?)

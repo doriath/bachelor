@@ -1,7 +1,7 @@
 \chapter{Architecture}
 
 This chapter describes the architecture of JPaxos.
-First the general architecture of the library is presented, consecutively focusing on its parts in detail.
+First, the general architecture of the library is presented, consecutively focusing on its parts in detail.
 Later the most significant data structures and the threading architecture details are presented.
 
 \section{Architecture overview}
@@ -50,7 +50,7 @@ take care of selecting a working (not crashed) replica himself. However, this
 approach enables using JPaxos in a wider context. For example, one could
 possibly create a REST web service, and use a usual web client as the service
 client, while the service itself would be replicated using JPaxos. This
-approach is visualised in figure \ref{fig:jpaxos_processes}b.
+approach is visualized in figure \ref{fig:jpaxos_processes}b.
 
 The service itself must be integrated within JPaxos \texttt{Replica} module. Service gets the requests and returns the response. However, in order to make the resource usage bounded, JPaxos requires snapshotting functionality from the service (described in section \ref{sec:snapshotting})
 what partially breaks transparency. 
@@ -74,7 +74,7 @@ The JPaxos client module is a single, light-weight module that performs several 
 % TODO TZ More information about service, service proxy, service interface, service module
 % TODO TZ move ServiceProxy section here
 
-The Service module is the core part -- in fact it is the service that uses JPaxos for replication.
+The Service module is the core part -- in fact, it is the service that uses JPaxos for replication.
 In order to integrate a service with the library, it must implement an interface specified in JPaxos. The interface provides required communication between the library and the service.
 
 The interface for interconnecting JPaxos replica and service allows for:
@@ -182,9 +182,9 @@ In our program responsible for storing list of Paxos instances is the \texttt{Lo
 \end{tightList}
 
 Theoretically \texttt{Log} should contain all instances from the first up to the current one.
-Of course such data structure cannot be implemented. The log must be bounded, however it must contain all instances that are still needed. The question is which instances are still needed and which may be truncated.
+Of course, such data structure cannot be implemented. The log must be bounded, however it must contain all instances that are still needed. The question is which instances are still needed and which may be truncated.
 
-Without the snapshotting (see \ref{sec:snapshotting}) every instance must be kept in log. With snapshotting only the instances since the last snapshot are needed. The instance with lowest ID that is still needed is the first instance that should be executed after updating the service state to the state from the last snapshot. This instance is the lowest instance that always is present in the log -- therefore we call it the lowest availabile one. The \textit{lowestAvailableId} is the ID of this instance.
+Without the snapshotting (see \ref{sec:snapshotting}) every instance must be kept in log. With snapshotting, only the instances since the last snapshot are needed. The instance with lowest ID that is still needed is the first instance that should be executed after updating the service state to the state from the last snapshot. This instance is the lowest instance that always is present in the log -- therefore we call it the lowest available one. The \textit{lowestAvailableId} is the ID of this instance.
 
 The smallest yet unused instance ID is called by us the \textit{nextId}, as it will be the ID assigned to the next instance.
 
@@ -206,7 +206,7 @@ New instance can always be appended to the log and after this operation \textit{
 \section{Threading Model}
 \label{sec:threads}
 
-Multi-threaded applications are very often complex, hard to debug and test. But single threaded applications cannot fully utilise multi-core processors. The JPaxos library is using multiple threads, but every variable in the library can be accessed only from one thread, what decreases the complexity and makes the code easier to test and maintain.
+Multi-threaded applications are very often complex, hard to debug and test. But single threaded applications cannot fully utilize multi-core processors. The JPaxos library is using multiple threads, but every variable in the library can be accessed only from one thread, what decreases the complexity and makes the code easier to test and maintain.
 
 We can divide threads in JPaxos library into two categories - task based and
 network related.
@@ -221,7 +221,7 @@ Below we describe the threads in JPaxos, their responsibilities and interactions
 \begin{description}
   \item[Replica thread] \hfill
 
-    The replica thread is a task based thread. New tasks are scheduled upon a signal from the Paxos about a new decision, or when a new snapshot was received or made by the service. For most of the time this thread waits for new decided consensus instances. When a new request is decided by the Paxos, it is executed by the service in replica thread. Also all snapshot related tasks are executed in this thread. Other threads (e.g. the Paxos dispatcher) may therefore safely execute their snapshot-concerning routines.
+    The replica thread is a task based thread. New tasks are scheduled upon a signal from the Paxos about a new decision, or when a new snapshot was received or made by the service. For most of the time, this thread waits for new decided consensus instances. When a new request is decided by the Paxos, it is executed by the service in replica thread. Also all snapshot related tasks are executed in this thread. Other threads (e.g. the Paxos dispatcher) may therefore safely execute their snapshot-concerning routines.
     
   \item[Paxos dispatcher] \hfill \nopagebreak
     
@@ -244,11 +244,11 @@ Below we describe the threads in JPaxos, their responsibilities and interactions
 
   \item[UdpNetwork] \hfill
 
-    This thread is responsible for listening on DatagramSocket for incoming UDP datagram packages. Every time a new message is received, it is deserialised and all listeners are notified.
+    This thread is responsible for listening on DatagramSocket for incoming UDP datagram packages. Every time a new message is received, it is deserialized and all listeners are notified.
 
   \item[TcpNetwork] \hfill
 
-    For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Overall, we have $n-1$ threads for receiving data from the other replicas and $n-1$ threads for transmitting data. It gives $(n - 1) + (n - 1) = 2 \cdot n - 2$ threads handling TCP. Each receiving and transmitting thread can be in one of three states:
+    For TCP connection between each two replicas, a separate thread for receiving and transmitting is created. Overall, we have $n-1$ threads for receiving data from the other replicas and $n-1$ threads for transmitting data. It gives $(n - 1) + (n - 1) = 2 \cdot n - 2$ threads handling TCP. Each receiving and transmitting thread can be in one of three states:
     \begin{itemize}
             \item not connected, trying to establish a new connection,
             \item waiting for a new connection to be established by other replica.

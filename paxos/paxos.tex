@@ -1,9 +1,9 @@
 \chapter{Paxos}
 
-In this chapter we provide some background on the Paxos and MultiPaxos algorithm. We start with the introduction to the Paxos and MultiPaxos protocol. Then we describe the problems we encountered while implementing these protocols and performance improvements that we made.
+In this chapter, we provide some background on the Paxos and MultiPaxos algorithm. We start with the introduction to the Paxos and MultiPaxos protocol. Then we describe the problems we encountered while implementing these protocols and performance improvements that we made.
 
 \section{Overview}
-The Paxos algorithm is used to solve consensus problem in a distributed system. Consider $n$ processes that try to decide upon the same value which was proposed by one of them in the presence of failures. Paxos does not need a coordinator, however some process may consider itself a leader for a certain time for a specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
+The Paxos algorithm is used to solve consensus problem in a distributed system. Consider $n$ processes that try to decide upon the same value, which was proposed by one of them in the presence of failures. Paxos does not need a coordinator, however some process may consider itself a leader for a certain time for a specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
 
 In order to simplify Paxos as well as for increased performance, the MultiPaxos protocol has been proposed \cite{Lam01}. It introduces one leader for all ballots.
 
@@ -28,12 +28,12 @@ In order to simplify Paxos as well as for increased performance, the MultiPaxos 
 
 To decide who is the current leader, our algorithm is using the \textit{view} number. This number is sent in every message and processes keep track of the highest \textit{view} received. The current leader is a process for which \textit{view $\mod$ n $=$ local id}. For example, if \textit{view} = 5 and we have \textit{n} = 3 processes then processes with \textit{local id} = 2 is the current leader.
 
-To detect if a leader is correct, a failure detector is used. In JPaxos this is done using heartbeats sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it has not sent any message during the last $\tau_0$ time.
+To detect if a leader is correct, a failure detector is used. In JPaxos, this is done using heartbeats sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it has not sent any message during the last $\tau_0$ time.
 
 \begin{TODO} % TODO TZ
 When a replica does not receive a message from the leader for more than $\tau_1$ time, it suspects the leader and tries to become the new leader. This phase is called a \textbf{prepare phase}. The replica process advances to the next view where it is the leader and sends a \prepare message to all. For example, if \textit{view} = 5, \textit{n} = 3 and we are process with \textit{local id} = 1, we will advance \textit{view} to number 7 -- first view where process 1 is a leader.
 
-To become a leader, process needs to prepare the view. It sends the \prepare message to all processes with its new \textit{view}. Every process which received this message, advances its \textit{view} and responds with \prepareOK[]. When a process receives majority of \prepareOK message, it becomes a leader. Each \prepareOK message is a promise that the sender will drop all messages with lower view -- that means from old leaders or processes which do not know about the new leader.
+To become a leader, process needs to prepare the view. It sends the \prepare message to all processes with its new \textit{view}. Every process that received this message advances its \textit{view} and responds with \prepareOK[]. When a process receives majority of \prepareOK message, it becomes a leader. Each \prepareOK message is a promise that the sender will drop all messages with lower view -- that means from old leaders or processes that do not know about the new leader.
 \end{TODO}
 
 
@@ -47,7 +47,7 @@ Every process keeps track of already proposed as well as decided values in a log
 
 As introduced in \cite{Lam01}, the Paxos protocol tasks can be divided into three groups:
 \begin{description}
- \item[Proposer] is responsible for proposing the values in correct order. In JPaxos it takes the requests from the Replica and proposes them.
+ \item[Proposer] is responsible for proposing the values in correct order. In JPaxos, it takes the requests from the Replica and proposes them.
  % TODO TZ ^^^^^^^^^^^^^
  
  \item[Acceptor] is a part of JPaxos that receives the \propose messages and responds to these messages according to the Paxos protocol -- i.e. when the view is not lower than current view.

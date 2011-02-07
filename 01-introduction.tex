@@ -1,5 +1,3 @@
-%TODO: JK introduce name JPaxos
-
 \chapter{Introduction}
 
 With the increase of usage and importance of Internet services in everyday life, there also increases demand on service reliability and constant availability.
@@ -7,10 +5,10 @@ Providing these features to the services is a complex matter, involving a trade-
 
 The most common and effective method of providing reliable services is replication. Applying the replication requires only minor changes for non-replicated service to become replicated one. Thus, this method is usable both for developing new services using well known design patterns as well as transforming existing services into replicated ones.
 
-Each replication approach relies on some group communication mechanism, usually providing strong guarantees. For example the total-order (atomic) broadcast is a very useful for interconnecting replicas -- it simplifies the design and implementation of the replication protocols, as it allows for dividing the system into two main modules with clearly visible responsibilities.
+Each replication approach relies on some group communication mechanism, usually providing strong guarantees. For example, the total-order (atomic) broadcast is a very useful for interconnecting replicas -- it simplifies the design and implementation of the replication protocols, as it allows for dividing the system into two main modules with clearly visible responsibilities.
 
 We have chosen to implement one of the replication approaches -- one that we think is very promising.
-It is called active replication. In this approach each service replica does the same work. The replicas must behave identically, therefore we require the service to behave deterministically.
+It is called active replication. In this approach, each service replica does the same work. The replicas must behave identically and therefore we require the service to behave deterministically.
 
 Every library for replicating services should address its main purpose, i.e. to guarantee high availability of service as well as durability of the service work results.
 
@@ -24,7 +22,7 @@ The goal of this bachelor's thesis is to implement JPaxos -- Java library and ru
 
 JPaxos requires deterministic behaviour from the service, does not accept replica misbehaviour and works with static group of replicas.
 
-JPaxos allows for replica crashes as well as recovering the crashed replicas, ensures the durability in spite of the failures, including faliure of all the replicas at once. It provides the availability of service if the majority of replicas are correct.
+JPaxos allows for replica crashes as well as recovering the crashed replicas, ensures the durability in spite of the failures, including failure of all the replicas at once. It provides the availability of service if the majority of replicas are correct.
 }
 \end{minipageWithIndent}
 
@@ -43,7 +41,7 @@ Extended mode:
 %  \item [\textbullet] around 200 times slower than the basic mode
 \end{tightList}
 
-\section{Thesis organisation}
+\section{Thesis organization}
 
 % TODO JK - napiszesz to ?
 
@@ -64,7 +62,7 @@ The last chapter concludes the thesis.
 
 The Paxos and MultiPaxos algorithm have been proposed by L. Lamport in \textit{The Part-Time Parliament}~\cite{Lam98}. Since the article presented the algorithm in quite specific form, the Paxos protocol has been described again by Lamport in \textit{Paxos Made Simple}~\cite{Lam01}.
 
-Since then the Paxos protocol has been described from the theoretical point of view. Improvements and their proofs of correctness were presented as well as behaviour with byzantine crashes has been characterised.
+Since then the Paxos protocol has been described from the theoretical point of view. Improvements and their proofs of correctness were presented as well as behaviour with byzantine crashes has been characterized.
 
 Some of the first real-world Paxos applications have been described in 2006 and 2007 (\textit{Paxos made live}~\cite{CGR07}). The articles describe certain implementation issues concerning the Paxos algorithm in the Chubby distributed filesystem developed at Google.
 
