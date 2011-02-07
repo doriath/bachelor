@@ -71,14 +71,14 @@ In practice, the number of instances must be bounded due to following reasons:
   \item when using UDP, more concurrent instances are causing network congestion so packets are dropped by the system and instances are decided slower.
 \end{itemize}
 
-The biggest problem connected with concurrent instances is the possibility of ordering the same request twice. Example scenarios explaining the problem are the following:
-\begin{figure*}[ht]
+The biggest problem connected with concurrent instances is the possibility of ordering the same request twice. Example scenario explaining the problem is as follows:
+\begin{figure}[ht]
   \includegraphics[keepaspectratio, width=\textwidth]{paxos/duplicating_messages.pdf}
-  \caption{Duplicating messages - Scenario 1}
-\end{figure*}
+  \caption{Duplicating messages -- the example scenario}
+\end{figure}
 \begin{description}
-  \item [Scenario] There are three replicas - $R_1$, $R_2$ and $R_3$. $R_1$ is the leader, proposes <1:B> (value B in first consensus instance). No other processes receives these messages and $R_2$ becomes the leader. $R_2$ proposes <1:C> and <2:B>. <2:B> is decided. $R_2$ fails and $R_1$ becomes the leader again. While preparing, it learns about <2:B>. It has <1:B> as a previously accepted value. The Paxos algorithm requires $R_1$ to propose <1:B> again, since its the accepted value with the highest timestamp, but this will result in the request being decided twice.
-\end{description} 
+  \item[Scenario] There are three replicas - $R_1$, $R_2$ and $R_3$. $R_1$ is the leader, proposes <1:B> (value B in first consensus instance). No other processes receives these messages and $R_2$ becomes the leader. $R_2$ proposes <1:C> and <2:B>. All proposes for <1:C> are lost, but <2:B> is decided. $R_2$ fails and $R_1$ becomes the leader again. While preparing, it learns about <2:B>. It has <1:B> as a previously accepted value. The Paxos algorithm requires $R_1$ to propose <1:B> again, since its the accepted value with the highest timestamp. And this will result in the request being decided twice.
+\end{description}
 
 Unfortunately we cannot prevent requests from being decided twice in two different instances. Because of that, the only valid solution for this problem is to remember the last executed instance for every client and not executing it again. But this requires to keep a new structure in memory as well as by every snapshot (after recovering from the snapshot, this structure has to be loaded too).
 

@@ -174,10 +174,10 @@ This ensures that the replica will catch-up eventually, even if there are no new
 
 There are three messages that may be sent during the algorithm: \catchUpQuery[], \catchUpResponse and \catchUpSnapshot[].
 \begin{description}
- \item[\normalfont\catchUpQuery -] a request for missing instances. It carries a list of missing ID's and may have one of two flags set: the first flag indicates if this was a periodical catch-up, second one -- 
+ \item[\normalfont\catchUpQuery --] a request for missing instances. It carries a list of missing ID's and may have one of two flags set: the first flag indicates if this was a periodical catch-up, second one -- 
  if we want to get the last snapshot, not the missing instances.
- \item[\normalfont\catchUpResponse -] response sent for every received request. It has a list of decided instances for requested numbers. The list may be empty. This message may have two flags: periodical flag and snapshot only flag. The periodical flag is set if this is response to the periodical query. The snapshot only flash is set if the replica does not have an old enough instances, and transferring a snapshot is the only possibility.
- \item[\normalfont\catchUpSnapshot -] if another replica asked for snapshot, this message is sent with most recent snapshot.
+ \item[\normalfont\catchUpResponse --] response sent for every received request. It has a list of decided instances for requested numbers. The list may be empty. This message may have two flags: periodical flag and snapshot only flag. The periodical flag is set if this is response to the periodical query. The snapshot only flag is set if the replica does not have an old enough instances, and transferring a snapshot is the only possibility.
+ \item[\normalfont\catchUpSnapshot --] if another replica asked for snapshot, this message is sent with most recent snapshot.
 \end{description}
 
 The list describing missing instances is constructed by replica in straightforward way: it contains all undecided instance numbers plus the (highestID+1) as the first instance, the replica has no knowledge about. The responder sends therefore all decided instances from the list and all decided instances that are higher or equal the additional number.

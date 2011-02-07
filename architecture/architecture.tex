@@ -10,23 +10,23 @@ The easiest way to understand the architecture of JPaxos is to analyze its archi
 
 \subsection{Processes and their communication}
 
-From the perspective of JPaxos library user, we can distinguish two types of processes -- replicas and clients. The replica process is responsible for state machine replication. This process receives commands (requests) from clients, executes them on state machine in the same order on every replica, and sends the results (of commands execution) back to clients. The client process sends commands to replicated service (replicas) and waits for the results. 
+From the perspective of the JPaxos library user, we can distinguish two types of processes -- replicas and clients. The replica process is responsible for state machine replication. This process receives commands (requests) from the clients, executes them on the state machine in the same order on every replica, and sends the results (of commands execution) back to the clients. The client process sends commands to the replicated service (replicas) and waits for the results.
 
-The user of JPaxos library has to provide implementation of a service (that executes clients requests and generates responses) and a client application that generates requests to service and waits for responses.
+The user of JPaxos library has to provide an implementation of the service (that executes clients requests and generates responses) and a client application that generates the requests to the service and waits for the responses.
 
 The JPaxos library provides two modules used to replicate a service:
 \begin{tightList}
-  \item[\textbf{JPaxos Replica}] - module of JPaxos library responsible for global request ordering, passing the requests to the service, answering to the clients and recovering service from crash.
-  \item[\textbf{JPaxos Client}] - module of JPaxos responsible for connecting and sending commands to JPaxos Replica module. It also handles crashes of replicas, and ensures that the request will be eventually executed on replicated service
+  \item[\textbf{JPaxos Replica}] - module of JPaxos responsible for global request ordering, passing the requests to the service, answering to the clients and recovering service from a crash.
+  \item[\textbf{JPaxos Client}] - module of JPaxos responsible for connecting and sending commands to the JPaxos Replica module. It also handles crashes of the replicas, and ensures that the request will be eventually executed on the replicated service.
 \end{tightList}
 
 There are two possible approaches of building replicated services using JPaxos.
-The first, recommended by us, is to integrates the JPaxos \texttt{Client}
-module with client application.  This approach provides full transparency of
+The first, recommended by us, is to integrate the JPaxos \texttt{Client}
+module with the client application.  This approach provides full transparency of
 replication for the clients. The service client contacts with the JPaxos
 \texttt{Client} module as if it would contact the service, i.e. it executes
 requests and gets answers for them. This approach is presented on figure
-\ref{fig:jpaxos_processes}a. 
+\ref{fig:jpaxos_processes}a.
 
 \begin{figure}[h]
  \begin{tabular}{ccc}
@@ -44,14 +44,13 @@ requests and gets answers for them. This approach is presented on figure
 \end{figure}
 
 The other approach incorporates the JPaxos \texttt{Client} module within
-replica. Because the client application is not using JPaxos \texttt{Client}
+each replica. Because the client application is not using the JPaxos \texttt{Client}
 module any more, the transparency is lost, and the programmer must
 take care of selecting a working (not crashed) replica himself. However, this
 approach enables using JPaxos in a wider context. For example, one could
 possibly create a REST web service, and use a usual web client as the service
-client, while the service itself would be replicated using JPaxos.  This
+client, while the service itself would be replicated using JPaxos. This
 approach is visualised in figure \ref{fig:jpaxos_processes}b.
-
 
 The service itself must be integrated within JPaxos \texttt{Replica} module. Service gets the requests and returns the response. However, in order to make the resource usage bounded, JPaxos requires snapshotting functionality from the service (described in section \ref{sec:snapshotting})
 what partially breaks transparency. 
@@ -124,7 +123,7 @@ One should choose proper way of storing the data used in a single module, but mu
 
 Every application has some configurable options that stay unchanged during the run. In JPaxos all these constants are kept in the \texttt{ProcessDescriptor} class.
 
-During the system startup, JPaxos reads a configuration file and initializes \texttt{ProcessDescriptor} with proper values for:
+During the system startup, JPaxos reads a configuration file and initializes \texttt{Pro\-cess\-De\-scrip\-tor} with proper values for:
 \begin{tightList}[\setlength{\labelwidth}{0em}]
  \item[\textbf{crashModel}] the crash model (see chapter \ref{chapter:recovery})
  \item[\textbf{logPath}] path for the stable storage
@@ -140,7 +139,7 @@ During the system startup, JPaxos reads a configuration file and initializes \te
 \subsection{Storage interface}
 \label{subsec:storage_interface}
 
-\texttt{Storage} interface is responsible for holding state of the Paxos protocol.
+\texttt{Storage} interface is responsible for holding the state of the Paxos protocol.
 
 The state of Paxos is shared across various modules.
 It is very likely that various threads might want to access the \texttt{Storage} simultaneously. In order to prevent concurrency-related errors only one thread, the Dispatcher (see section \ref{sec:threads}), may access these data. 
@@ -210,9 +209,9 @@ New instance can always be appended to the log and after this operation \textit{
 Multi-threaded applications are very often complex, hard to debug and test. But single threaded applications cannot fully utilise multi-core processors. The JPaxos library is using multiple threads, but every variable in the library can be accessed only from one thread, what decreases the complexity and makes the code easier to test and maintain.
 
 We can divide threads in JPaxos library into two categories - task based and
-network related. 
+network related.
 Task based thread provides a method to add new tasks (work
-items) to the queue . When the queue is not empty, the thread takes the task
+items) to the queue. When the queue is not empty, the thread takes the task
 with highest priority and executes it. If no task is available, the thread is
 sleeping. The network related threads are used to receive and send messages
 over the network.
@@ -222,16 +221,15 @@ Below we describe the threads in JPaxos, their responsibilities and interactions
 \begin{description}
   \item[Replica thread] \hfill
 
-    The replica thread is task based thread. New tasks are scheduled upon a signal from Paxos about a new decision, or when new snapshot was received or made by service. For most of the time this thread waits for new decided consensus instances. When new request is decided by Paxos, it is executed by service in replica thread. Also all snapshot related tasks are executed in this thread. Other threads (e.g. Paxos dispatcher) may therefore safely execute their snapshot-concerning routines.
+    The replica thread is a task based thread. New tasks are scheduled upon a signal from the Paxos about a new decision, or when a new snapshot was received or made by the service. For most of the time this thread waits for new decided consensus instances. When a new request is decided by the Paxos, it is executed by the service in replica thread. Also all snapshot related tasks are executed in this thread. Other threads (e.g. the Paxos dispatcher) may therefore safely execute their snapshot-concerning routines.
     
   \item[Paxos dispatcher] \hfill \nopagebreak
     
-    This is also task based thread. It executes tasks related to Paxos consensus algorithm as well as provides secure access to critical data structures -- to the \texttt{Storage} (see subsection \ref{subsec:storage_interface}). This thread is also responsible for sending, receiving and handling most of protocol messages as well as accessing the \texttt{Storage} and triggering catch-Up. All tasks are prioritized, so for example, writes to the storage and the Paxos-related processing events have a higher priority than the catch-Up tasks.
+    This is also a task based thread. It executes tasks related to the Paxos consensus algorithm as well as provides secure access to the critical data structures -- to the \texttt{Storage} (see subsection \ref{subsec:storage_interface}). This thread is also responsible for sending, receiving and handling most of the protocol messages as well as triggering catch-up. All tasks are prioritized, so for example, writes to the storage and the Paxos-related processing events have a higher priority than the catch-up tasks.
     
     New tasks are added in the following situations:
     \begin{tightList}
       \item[\textbullet] a new message has been received - related message handler is executed
-      \item[\textbullet] a new message has been sent
       \item[\textbullet] failure detector suspects the leader
       \item[\textbullet] failure detector should sent \alive message
       \item[\textbullet] proposer starts new proposal
@@ -250,10 +248,10 @@ Below we describe the threads in JPaxos, their responsibilities and interactions
 
   \item[TcpNetwork] \hfill
 
-    For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Also there is one thread which waits for new incoming connections. Overall, we have $n-1$ threads for receiving data from $n-1$ other replicas, $n-1$ threads for transmitting data and 1 thread for new incoming connection. It gives $(n - 1) + (n - 1) + 1 = 2 \cdot n - 1$ threads handling TCP. Each receiving and transmitting thread can be in one of three states:
+    For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Overall, we have $n-1$ threads for receiving data from the other replicas and $n-1$ threads for transmitting data. It gives $(n - 1) + (n - 1) = 2 \cdot n - 2$ threads handling TCP. Each receiving and transmitting thread can be in one of three states:
     \begin{itemize}
-            \item connected, waiting for new messages,
             \item not connected, trying to establish a new connection,
             \item waiting for a new connection to be established by other replica.
+            \item connected, waiting for new messages,
     \end{itemize}
 \end{description}
