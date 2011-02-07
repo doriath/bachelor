@@ -307,37 +307,6 @@ There are several approaches possible on who decides the proper time for the sna
 Snapshotting requires also additional data exchanged between replica and service: the state machine must know the request number, in order to let snapshot identification in replica. For example, if the snapshotting would be done completely on service's side, how would the replica know after which command the snapshot was taken.
 
 
-\section{Batching}
-\label{sec:batching}
-Batching means using the same consensus instance to order several requests.
-
-This optimisation does not need any changes to the Paxos algorithm, only requires that requests from one instance can be ordered deterministically by each replica, so that replicas know the order in which they should execute the requests. That is no problem, as a byte stream is already ordered -- so each replica will decode the requests the same way.
-
-To achieve multiple requests in the same instance an additional activity must be taken up by the proposer and later, by replica, just before execution.
-
-The proposer needs to \textit{stick} together the requests, and from that moment on they are treated as one. The other part, dividing it again into requests, should be done after the decision has been taken.
-\begin{figure}[h]
-\includegraphics[keepaspectratio, width=\textwidth]{features/batching.pdf}
-\vspace{-1em}
-\caption{The batching mechanism}
-\vspace{-1em}
-\end{figure}
-
-As the count of concurrent instances is bounded (see subsection \ref{subsec:concurrent_instances}), without batching every client needs to wait for his own instance. With batching many client requests may be \textit{packed} in one instance. That, on one side, increases the throughput and decreases the delay.
-On the other side, the message size is getting bigger -- and that means slower voting.
-
-Here arises a question: how many requests to batch? One boundary is quite obvious -- a serialized message should not be bigger than the transport protocol frame size. As for UDP the size is about 65kB, but for TCP stays unbounded.
-
-The network bandwidth is the upper bound of peformance. Increasing the size of the instance value does not change the CPU time needed to decide on this instance. So the best performance is achieved as the batching size is set to the minimal size when all available bandwidth is used.
-
-Another problem concerns the proposer: should there be a lower limit of requests in one instance? Doing so implies waiting for new client requests to come. Not waiting means sometimes severe throughput loss.
-
-A new request may come a long time after we begun gathering the requests for batching -- and that would cause an unacceptable delay. So if we choose to wait for new client requests, we need to set up a timeout after which we stop waiting for the new requests and start deciding the requests we manged to gather.
-
-If we decide not to wait at all we are packing all client requests we got until now into a single request (if it fits, of course). Such approach guarantees good behaviour if the system state is not changing. Under load  we are usually unable to pack all requests we got into single instace, while with small amount of requests no delay by packing decreases the latency.
-
-Both the batching size and the timeout for gathering requests in a batch is configurable in our library.
-
 \section{Service Proxy}
 \label{sec:serviceProxy}
 
