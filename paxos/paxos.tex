@@ -3,13 +3,24 @@
 In this chapter we provide some background on the Paxos and MultiPaxos algorithm. We start with the introduction to the Paxos and MultiPaxos protocol. Then we describe the problems we encountered while implementing these protocols and performance improvements that we made.
 
 \section{Overview}
-The Paxos algorithm is used to solve consensus problem in a distributed system. Consider $n$ processes that try to decide upon the same value which was proposed by one of them. Paxos does not need a coordinator, however some process may consider itself a leader for a certain time for a specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
+The Paxos algorithm is used to solve consensus problem in a distributed system. Consider $n$ processes that try to decide upon the same value which was proposed by one of them in the presence of failures. Paxos does not need a coordinator, however some process may consider itself a leader for a certain time for a specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
 
 In order to simplify Paxos as well as for increased performance, the MultiPaxos protocol has been proposed \cite{Lam01}. It introduces one leader for all ballots.
 
-The phase of electing the current leader is described in the following section. When the leader is elected, it starts proposing new values submitted by clients.
+%\section{Paxos}
 
-% TODO: TZ jak działa Paxos
+% High level overview, intuion (one leader, no crashes, no message loss)
+% leader, leader has value, leader proposes the value, other processes accepts, when process receives accept from majority of processes it knows that the client request is decided / agreed. server can execute the request
+
+
+%1. elect leader
+%2. propose a value. other processes ack or rejcets
+%3. when majority of accept is received, the consensus is reached
+
+
+%\section{MultiPaxos}
+
+
 
 \section{Leader Election}
 \label{sec:leader_election}

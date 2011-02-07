@@ -11,8 +11,7 @@ The client ID has to be unique for two different clients. To guarantee this, rep
 Below we present some of the possible methods for solving this problem:
 
 \paragraphNewline{Based on the number of replicas}
-Each replica can grant numbers % 
-incremented by a number of replicas, starting from ID of a local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, \ldots{} and replica with ID 2 can grant 2, 5, 8, \ldots{} . It guarantees that two different replicas will not grant the same ID. This solution works with the crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't know what was the last granted ID.
+Each replica can grant numbers incremented by a number of replicas, starting from ID of a local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, \ldots{} and replica with ID 2 can grant 2, 5, 8, \ldots{} . It guarantees that two different replicas will not grant the same ID. This solution works with the crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't know what was the last granted ID.
 
 \paragraphNewline{Time based}
 This is a different approach -- we use system time as the source of unique numbers. To each client ID we are also adding information when replica was started (in milliseconds).
@@ -25,12 +24,8 @@ This method assumes that the local system timer is not set back into past and al
 Because time-based assumptions sometimes cannot be guaranteed, another approach for the crash-recovery model may be considered. Instead of adding information about start time, we can add the current view number. In each view, there is exactly one leader -- so after the prepare phase this replica can grant clients IDs as pair (view, sequence number). Two different replicas cannot start the same view.
 Also we have to guarantee that only the leader replica after prepare phase can grant new client IDs.
 
-This approach will also work by using the epoch numbers -- if a leader crashes, the view must be increased by his recovery. % TODO TZ
-
-
 \section{Catch-up}
 \label{sec:catch_up}
-%TODO TZ should it be here ?
 
 \paragraphNewline{Motivation}
 % TODO TZ rewrite - reader can't understand what catch-up is from this text 
@@ -137,29 +132,21 @@ Choice of the transport layer must take into account characteristics of this mec
 
 Both TCP and UDP may be used -- both having their pros and cons, presented in table below
 
-% TODO TZ
 \begin{center}
-\begin{tabular}{>{\raggedleft\hspace{0pt}}m{0.47\textwidth}m{0.47\textwidth}}
-
-\multicolumn{1}{c}{ \textbf{TCP} }& \multicolumn{1}{c}{ \textbf{UDP} } \\ 
-automatic retransmission guaranteed by protocol &
-                                retransmission must be implemented manually \\ 
-flow control provided by protocol & no flow control, it \emph{is} easy to congest network \\
-big messages automatically fragmented, mer\-ged and managed &
-                                splitting and handling big messages must be~self implemented \vspace{0.5em} \\
-
-request cannot be changed at retransmission &
-                                request can be changed each retransmission \\
-default retransmission time & custom retransmission time \\
-another message may be sent once the previous was delivered &
-                                new datagram may be sent anytime, no matter if the previous reached the target \\
-
-\end{tabular}
+  \begin{tabular}{m{0.47\textwidth}|m{0.47\textwidth}}
+    \multicolumn{1}{c|}{ \textbf{TCP} }                          & \multicolumn{1}{c}{ \textbf{UDP} } \\ \hline
+    automatic retransmission guaranteed by protocol             & retransmission must be implemented manually \\
+    flow control provided by protocol                           & no flow control, it \emph{is} easy to congest network \\
+    big messages automatically fragmented, mer\-ged and managed & splitting and handling big messages must be~self implemented \\
+    request cannot be changed at retransmission                 & request can be changed each retransmission \\
+    default retransmission time                                 & custom retransmission time \\
+    another message may be sent once the previous was delivered & new datagram may be sent anytime, no matter if the previous reached the target \\
+  \end{tabular}
 \end{center}
 
 When catch-up is needed,  our network must have (probably high) message loss. That means the catch-up messages may also get easily lost.
 
-We have noticed, that it is more efficient to use UDP for all smaller messages -- if the package gets lost, we're retransmitting it with updated query. Sometimes UDP message retransmitted even twice is faster than one TCP. In TCP, the timeout for the ACK message grows automatically - and that may cause big delays. During experiments, with 30\% message loss, transmitting a message using TCP that is smaller than the UDP-datagram size took even more than 4 seconds % are these measurements valid for the current implementation or there are result from EPFL time
+We have noticed, that it is more efficient to use UDP for all smaller messages -- if the package gets lost, we're retransmitting it with updated query. Sometimes UDP message retransmitted even twice is faster than one TCP. In TCP, the timeout for the ACK message grows automatically - and that may cause big delays. During experiments, with 30\% message loss, transmitting a message using TCP that is smaller than the UDP-datagram size took even more than 4 seconds 
 to reach the other side.
 
 In UDP, a single message delay or loss does not block communication to the replica -- but in TCP it does.
@@ -188,12 +175,9 @@ This ensures that the replica will catch-up eventually, even if there are no new
 There are three messages that may be sent during the algorithm: \catchUpQuery[], \catchUpResponse and \catchUpSnapshot[].
 \begin{description}
  \item[\normalfont\catchUpQuery -] a request for missing instances. It carries a list of missing ID's and may have one of two flags set: the first flag indicates if this was a periodical catch-up, second one -- 
- if we want to get the last snapshot, not the missing log fragment. % TODO TZ ?
- \item[\normalfont\catchUpResponse -] response sent for every received request. It has a list of decided instances for requested numbers. The list may be empty. This message may have two flags: 
- either if the query had periodical flag set % TODO TZ ?
- , or an indicator that the replica doesn't have an old enough log, and 
- state transfer is the only possibility. % TODO TZ ?
- \item[\normalfont\catchUpSnapshot -] if another replica asked for our last snapshot, this message is sent. It contains only responders last snapshot. % TODO TZ ?
+ if we want to get the last snapshot, not the missing instances.
+ \item[\normalfont\catchUpResponse -] response sent for every received request. It has a list of decided instances for requested numbers. The list may be empty. This message may have two flags: periodical flag and snapshot only flag. The periodical flag is set if this is response to the periodical query. The snapshot only flash is set if the replica does not have an old enough instances, and transferring a snapshot is the only possibility.
+ \item[\normalfont\catchUpSnapshot -] if another replica asked for snapshot, this message is sent with most recent snapshot.
 \end{description}
 
 The list describing missing instances is constructed by replica in straightforward way: it contains all undecided instance numbers plus the (highestID+1) as the first instance, the replica has no knowledge about. The responder sends therefore all decided instances from the list and all decided instances that are higher or equal the additional number.
