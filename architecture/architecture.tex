@@ -118,13 +118,13 @@ Short description of the JPaxos modules goes as follows:
 \label{sec:storage_and_data_structures}
 
 Apart of modules and interaction among them it is important to design proper routines for accessing the data.
-One should choose proper way of storing the data used in a single module, but much more challenging is to design proper structures and access methods for the data shared across JPaxos. Below we describe how we store most significant data in our library. %TODO TZ: Sprawdź proszę ten akapit
+One should choose proper way of storing the data used in a single module, but much more challenging is to design proper structures and access methods for the data shared across JPaxos. Below we describe how we store the most significant data in our library.
 
 \subsection{Process descriptor}
 
 Every application has some configurable options that stay unchanged during the run. In JPaxos all these constants are kept in the \texttt{ProcessDescriptor} class.
 
-During the system startup, JPaxos reads a configuration file and initializes ProcessDescriptor with proper values for:
+During the system startup, JPaxos reads a configuration file and initializes \texttt{ProcessDescriptor} with proper values for:
 \begin{tightList}[\setlength{\labelwidth}{0em}]
  \item[\textbf{crashModel}] the crash model (see chapter \ref{chapter:recovery})
  \item[\textbf{logPath}] path for the stable storage
@@ -134,44 +134,45 @@ During the system startup, JPaxos reads a configuration file and initializes Pro
  \item[\textbf{batchingLevel}] a maximum size of the batch (see \ref{sec:batching})
  \item[\textbf{maxBatchDelay}] delay for connecting requests for batching in milliseconds
  \item[\textbf{network}] network protocol to be used (TCP or UDP)
- \item[\textbf{maxUdpPacketSize}] a threshold for generic network
+ \item[\textbf{maxUdpPacketSize}] a maximum size of UDP-datagram sent by GenericNetwork
 \end{tightList}
 
 \subsection{Storage interface}
 \label{subsec:storage_interface}
 
-\texttt{Storage} interface is responsible for holding the data for the Paxos protocol.
+\texttt{Storage} interface is responsible for holding state of the Paxos protocol.
 
-The data is shared across various modules.
-It is very likely that various threads might want to access the \texttt{Storage} simultaneously. In order to prevent concurrency-related errors only one thread, the Dispatcher, may access these data. So if one wants to modify the \texttt{Storage}, a proper \texttt{Runnable} must be passed to the Dispatcher for execution (see subsection \ref{sec:threads}).
+The state of Paxos is shared across various modules.
+It is very likely that various threads might want to access the \texttt{Storage} simultaneously. In order to prevent concurrency-related errors only one thread, the Dispatcher (see section \ref{sec:threads}), may access these data. 
 
 \paragraph{\normalfont \ttfamily Storage}
 holds the data as follows:
 \begin{tightList}[\setlength{\labelwidth}{0em}]
   \item[\textbf{log}] the Paxos Log (see section \ref{subsec:the_paxos_log})
   \item[\textbf{view}] current view
-  \item[\textbf{firstUncommitted}] first instance not decided yet instance.
+  \item[\textbf{firstUncommitted}] first instance not decided yet
   \item[\textbf{windowSize}] the current size of the window used for multiple instances
   \item[\textbf{acceptors}] a list of processes acting as acceptors
-  \item[\textbf{snapshot}] the most recent snapshot
+  \item[\textbf{snapshot}] the most recent snapshot (see section \ref{sec:snapshotting})
   \item[\textbf{epoch}] the current epoch vector (see section \ref{sec:epoch_ss})
 \end{tightList}
 
 \strut
 
-The type of \texttt{Storage} implementation must be chosen according to requirements impose by the model or recovery.
+The type of \texttt{Storage} implementation must be chosen according to requirements imposed by the model or recovery.
 The implementation decides which elements must be kept in the stable storage and which may be placed in volatile memory.
 
 \subsection{The Paxos Log}
 \label{subsec:the_paxos_log}
-The most important data structure for Paxos, the Log, is part of the \texttt{Storage}.
-In our program responsible for that is the \texttt{Log} interface and the \texttt{Con\-sen\-susInstance} class.
 
-\texttt{ConsensusInstance} is a class keeping all data related to a single instance of Paxos: % TODO TZ
+The most important data structure for Paxos, the Log, is part of the \texttt{Storage}.
+In our program responsible for storing list of Paxos instances is the \texttt{Log} interface and the \texttt{Con\-sen\-susInstance} class.
+
+\texttt{ConsensusInstance} is a class keeping information about single instance of Paxos and contains:
 
 \begin{tightList}[\setlength{\itemindent}{0pt}\setlength{\leftmargin}{2\leftmargin}]
   \item[\textbf{view}] a view of the last received message related with this instance,
-  \item[\textbf{value}] the value which is held by this instance (i.e. packed requests that are received from clients and executed after deciding), %TODO TZ deciding what
+  \item[\textbf{value}] the value which is held by this instance (i.e. packed requests that are received from clients and executed when the state is set to DECIDED), 
   \item[\textbf{state}] the instance can be in one of three states:
   \begin{tightList}[\setlength{\itemindent}{0pt} \setlength{\labelwidth}{7em}]
     \item[\texttt{\tiny UNKNOWN}] no information about the value of this instance,
@@ -203,111 +204,56 @@ New instance can always be appended to the log and after this operation \textit{
 
 \noindent Old instances can be removed by snapshotting only. When the replica receives a new snapshots, the log is truncated and the \textit{lowestAvailableId} is increased.
 
-
-
-\subsection{Significant data structures}
-% TODO TZ is the Thesis reader able to understand what are these?
-% it it information for the JPaxos "user" or "developer"? Or it's documentation of JPaxos design
-
-
-Other noteworthy data structures include:
-\label{subsubsec:significant_structures}
-  \begin{description}
-    \item[pendingRequests Map\textless RequestId, ClientId\textgreater] Keeps the requests received from the client for execution that were not yet executed. After execution of request, the reply is sent to client from this structure.
-    \item[lastReplies Map\textless ClientId, Reply\textgreater] For each client, keeps the last reply that was sent to it. If client retransmits message which was executed, replica responses immediately.
-    \item[decidedWaitingExecution Map\textless Integer, BatchedRequests\textgreater] Paxos might decide in\-stan\-ce $k$ before instance $k-1$, but the replica must execute all requests in order. So it must cache in\-stan\-ce $k$ until all previous instances are decided.
-    \item[executedRequests Map\textless ClientId, Reply\textgreater] We have to save IDs of all requests which were executed on state machine to prevent executing the same request twice.
-	\item[executedDifference Map\textless Integer, Replies\textgreater] Used to recreate executedRequests stru\-ctu\-re for moment when snapshot was made by state machine.
-  \end{description}
-
-
-
 \section{Threading Model}
 \label{sec:threads}
 
-A proper design of a multi-threaded application % TODO TZ what application
-must contain description of the major threads, their responsibilities and interactions. 
+Multi-threaded applications are very often complex, hard to debug and test. But single threaded applications cannot fully utilise multi-core processors. The JPaxos library is using multiple threads, but every variable in the library can be accessed only from one thread, what decreases the complexity and makes the code easier to test and maintain.
+
+We can divide threads in JPaxos library into two categories - task based and
+network related. 
+Task based thread provides a method to add new tasks (work
+items) to the queue . When the queue is not empty, the thread takes the task
+with highest priority and executes it. If no task is available, the thread is
+sleeping. The network related threads are used to receive and send messages
+over the network.
+
+Below we describe the threads in JPaxos, their responsibilities and interactions between them. 
 
 \begin{description}
-  \item[Replica] \hfill
+  \item[Replica thread] \hfill
+
+    The replica thread is task based thread. New tasks are scheduled upon a signal from Paxos about a new decision, or when new snapshot was received or made by service. For most of the time this thread waits for new decided consensus instances. When new request is decided by Paxos, it is executed by service in replica thread. Also all snapshot related tasks are executed in this thread. Other threads (e.g. Paxos dispatcher) may therefore safely execute their snapshot-concerning routines.
     
-    Designed as an event loop. The thread % TODO TZwhat thread
-    waits for new events at certain event queue and reacts on them.
-
-    An event may either be a signal from Paxos about a new decision, or it may concern snapshotting, e.g. a new snapshot was made by service, the catch-up provided a new snapshot or a new snapshot has been requested from the service.
-
-    For most of the time Replica thread waits for requests to be ordered. If they can not be executed yet, it puts them on a list (it uses for that % TODO TZ??
-    the decidedWaitingExecution object).
+  \item[Paxos dispatcher] \hfill \nopagebreak
     
-    As for snapshotting -- the thread is a proxy ensuring linearizability in snapshot handling.
-    Multiple threads (replica itself, dispatcher and catch-up) may therefore safely execute their snapshot-concerning routines.
+    This is also task based thread. It executes tasks related to Paxos consensus algorithm as well as provides secure access to critical data structures -- to the \texttt{Storage} (see subsection \ref{subsec:storage_interface}). This thread is also responsible for sending, receiving and handling most of protocol messages as well as accessing the \texttt{Storage} and triggering catch-Up. All tasks are prioritized, so for example, writes to the storage and the Paxos-related processing events have a higher priority than the catch-Up tasks.
     
-  \item[Dispatcher] \hfill \nopagebreak
+    New tasks are added in the following situations:
+    \begin{tightList}
+      \item[\textbullet] a new message has been received - related message handler is executed
+      \item[\textbullet] a new message has been sent
+      \item[\textbullet] failure detector suspects the leader
+      \item[\textbullet] failure detector should sent \alive message
+      \item[\textbullet] proposer starts new proposal
+      \item[\textbullet] message should be retransmitted
+      \item[\textbullet] new snapshot is received (from service or catch-up)
+      \item[\textbullet] a periodical catch-up should occur
+    \end{tightList}
     
-    Also designed as an event loop, the dispatcher executes the Paxos consensus algorithm as well as provides secure access to critical data structures -- to the \texttt{Storage} (see subsection \ref{subsec:storage_interface}).
-    
-    The Dispatcher thread is using a priority queue, so that the events are sorted by their importance -- for example, writes to the storage and the Paxos-related processing events have a higher priority than the Catch-Up tasks.
-    
-    The dispatcher is responsible for sending, receiving and handling most of protocol messages as well as accessing the \texttt{Storage} and triggering Catch-Up.
-    
-    Events are placed in the event queue in the following situations:
-    
+  \item[NioClientManager] \hfill
 
-    % TODO TZ methods? that generate these events or what?
-    \begin{tabular}{rl}
-      Recovery.NetworkListener & \begin{tabular}[t]{l}
-                          received a new message \\
-                          sent a message
-                        \end{tabular} \\
-      FailureDetector & \begin{tabular}[t]{l}
-                          suspects another process \\
-                          leader sends alive messages
-                        \end{tabular} \\
-      Paxos.NetworkListener & \begin{tabular}[t]{l}
-                          received a new message \\
-                          sent a message
-                        \end{tabular} \\
-      Paxos.propose() & \begin{tabular}[t]{l}
-                          the application starts a new proposal
-                        \end{tabular} \\
-      Paxos.startProposal() & \begin{tabular}[t]{l}
-                                the application asks the current process \\ \hspace{1em} to become a proposer.
-                              \end{tabular} \\
-      Proposer &  \begin{tabular}[t]{l}
-                    timeout for requests to be batched
-                  \end{tabular} \\
-      Retransmitter & \begin{tabular}[t]{l}
-                        message should be retransmitted
-                      \end{tabular} \\
-      Catch-Up &  \begin{tabular}[t]{l}
-                   gets and merges log fragment \\
-                   a message is received \\
-                   received a snapshot form other replica \\
-                   a periodcal catch-up should occur
-                 \end{tabular} \\
-      SnapshotMaintainer & \begin{tabular}[t]{l}
-                             truncates the log after receiving new snapshot
-                           \end{tabular} \\
-    \end{tabular}
+    This is thread used to handle connections with clients. By using java.nio package, we only need one thread to manage all clients connection. Every time a new event occurs (an incoming connection waits for accepting, data received from client, data ready to be sent) an appropriate action is executed. 
 
+  \item[UdpNetwork] \hfill
 
-        % TODO TZ What are these? (we should better describe what we want to present in this section and why)
-	\item[NioClientManager] \hfill
+    This thread is responsible for listening on DatagramSocket for incoming UDP datagram packages. Every time a new message is received, it is deserialised and all listeners are notified.
 
-		By using java.nio package, we only need one thread \textsc{SelectorThread} to manage all clients connection. Every time a new event occurs (an incoming connection waits for accepting, data received from client, data ready to be sent) an appropriate action is executed. The current implementation allows easy scaling % TODO TZ ??
-                to more \textsc{SelectorThread}'s to balance the CPU load if one thread wouldn't cope with a large number of connections.
+  \item[TcpNetwork] \hfill
 
-	\item[UdpNetwork] \hfill
-
-		One thread responsible for listening on DatagramSocket for datagram packages. Every time a new message is received, it is deserialised and all listeners are notified. 
-
-	\item[TcpNetwork] \hfill
-
-		For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Also there is one thread which waits for new incoming connections. Overall we have  $2 \cdot \text{\textit{replica count}} - 1$ % TODO TZ explain this in more detail
-                threads handling TCP. Each of them can be in one of three states:
-		\begin{itemize}
-			\item connected, waiting for new messages,
-			\item not connected, trying to establish a new connection,
-			\item waiting for a new connection to be established by other replica.
-		\end{itemize}
+    For TCP connection between each two replicas a separate thread for receiving and transmitting is created. Also there is one thread which waits for new incoming connections. Overall, we have $n-1$ threads for receiving data from $n-1$ other replicas, $n-1$ threads for transmitting data and 1 thread for new incoming connection. It gives $(n - 1) + (n - 1) + 1 = 2 \cdot n - 1$ threads handling TCP. Each receiving and transmitting thread can be in one of three states:
+    \begin{itemize}
+            \item connected, waiting for new messages,
+            \item not connected, trying to establish a new connection,
+            \item waiting for a new connection to be established by other replica.
+    \end{itemize}
 \end{description}
