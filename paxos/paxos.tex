@@ -66,11 +66,7 @@ The biggest problem connected with concurrent instances is the possibility of or
   \caption{Duplicating messages - Scenario 1}
 \end{figure*}
 \begin{description}
-  \item [Scenario 1] $R_1$ is the leader, proposes (1:B). No other processes receives these messages and $R_2$ becomes the leader. $R_2$ proposes (1:C) and (2:B). (2:B) is decided. $R_2$ fails and $R_1$ becomes the leader again. While preparing, it learns about (2:B). It has (1:B) as a previously accepted value. The Paxos algorithm requires $R_1$ to propose (1:B) again, since its the accepted value with the highest timestamp, but this will result in the request being decided twice.
-
-  \item [Scenario 2] After a view change, the new primary will know about any value that might have been decided on a previous instance but it might not know about values that were proposed, accepted by up to a minority of replicas but not decided. Suppose that in instance $i$, process $p_1$ had proposed request $R_1$ which was accepted by a minority of replicas. The new primary, $p_2$ doesn't learn about request $R_1$
-  so it proposes no-op for instance $i$. % TODO: TZ why?
-  More or less at the same time, the client resends the request $R_1$ to the new primary, which proposes it and gets it accepted as instance $i+2$, before the no-op request for instance $i$ being accepted. Process $p_2$ crashes and $p_1$ takes over again. Since $p_2$ didn't manage to get no-op accepted for instance $i$, $p_1$ proposes $R_1$ again which ends up being ordered both as instance $i$ and $i+2$.
+  \item [Scenario] There are three replicas - $R_1$, $R_2$ and $R_3$. $R_1$ is the leader, proposes <1:B> (value B in first consensus instance). No other processes receives these messages and $R_2$ becomes the leader. $R_2$ proposes <1:C> and <2:B>. <2:B> is decided. $R_2$ fails and $R_1$ becomes the leader again. While preparing, it learns about <2:B>. It has <1:B> as a previously accepted value. The Paxos algorithm requires $R_1$ to propose <1:B> again, since its the accepted value with the highest timestamp, but this will result in the request being decided twice.
 \end{description} 
 
 Unfortunately we cannot prevent requests from being decided twice in two different instances. Because of that, the only valid solution for this problem is to remember the last executed instance for every client and not executing it again. But this requires to keep a new structure in memory as well as by every snapshot (after recovering from the snapshot, this structure has to be loaded too).
@@ -98,24 +94,19 @@ As already mentioned, using the concurrent instances will improve latency and th
 
 In full-duplex networks, concurrent instances will improve network utilisation, because when the leader is waiting for replies, the network from the leader to the others is idle, so it can be used to send the next request. 
 
-% TODO: TZ ↓
-\paragraph{Batching} is another method for improving performance and network usage. It is preferred over increasing the concurrent instances count, however
-the benchmarks show % ← TODO:
-that joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
+\paragraph{Batching} is another method for improving performance and network usage. It is preferred over increasing the concurrent instances count, however joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
 
 \section{No operation command}
 
-The best method to understand the problem is to analyze the scenario below:
+When concurrent instances optimisation is used, it is possible that leader after prepare phase will have a gap in the log. To illustrate the problem, let's analyze the scenario below.
 
-\begin{TODO} % TODO: TZ
-
-We have three replicas $R1$, $R2$ and $R3$. Replica $R1$ is the leader and proposes {1:A} and {2:B}. Value {2:B} was decided by all replicas, but {1:A} was lost. $R1$ crashes and $R2$ becomes a new leader. After preparing $R2$ has a gap in log because no information about instance 1 was received.
+\begin{description}
+  \item [Scenario] We have three replicas $R1$, $R2$ and $R3$. Replica $R1$ is the leader and proposes <1:A> and <2:B>. Value <2:B> is decided by all replicas, but no other process receives <1:A>. $R1$ crashes and $R2$ becomes a new leader. After prepare phase, $R2$ has a gap in the log because no information about instance 1 was received.
+\end{description} 
 
 As we can see after the prepare phase, a leader can have a gap in the log. Without filling this gap, replica cannot execute and propose new values. Because of that, a new value has to be proposed in this place.
 
-With crash-stop or crash-recovery without stable storage the value may be lost forever. That happens when decision $n+1$ is already decided, and decision $n$ is unknown to all but the leader, and the leader crashes. As only he got the value, and it has been lost -- either because he is not allowed to recover, or he is recovering without stable storage.
-
-\end{TODO}
+With crash-stop or crash-recovery without stable storage the value may be lost forever. That happens when decision $k+1$ is already decided, and decision $k$ is unknown to all but the leader, and the leader crashes. As only he got the value, and it has been lost -- either because he is not allowed to recover, or he is recovering without stable storage.
 
 On the other hand, the leader change may happen due to the lost of \alive message. In this case someone has the value, and it could be used back in the voting. But there is no simple and fast method to detect this situation.
 
@@ -152,7 +143,7 @@ The mechanism of managing such snapshots is called by us \textit{snapshotting}.
 
 In order to be able to remove stale log entries snapshotting must to be implemented. It also speeds up the recovery and process of filling missing instances.
 
-The size of a snapshot is of course bounded. If we create a new snapshot as the log size reaches some limit the size of the log is bounded as well, so no strucrure is allowed to grow forever.
+The size of a snapshot is of course bounded. If we create a new snapshot as the log size reaches some limit the size of the log is bounded as well, so no structure is allowed to grow forever.
 
 When a new snapshot is created the old log entries are truncated. If a replica that is missing old logs rejoins, the most recent snapshot is transferred first and then all the decisions since the snapshot are sent to complete the updating procedure.
 
@@ -169,7 +160,7 @@ It has been proven for the Paxos consensus algorithm that it minimises the numbe
 
 Another optimisation is merging the role of \accept and \textsc{Propose}. As long as acceptors and proposes do not share the log this is not allowed. But if their knowledge is identical and the leader proposed some value, then he must accept it as well. In most solutions one node acts as proposer and acceptor, and they do share the log.
 
-So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- he knows that the leader and it itself % TODO TZ ??
+So in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- it knows that the leader and itself
 accept the message. Normally the leader process has to first send \propose to all and later \accept to all. By this optimisation only half of messages is required to be sent.
 
 \paragraphNewline{Sending to itself}
@@ -182,7 +173,7 @@ This does not influence performance much, however it is recommended as it decrea
 
 \paragraphNewline{Minimizing the count of messages carrying the value}
 
-Most of the articles about Paxos state that the \accept message carries the value proposed by the proposer. %TODO: TZ
+Most of the articles about Paxos state that the \accept message carries the value (request from client).
 In such case we can accept on the value even without receiving a \propose message.
 
 The value usually is bigger than a normal message of JPaxos. Because of that we want to minimize number of messages which contain the value.
