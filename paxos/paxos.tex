@@ -127,7 +127,10 @@ The replicated log cannot be allowed to grow forever, it must be bounded in any 
 
 In JPaxos the Paxos protocol is not used for getting lost requests due to performance reasons. For this we use a special procedure called \textit{catch-up}, which is described in section \ref{sec:catch_up}.
 
-So having the old log is needed for view change and, in the crash-recovery model, for recovery. % TODO unclear, explain more
+Having the old log is needed in three cases: for the catch-up, for view change and, in the crash-recovery model, for recovery.
+The catch-up needs old log in order to send them to a replica which is not up to date, once the replica requests them.
+During the view change the leader requests log entries of all instances it considers to be undecided.
+By recovery a replica needs the log of other replicas in order to know what has been decided at least since its crash.
 
 Especially the latter is problematic. The view change always requires a bounded number of instances in the log. But if we assume recovery with minimal or no stable storage (as in the case of the epoch based or view based recovery algorithm), after the recovery a replica needs to recover the state from scratch. For this, it needs the whole log or complete state.
 
@@ -135,23 +138,25 @@ Especially the latter is problematic. The view change always requires a bounded 
 
 A command can be deleted from the log after being executed by all replicas in crash-stop and crash-recovery models with stable storage. The highest instance executed by all replicas is called a \emph{global commit point}.
 
-But the rule above % TODO JK what rule
-is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for some time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime. If one replica crashes, the other replicas have no way of knowing that it is a crash and not a disconnection, so they would have to keep the logs forever. And the replica can stay crashed for arbitrary long time.
+But removing all instances prior to the global commit point is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for some time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime. If one replica crashes, the other replicas have no way of knowing that it is a crash and not a disconnection, so they would have to keep the logs forever. And the replica can stay crashed for arbitrary long time.
 
 Therefore using snapshotting is the only acceptable solution in JPaxos.
 
-\paragraphNewline{Snapshotting} 
-% TODO JK what is snapshotting (write one - two sentences of introduction)
+\paragraphNewline{Snapshotting}
 
-In order to be able to remove stale log entries snapshotting has to be implemented. It also speeds up the recovery and process of filling missing instances.
+A replica needs the old log entries in order to bring its state up to date. But instead of executing all decided requests the replica may transfer the state of the service from other replica. To transfer the state of the service some assumption must be fullfilled: the service must be able to save its state, and be able to update itself to such state.
 
-\begin{TODO} % TODO JK rewrite
-The size of a snapshot is bounded, as the state machine must be implemented with the assumption of bounded memory, and the snapshot may be just the processes memory image. The size of the log is bounded as well -- we create a new snapshot as log size reaches some limit.
+The service can create a \textit{snapshot} -- arbitrary data that can be parsed by the service to change its state to the state identical as in the moment when the snapshot was created.
 
-Upon reaching the limit of the log, a new snapshot with full state is created and the old logs are truncated -- even if some other replica does not have them yet. When a replica that is missing old logs rejoins, the most recent snapshot is transferred first and later all the decisions from the top of the log that were not yet applied to the state.
+The mechanism of managing such snapshots is called by us \textit{snapshotting}.
 
-The problematic part here is the Service -- if the application using JPaxos library does not implement creating snapshots or does not provide them often enough, the log will grow forever.
-\end{TODO}
+In order to be able to remove stale log entries snapshotting must to be implemented. It also speeds up the recovery and process of filling missing instances.
+
+The size of a snapshot is of course bounded. If we create a new snapshot as the log size reaches some limit the size of the log is bounded as well, so no strucrure is allowed to grow forever.
+
+When a new snapshot is created the old log entries are truncated. If a replica that is missing old logs rejoins, the most recent snapshot is transferred first and then all the decisions since the snapshot are sent to complete the updating procedure.
+
+The most problematic part is the Service -- if it does not implement creating snapshots or does not provide them often enough, the log will grow forever.
 
 Snapshotting is described in details in the section \ref{sec:snapshotting}.
 
@@ -177,30 +182,41 @@ This does not influence performance much, however it is recommended as it decrea
 
 \paragraphNewline{Minimizing the count of messages carrying the value}
 
-Most of the articles about Paxos state that the \accept message carries the value proposed by proposer. %TODO: TZ
-In such case we can accept the value even without receiving a \propose message.
+Most of the articles about Paxos state that the \accept message carries the value proposed by the proposer. %TODO: TZ
+In such case we can accept on the value even without receiving a \propose message.
 
-The value usually is bigger than a normal message of JPaxos. Because of that we want to minimize number of message which contain the value.
+The value usually is bigger than a normal message of JPaxos. Because of that we want to minimize number of messages which contain the value.
 In JPaxos the \accept message does not carry the value. Before a process can send the \accept message it has to receive the \propose message. The process decides upon a value if it receives a \propose and majority of \accept messages.
 
-Waiting for the \propose message might seem to cause additional overhead, but it makes JPaxos faster -- less network bandwidth is used by a single instance. % TODO JK why? explain
-Also usually the \propose will be delivered before any \accept message.
+Waiting for the \propose message might cause additional overhead, but usually the \propose will be delivered prior to the majority of \accept messages.
+Each process must receive one \propose[], but multiple \accept messages. If the \accept message does not carry the value, significantly less network bandwidth is used by a single instance.
+
 
 \paragraphNewline{Best-case messages}
 \label{par:bestCaseMessages}
 So, in the normal operation in JPaxos:
 
-% TODO JK Value - value to be agreed upon?
-% TODO JK what are the numbers inside table the number of messages sent
-\begin{tabular}{llllll}
-          & Processes & Count & Time & Message  & Value  \\
- Proposer & $1$       & $n-1$ & $n$  & \propose & yes    \\
- Acceptor & $n-1$     & $n-1$ & 1    & \accept  & no
+%TODO: TZ: Jeśli masz sprawnego inkscape'a, narysuj proszę do tego prosty rysunek best case 
+% mi nie tylko vim'a popsuł niedokończony update systemu, inkscape też narzeka na brak jakiegoś .so
+% chodzi o diagram odpowiadający komunikacjom z tabelki poniżej
+
+\begin{table}[h]
+\begin{tabular}{rccccc}
+          & \begin{tabular}{c} How many \\ processes send \\ the message \end{tabular} 
+          & \begin{tabular}{c} Count of \\ messages \\ sent \end{tabular} 
+          & Time 
+          & \begin{tabular}{c} Message \\ type \end{tabular}
+          & \begin{tabular}{c} Carries value \\ (client requests) \end{tabular}
+          \\
+ Proposer & $1$                     & $n-1$             & $n$  & \propose & yes    \\
+ Acceptor & $n-1$                   & $n-1$             & 1    & \accept  & no
 \end{tabular}
+\end{table}
 
-We can see that in order to decide the process needs to send the \propose[] once, and later each not-leader process sends the \accept to others.
+We can see that in order to decide the process needs to send the \propose[] once, and later each non-leader process sends the \accept to others.
 
-Other implementations consider using bounded learner count % TODO JK can't understand what you mean
--- so that an acceptor sends \accept only to them. An additional message, \textsc{Decided}, is sent by learners to all as the ballot has finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase must occur.
+For the comparison of consensus algorithms usually time is defined in a specific way: $n$ denotes the time needed to send a message containing the value to be agreed upon, and $1$ is the time required to send any other message. This is motivated by the value size -- usually the value is significantly bigger than any protocol message, so it is important to differentiate the messages carrying value and all the others.
 
-An interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP multicast is used for all broadcasts, what significantly increases the scalability and performance.
+Other implementations consider using bounded learner count -- only some processes are selected as the learners. For example only one process plays the role of a learner -- that means the acceptors send the \accept messages only to this process. An additional message, \textsc{Decided}, is sent by the learner to all as the ballot has finished. Thanks to this modification no reliable broadcast is needed, but also an additional phase of communication must occur. If only some processes act as learners, it is important to ensure that there is at least one learner that didn't crash, otherwise the protocol would not guarantee liveness.
+
+An interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP-multicast is used for all broadcasts, what significantly increases the scalability and performance.
