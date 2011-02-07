@@ -6,11 +6,20 @@ In order to prevent misunderstandings and to clarify the subject of the thesis w
 basic % TODO -- lepszy odpwoednik 
 terms that we use in the reminder of this thesis.
 
-% TODO: JK
-% 1) correct process
-% 2) snapshot
-% 3) batching (?)
-% 4) the value, the view?
+\paragraph{Failure (crash)}
+is a permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc.
+We do not consider byzantine failures, i.e. a process may not misbehave in any way.
+
+\paragraph{Catastrophic failure} is a failure of all processes at the same moment.
+
+\paragraph{The failure model}
+defines what type of failures can be tolerated by a system
+\begin{tightList}[ \setlength{\leftmargin}{2\leftmargin}]
+ \item[\textbf{Crash-Stop}] means that if a process failed, it failed permanently and must never be up again
+ \item[\textbf{Crash-Recovery}] assumes that a crashed process may recover (i.e. start working again)
+\end{tightList}
+
+\paragraph{Correct process} is a process that did not crash, i.e. that works according to the expectations.
 
 \paragraph{Consensus}
 is a problem in distributed computing that encapsulates the task of reaching distributed agreement in the group of processes in the presence of faults.
@@ -24,6 +33,8 @@ The consensus protocol guarantees:
 \end{tightList}
 
 \paragraph{Instance (ballot)} is a single logical run of an algorithm. In order to decide on multiple values, many consecutive \textit{consensus instances} are executed, each identified by it's \textit{ID}.
+
+\paragraph{Value} is the value consensus agrees upon. In JPaxos the value always consists of the client requests.
 
 \paragraph{State machine}
 is any program, algorithm or protocol that can be described by its state and that can transit to other state only by receiving a command.
@@ -39,6 +50,9 @@ is a program that receives requests (or commands) and executes them generating a
 \paragraph{Deterministic service}
 is a service that in a given state will always given the same response for a given command, and will always change its state to the same state.
 
+\paragraph{Snapshot}
+is the saved state of a service at a specified point in time that can be used by the same service to restore its state to the exact state from the specified point in time. The snapshot should be in format that may be easily stored and transferred via network.
+
 \paragraph{Client}
 is the program sending requests to the service
 
@@ -53,19 +67,6 @@ is a networking primitive providing send-to-all communication for which holds:
 
 \noindent The atomic broadcast problem is equivalent to consensus, i.e. if one can be solved, then the other also can be solved.
 
-\paragraph{Failure (crash)}
-is a permanent lack of activity from a program. It may be caused by programming error, lack of electricity etc.
-We do not consider byzantine failures, i.e. a process may not misbehave in any way.
-
-\paragraph{Catastrophic failure} is a failure of all processes at the same moment.
-
-\paragraph{The failure model}
-defines what type of failures can be tolerated by a system
-\begin{tightList}[ \setlength{\leftmargin}{2\leftmargin}]
- \item[\textbf{Crash-Stop}] means that if a process failed, it failed permanently and must never be up again
- \item[\textbf{Crash-Recovery}] assumes that a crashed process may recover (i.e. start working again)
-\end{tightList}
-
 \paragraph{Stable storage}
 is the memory that survives crashes. Usually stable storage denotes a hard drive.
 Sometimes also \textbf{volatile storage} name is used, to name memory that does not survive crashes, like the RAM memory.
@@ -79,11 +80,12 @@ Sometimes also \textbf{volatile storage} name is used, to name memory that does 
 The consensus problem is not solvable in an asynchronous system where at least one process may crash and processes communicates by sending messages. This fact has been proved in the \cite{FLP}.
 
 \paragraphNewline{Number of messages}
+% TODO TZ: Jeśli masz pomysł, zmień tytuł tego paragrafu. Nie mam pomysłu na jaki.
+% Po moich poprawkach jest bardziej o czasie niz o liczbie wiadomości.
 
-In the best case no algorithm is able to solve consensus in time less than $1n+1$, that is one message with the value and one message not carrying the dataload, where $n$ is the time of transferring a message carrying data, and $1$ is time of transferring a protocol message without the data.
-% TODO JK ^^^^^^^^^^^^^^^^^^^
+In the best case no algorithm is able to solve consensus faster than in the time needed to send one message with the value and one message not carrying value agreed upon.
 
-Our implementation, as described in section \ref{par:bestCaseMessages}, is theoretically able to decide messages in $n+1$ time. Moreover, assuming no network congestion and message loss the average time is equal to the best-case time.
+Our implementation, as described in section \ref{par:bestCaseMessages}, is able to decide client commands in such time. Moreover, assuming no network congestion and message loss the average time is equal to the best-case time.
 
 However, with TCP and simple UDP it is not possible to use either multicast or broadcast primitive; this prolongs the real time needed for sending a message, as in JPaxos the network module \emph{broadcast} is translated to $n$ identical \textit{unicast} messages.
 
