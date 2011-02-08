@@ -26,37 +26,24 @@ JPaxos allows for replica crashes as well as recovering the crashed replicas, en
 }
 \end{minipageWithIndent}
 
-JPaxos can be run in one of the following two modes of operation with following guarantees:\nopagebreak
-
-Basic mode:
-\begin{tightList}
-  \item [\textbullet] to be able to tolerate $f$ faulty replicas, the system must consists of at least $2f + 1$ replicas (i.e. $n \ge 2f + 1$)
-  \item [\textbullet] after replica crashes, it recovers its state from other replicas
-\end{tightList}
-
-Extended mode:
-\begin{tightList}
-  \item [\textbullet] no limit on the number of faulty processes (i.e. $f = n$)
-  \item [\textbullet] after replica crashes, it recovers its state from non-volatile memory
-%  \item [\textbullet] around 200 times slower than the basic mode
-\end{tightList}
-
 \section{Thesis organization}
 
 % TODO JK - napiszesz to ?
 
-Second part of this chapter % TODO TZ
-shortly characterizes articles concerning Paxos algorithm and presents the most significant definitions as well as theoretical results concerning Paxos.
+In the opening chapter we shortly characterize articles concerning Paxos algorithm and present the most significant definitions as well as theoretical results concerning Paxos.
 
-The second chapter provides description of Paxos algorithm used by us, including the modifications, implementation details and optimizations.
+The second chapter provides description of Paxos algorithm, including some modifications to the core algorithm.
 
 In chapter 3 we describe the design of JPaxos -- its architecture, modules, important data structures and threading model.
 
 Implemented features, chapter 4, is devoted to the implementation work related to the state machine replication, including the snapshotting, catch-up and proper achieving transparency for the service.
 
-Fifth chapter describes the recovery related issues, both for Paxos and for the state machine replication.
+Fifth chapter contains description of optimisations we used in order to acheive better performance of the library.
+
+Chapter 6 describes recovery related issues, both for Paxos and for the service replication.
 
 The last chapter concludes the thesis.
+
 
 \section{Related work}
 
