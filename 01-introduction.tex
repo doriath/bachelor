@@ -28,26 +28,17 @@ JPaxos allows for replica crashes as well as recovering the crashed replicas, en
 
 \section{Thesis organization}
 
-% TODO JK - napiszesz to ?
-
-In the opening chapter we shortly characterize articles concerning Paxos algorithm and present the most significant definitions as well as theoretical results concerning Paxos.
-
+In the opening chapter we shortly characterize articles concerning Paxos algorithm and present the most significant definitions as well as theoretical results concerning Paxos. 
 The second chapter provides description of Paxos algorithm, including some modifications to the core algorithm.
-
 In chapter 3 we describe the design of JPaxos -- its architecture, modules, important data structures and threading model.
-
-Implemented features, chapter 4, is devoted to the implementation work related to the state machine replication, including the snapshotting, catch-up and proper achieving transparency for the service.
-
-Fifth chapter contains description of optimisations we used in order to acheive better performance of the library.
-
+Chapter 4 is devoted to the implementation work related to the state machine replication, including snapshotting, catch-up and achieving transparency for the service.
+Fifth chapter contains description of optimizations we used in order to achieve better performance of the library.
 Chapter 6 describes recovery related issues, both for Paxos and for the service replication.
-
 The last chapter concludes the thesis.
-
 
 \section{Related work}
 
-The Paxos and MultiPaxos algorithm have been proposed by L. Lamport in \textit{The Part-Time Parliament}~\cite{Lam98}. Since the article presented the algorithm in quite specific form, the Paxos protocol has been described again by Lamport in \textit{Paxos Made Simple}~\cite{Lam01}.
+The Paxos and MultiPaxos algorithms have been proposed by L. Lamport in \textit{The Part-Time Parliament}~\cite{Lam98}. Since the article presented the algorithm in quite specific form, the Paxos protocol has been described again by Lamport in \textit{Paxos Made Simple}~\cite{Lam01}.
 
 Since then the Paxos protocol has been described from the theoretical point of view. Improvements and their proofs of correctness were presented as well as behaviour with byzantine crashes has been characterized.
 
