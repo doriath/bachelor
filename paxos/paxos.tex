@@ -7,18 +7,82 @@ The Paxos algorithm is used to solve consensus problem in a distributed system. 
 
 In order to simplify Paxos as well as for increased performance, the MultiPaxos protocol has been proposed \cite{Lam01}. It introduces one leader for all ballots.
 
-%\section{Paxos}
+\section{The algorithm}
+First we explain shortly the Paxos algorithm as proposed in \cite{Lam98}.
 
-% High level overview, intuion (one leader, no crashes, no message loss)
-% leader, leader has value, leader proposes the value, other processes accepts, when process receives accept from majority of processes it knows that the client request is decided / agreed. server can execute the request
+Paxos is a consensus algorithm, that means using it a group of \textit{processes} agree in finite time upon a single \textit{value} proposed by one of them.
+
+The algorithm of Paxos is presented in table \ref{table:paxosAlgorithm}.
+\begin{table}
+\label{table:paxosAlgorithm}
+\begin{description}
+\small
+ \item[Initialisation] \strut \\
+   $\textit{view} \leftarrow 0$\\
+   $\{\textit{view}_v, \textit{value}\} \leftarrow \{0, \bot\}$ \\
+   $\textit{procId} \leftarrow $ ID of the process \\
+   $\textit{accepted} \leftarrow \{ \bot \} $ \\
+   let $leader(\textit{view})$ be function that for a \textit{view} returns the leader process ID
 
 
-%1. elect leader
-%2. propose a value. other processes ack or rejcets
-%3. when majority of accept is received, the consensus is reached
+ \item[Prepare phase] \strut \\
+   $\textit{view} \leftarrow $ $v$ such that $ v > \textit{view}$ and $leader(v) = \textit{procId}$\\
+   \textbf{send} \prepare[$<\textit{view}_m>$] where $\textit{view}_m \leftarrow \textit{view}$ \textbf{to} all\\
+   \textbf{wait for} majority \textbf{of} \prepareOK[$<\textit{view}_m,\{\textit{view}_p,\textit{value}_p\}>$] where $\textit{view}_m = \textit{view}$\\
+   $\{\textit{view}_v, \textit{value}\} \leftarrow \{\textit{view}_p,\textit{value}_p\} $ from \prepareOK with highest $\textit{view}_p$\\
+   \textbf{begin} Propose phase
+
+ \item[Propose phase] \strut \\
+   \textbf{if} $\textit{value} = \bot$ \textbf{then} $\textit{value} \leftarrow \textit{the value the process wants to propose}$\\
+   $\textit{view}_v \leftarrow \textit{view}$ \\
+   \textbf{send} \propose[$<\textit{view}_m, \textit{value}_m>$] where $\textit{view}_m \leftarrow \textit{view};~\textit{value}_m \leftarrow \textit{value}$ \textbf{to} all
+
+ \item[Upon] \prepare[$<\textit{view}_m>$] where $\textit{view}_m \geq \textit{view}$ \textbf{from} $p$  \\
+   $\textit{view} \leftarrow \textit{view}_m$ \\
+   \textbf{send} \prepareOK[$<\textit{view}_m,\{\textit{view}_p,\textit{value}_p\}>$] \\
+       \hspace*{0.2\textwidth} where $\textit{view}_m \leftarrow \textit{view};~\{\textit{view}_p, \textit{value}_p\} \leftarrow \{\textit{view}_v, \textit{value}\}$ \textbf{to} $p$ \\
+   $\textit{accepted} \leftarrow \bot $ \\
+   leave \textsl{Propose} or \textsl{Prepare} phase if process is in any of these
+
+ \item[Upon] \textsc{Message$<\textit{view}_p, \ldots>$} where $\textit{view}_p \neq \textit{view}$ \\
+   \textbf{if} $\textit{view}_p > \textit{view}$ \textbf{then} \\
+     \hspace*{\defaultParIndent} {\scriptsize \textless!-{}- this means a \prepare message got lost -{}-\textgreater }\\
+     \hspace*{\defaultParIndent} $\textit{view} \leftarrow \textit{view}_m$ \\
+     \hspace*{\defaultParIndent} $\textit{accepted} \leftarrow \{ \bot \} $ \\
+     \hspace*{\defaultParIndent} leave \textsl{Propose} or \textsl{Prepare} phase if process is in any of these \\
+     \hspace*{\defaultParIndent} react according to message type \\
+   \textbf{else} \\
+     \hspace*{\defaultParIndent} drop the message
+
+ \item[Upon] \propose[$<\textit{view}_p, \textit{value}_p>$] where $\textit{view}_p = \textit{view}$ \textbf{from} $p$ \\
+   $\{\textit{view}_v, \textit{value}\} \leftarrow \{\textit{view}_p, \textit{value}_p\}$ \\
+   \textbf{send} \accept[$<\textit{view}_m, \textit{value}_m>$] where $\textit{view}_m \leftarrow \textit{view}_p;~\textit{value}_m \leftarrow \textit{value}_p$ \textbf{to} all\\
+   $\textit{accepted} \leftarrow \textit{accepted} \cup \{ p, \textit{procId} \} $\\
+   \textbf{if} \textit{accepted} contains majority of processes \textbf{then} \\
+     \hspace*{\defaultParIndent} \textbf{decided on} \textit{value}
+
+ \item[Upon] \accept[$<\textit{view}_p, \textit{value}_p>$] where $\textit{view}_p = \textit{view}$ \textbf{from} $p$ \\
+   \textbf{if} $\textit{view}_v \neq \textit{view}_p$ \textbf{then} \\
+     \hspace*{\defaultParIndent} execute Upon \propose[$<\textit{view}_p, \textit{value}_p>$] \\
+   $\textit{accepted} \leftarrow \textit{accepted} \cup \{ p \} $ \\
+   \textbf{if} \textit{accepted} contains majority of processes \textbf{then} \\
+     \hspace*{\defaultParIndent} \textbf{decided on} \textit{value}
+
+ \item[Upon] Value for voting received \\
+   \textbf{begin} Prepare phase
+
+ \item[Upon] (no decision taken) and (no message the last $\tau$ time) and ($\textit{view} \neq 0$) \\
+   \textbf{begin} Prepare phase
+
+\end{description}
+\end{table}
 
 
-%\section{MultiPaxos}
+
+\subsection*{Description}
+
+
+\section{MultiPaxos}%TODO
 
 
 
