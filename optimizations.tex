@@ -48,9 +48,6 @@ As already mentioned, using the concurrent instances will improve latency and th
 
 In full-duplex networks, concurrent instances will improve network utilization, because when the leader is waiting for replies, the network from the leader to the others is idle, so it can be used to send the next request. 
 
-% TODO remove this paragraph?
-\paragraph{Batching} is another method for improving performance and network usage. It is preferred over increasing the concurrent instances count, however joining these two methods is better than any of them alone. Batching is described in section \ref{sec:batching}, as it does not concern the Paxos protocol, but values passed to the Proposer.
-
 \section{Batching}
 \label{sec:batching}
 Batching is a method of using one consensus instance to order several requests.
