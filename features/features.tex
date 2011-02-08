@@ -28,13 +28,12 @@ Also, we have to guarantee that only the leader replica after prepare phase can 
 \label{sec:catch_up}
 
 \paragraphNewline{Motivation}
-% TODO TZ rewrite - reader can't understand what catch-up is from this text 
-Paxos must guarantee that every valid replica will eventually decide. Most papers about Paxos state that if a replica notices the lack of activity for some instance, it must send a new proposal and eventually decide. However, by using view for all instances, this would mean often view changes -- and this contradicts performance.
 
-Therefore, a different approach is used by us. Notice, that if the leader is correct, it will decide. If it has crashed, a new leader will be elected. If the leader is correct, and no activity about an instance is noticed, that means the value is already decided and the replica is in the minority that does not know about the decision.
+Paxos must guarantee that every valid process will eventually decide. To decide, the process has to receive a propose message and majority of accept messages. In network with message loss, it is possible that the propose message from the leader will be lost. The leader after receiving majority of accept messages, will continue to send next proposals and will never retransmit the lost propose again. Without the missing instance, the process is not able to execute any future instance.
 
-In such case, instead of forcing a new proposal, we use the catch-up module.
-The catch-up has to download all missing decisions. This solution is faster than restarting the ballot if it is already decided and it does not need a view change.
+Most papers about Paxos state that if a replica notices the lack of activity for some instance, it must send a new proposal and eventually decide. However, by using view for all instances, this would mean often view changes -- and this contradicts performance.
+
+Therefore, a different approach is used by us -- a catch-up mechanism. The catch-up mechanism is using following observation -- if the leader is correct, and no activity about an instance is noticed, that means the value is already decided. The process with missing instance can ask the leader process about the decision for the instance. This solution is faster than restarting the decided ballot and it does not require a view change.
 
 \paragraphNewline{Recovery}
 
@@ -62,17 +61,14 @@ One should use of course the method achieving better performance. However, which
 
 State-base recovery has the following steps:
 
-%\vspace{-0.5em}
 \begin{center}
-  %\footnotesize
   \begin{tabular}{ll}
-    Serialisation               & state is transformed into a sequence of bytes \\
+    Serialization               & state is transformed into a sequence of bytes \\
     Transfer                    & state is sent via network \\
     Deserialization             & state is rebuilt at destination \vspace{0.5em} \\
     Residual log-based-recovery & recovery from snapshot process is made \\
   \end{tabular}
 \end{center}
-%\vspace{-0.5em}
 
 The first three tasks may be done concurrently. If the fourth task is comparatively fast, we can consider that the total recovery time is the maximum time it takes to do each of the first three tasks.
 
@@ -258,7 +254,7 @@ Therefore, we assume the snapshot should be made when the cost of catch-up from 
 
 Please note that catch-up time also includes time of state/log transfer.
 
-\subsection{Replica vs. service responsibility}
+\subsection{Replica vs service responsibility}
 \label{subsec:replica_vs_state_machine_responsibility}
 There are two approaches to the problem who is in charge for the initiating of snapshot creation. Either the JPaxos \texttt{Replica} module issues a snapshot, or the service chooses an appropriate moment.
 
