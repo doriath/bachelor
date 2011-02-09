@@ -33,7 +33,7 @@ Even if we cannot prevent from deciding a request twice, we should minimize the 
 \end{itemize}
 
 \paragraph{Setting the window size}
-The windows size specifies how many concurrent instances can be started (it has very similar meaning to the window size in the TCP protocol). In order to use available resources and keep high responsiveness the window size must be set correctly. There is no global, generic solution: every usage needs different setting.
+The windows size specifies how many concurrent instances can be started (it has very similar meaning to the window size in the TCP protocol). In~order to use available resources and keep high responsiveness the window size must be set correctly. There is no global, generic solution: every usage needs different setting.
 
 The most important thing is monitoring the network: its usage should be high, but no congestion should occur.
 That means, on one side, the window size must be enlarged as long as the links are not full, and on the other side, it must be guaranteed that no message will be delayed or dropped because of the network traffic. As long as the two conditions hold, a speed of a single instance remains constant (putting aside CPU time).
@@ -75,7 +75,7 @@ Another problem concerns the proposer: should there be a lower limit of requests
 
 A new request may come a long time after we begun gathering the requests for batching -- and that would cause an unacceptable delay. So if we choose to wait for new client requests, we need to set up a timeout after which we stop waiting for the new requests and start deciding the requests we managed to gather.
 
-If we decide not to wait at all, we are packing all client requests we got until now into a single request (if it fits, of course). Such approach guarantees good behaviour if the system state is not changing. Under load  we are usually unable to pack all requests we got into a single instance, while with small amount of requests no delay by packing decreases the latency.
+If we decide not to wait at all, we are packing all client requests we got until now into a single request (if it fits, of course). Such approach guarantees good behaviour if~the system state is not changing. Under load  we are usually unable to pack all requests we got into a single instance, while with small amount of requests no delay by packing decreases the latency.
 
 Both the batching size and the timeout for gathering requests in a batch is con\-figurable in our library.
 
@@ -100,7 +100,7 @@ The easiest solution is to create a new request type called no-op, which is a nu
 
 The replicated log cannot be allowed to grow forever, it must be bounded in any practical system. After a replica executes some command, it no longer needs the corresponding log entry locally. However, other replicas may not have learnt the decision yet. \linebreak In this case, these late replicas need to learn the decision by asking the corresponding log entry from a replica that still has it.
 
-In JPaxos, the Paxos protocol is not used for getting lost requests due to performance reasons. For this we use a special procedure called \textit{catch-up}, which is described in section~\ref{sec:catch_up}.
+In JPaxos, the Paxos protocol is not used for getting lost requests due to performance reasons. For this we use a special procedure called \textit{catch-up}, which is described in~section~\ref{sec:catch_up}.
 
 Having the old log entries is needed in three cases: for the catch-up, for view change and, in the crash-recovery model, for recovery.
 The catch-up needs old log entries in~order to send them to a replica which is not up-to-date, once the replica requests them.
