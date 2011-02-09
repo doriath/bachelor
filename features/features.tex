@@ -12,7 +12,7 @@ The client ID has to be unique for two different clients. To guarantee this, rep
 Below we present some of the possible methods for solving this problem:
 
 \paragraphNewline{Based on the number of replicas}
-Each replica can grant numbers incremented by a number of replicas, starting from ID of a local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, \ldots{} and replica with ID 2 can grant 2, 5, 8, \ldots{} . It guarantees that two different replicas will not grant the same ID. This solution works with the crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't know what was the last granted ID.
+Each replica can grant numbers incremented by a number of replicas, starting from ID of a local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, \ldots{} and replica with ID 2 can grant 2, 5, 8, \ldots{} . It guarantees that two different replicas will not grant the same ID. This solution works with the crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it does not know what was the last granted ID.
 
 \clearpage
 
@@ -94,7 +94,7 @@ Most common events used to initialize the algorithm are:
   \item Activate periodically the mechanism (\textsc{periodical})
 \end{itemize}
 
-These methods let the replica suspect, that a locally undecided instance has already been decided, so its log state is not up to date. It's good to use more than one of them, as each method is sensitive for a particular scenario, perhaps performing bad otherwise.
+These methods let the replica suspect, that a locally undecided instance has already been decided, so its log state is not up to date. It is good to use more than one of them, as each method is sensitive for a particular scenario, perhaps performing bad otherwise.
 
 Simplest, but not efficient for most uses is the \textsc{periodical} method -- it guarantees that from time to time the replica will be up to date.
 However the method used too often may cause bandwidth and processor consumption, too rarely -- having old state for unacceptably long time.
