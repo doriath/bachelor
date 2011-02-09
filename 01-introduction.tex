@@ -13,17 +13,24 @@ It is called active replication. In this approach, each replica does the same wo
 Every library for replicating services should address its main purpose, i.e.\ to guarantee high availability of service as well as durability of the service work results.
 
 
-\begin{minipageWithIndent}{0.9\textwidth}
-{
-\bfseries
+%\begin{minipageWithIndent}{0.9\textwidth}
+%{
+%\bfseries
+%
+%The goal of this bachelor's thesis is to implement JPaxos -- Java library and runtime system for efficient service replication.
+%
+%JPaxos requires deterministic behaviour from the service, does not accept replica misbehaviour and works with static group of replicas.
+%
+%JPaxos allows for replica crashes as well as recovering the crashed replicas, ensures the durability in spite of the failures, including failure of all the replicas at once. It provides the availability of service if the majority of replicas are correct.
+%}
+%\end{minipageWithIndent}
 
-The goal of this bachelor's thesis is to implement JPaxos -- Java library and runtime system for efficient service replication.
+As part of our diploma project, we have developed a library and runtime system for efficient service replication. Our system, written in Java, implements the Paxos protocol \cite{Lam98} for distributed consensus.
 
-JPaxos requires deterministic behaviour from the service, does not accept replica misbehaviour and works with static group of replicas.
+JPaxos requires deterministic behaviour from the service, does not tolerate Byzantine failures and works with static group of replicas.
 
-JPaxos allows for replica crashes as well as recovering the crashed replicas, ensures the durability in spite of the failures, including failure of all the replicas at once. It provides the availability of service if the majority of replicas are correct.
-}
-\end{minipageWithIndent}
+JPaxos supports replica crashes as well as recovering the crashed replicas, ensures durability in spite of failures, including the failure of all replicas at once. It provides availability of service as long as a majority of replicas are correct.
+
 
 \section{Thesis organization}
 
@@ -66,7 +73,7 @@ Jan Kończak for the purpose of this thesis has prepared the design and implemen
   \item[\textbullet] unit tests for JPaxos project,
   \item[\textbullet] client manager module, 
   \item[\textbullet] network module for communication between replicas,
-  \item[\textbullet] view based recovery (Section \ref{sec:view_ss}),
+  \item[\textbullet] view-based recovery (Section \ref{sec:view_ss}),
   \item[\textbullet] disc writers for full stable storage recovery.
 \end{tightList}
 

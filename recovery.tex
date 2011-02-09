@@ -179,7 +179,7 @@ Process 0 already received three \prepareOK responses, from [0, 1, 2]. However, 
  \label{fig:epoch_based_recovery}
 \end{figure}
 
-\section{View based recovery}
+\section{View-based recovery}
 \label{sec:view_ss}
 
 The next algorithm is view-based recovery. It has similar properties to epoch-based recovery. In every moment majority of processes is required to be correct but instead of using epoch numbers, the view number is written to table storage on every change. 
@@ -238,7 +238,7 @@ We presented 4 different algorithms implemented to JPaxos library. Each algorith
 \begin{table}[h]
   \footnotesize
   \begin{tabular}{lccccc}
-                        & Crash-stop & Full stable storage & View based      & Epoch based \vspace{0.2em} \\
+                        & Crash-stop & Full stable storage & View-based      & Epoch based \vspace{0.2em} \\
     Decides by          & $2f+1$     & $2f+1$              & $2f+1$          & $2f+1$      \\
     Fault tolerance     & $2f+1$     & $f$                 & $2f+1$          & $2f+1$      \\
     Process can recover & no         & yes                 & yes             & yes         \\

@@ -23,7 +23,7 @@ For example, if a replica has been started at time $t$, it will grant to the new
 
 This method assumes that the local system timer is not set back into past and also that the replica will not recover in the same millisecond. If these assumptions are fulfilled, then unique IDs are guaranteed also in the crash-recovery model without stable storage. This approach is currently set as default in our library.
 
-\paragraphNewline{View based}
+\paragraphNewline{View-based}
 Because time-based assumptions sometimes cannot be guaranteed, another approach for the crash-recovery model may be considered. Instead of adding information about start time, we can add the current view number. In each view, there is exactly one leader -- so after the prepare phase this replica can grant clients IDs as pair (view, sequence number). Two different replicas cannot start the same view.
 Also, we have to guarantee that only the leader replica after prepare phase can grant new client IDs.
 

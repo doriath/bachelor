@@ -107,7 +107,7 @@ The catch-up needs old log in order to send them to a replica which is not up-to
 During the view change, the leader requests log entries of all instances it considers undecided.
 By recovery, a replica needs the log of other replicas in order to know what has been decided at least since its crash.
 
-Especially the latter is problematic. The view change always requires a bounded number of instances in the log. However, if we assume recovery with minimal or no stable storage (as in the case of the epoch based or view based recovery algorithm), after the recovery a replica needs to recover the state from scratch. For this, it needs the whole log or complete state.
+Especially the latter is problematic. The view change always requires a bounded number of instances in the log. However, if we assume recovery with minimal or no stable storage (as in the case of the epoch based or view-based recovery algorithm), after the recovery a replica needs to recover the state from scratch. For this, it needs the whole log or complete state.
 
 \paragraphNewline{Global Commit Point}
 

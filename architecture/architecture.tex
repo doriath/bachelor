@@ -157,7 +157,7 @@ holds the data as follows:
 The type of \texttt{Storage} implementation must be chosen according to requirements imposed by the model or recovery.
 The implementation decides which elements must be kept in the stable storage and which may be placed in volatile memory.
 
-\subsection{The Paxos Log}
+\subsection{Paxos Log}
 \label{subsec:the_paxos_log}
 
 The most important data structure for Paxos, the Log, is part of the \texttt{Storage}.
@@ -199,7 +199,7 @@ New instance can always be appended to the log and after this operation \textit{
 
 \noindent Old instances can be removed by snapshotting only. When the replica receives a new snapshots, the log is truncated and the \textit{lowestAvailableId} is increased.
 
-\section{Threading Model}
+\section{Threading model}
 \label{sec:threads}
 
 Multi-threaded applications are very often complex, hard to debug and test. But single threaded applications cannot fully utilize multi-core processors. The JPaxos library is~using multiple threads, but every variable in the library can be accessed only from one thread, what decreases the complexity and makes the code easier to test and maintain.
