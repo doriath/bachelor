@@ -1,7 +1,7 @@
 \chapter{Recovery}
 \label{chapter:recovery}
 
-In this chapter, we describe the issues concerning recovery from crash. We start from short overview of recovery and then present four different algorithms -- crash-stop, crash-recovery with stable storage, epoch-based recovery and view-based recovery. After that, we summarize and compare performance and fault tolerance of the algorithms.
+In this chapter, we describe the issues concerning recovery from crash. We start from short overview of recovery and then present four different algorithms -- crash-stop, crash-recovery with stable storage, epoch-based recovery and view-based recovery. \linebreak After that, we summarize and compare performance and fault tolerance of the algorithms.
 
 \section{Overview}
 
@@ -24,7 +24,7 @@ In following sections, we will use below variables:
 \label{sec:crash_stop}
 
 Let's start from the easiest scenario -- the crash-stop model. In this model, crashed process will never be up again.
-Because of that, there is no recovery phase and we don't need a stable storage. Because process does not do any synchronous writes to stable storage, the performance is very high. 
+Because of that, there is no recovery phase and we do not need a stable storage. Because process does not do any synchronous writes to stable storage, the performance is very high. 
 
 However, there is one big drawback. In previous chapters, we said that Paxos algorithm can decide on the value (can continue working) if majority of processes are correct. If majority of processes will crash in this model, the algorithm will never decide again and our replicated service will stop forever. Because of that using this model is not very practical. Below we present three algorithms, which allow for process recovering.
 
@@ -36,13 +36,13 @@ A recovery phase is the state of JPaxos replica after starting the process. It m
 
 Of course, if this is the first start, the process can just go to normal state. Otherwise, the process must stay in the Recovery phase as long as it does not fulfill requirements of the recovery model.
 
-The process cannot join the Paxos protocol until the recovery phase is finished. So recovering process cannot respond to any message received, like \propose[], \accept[], \prepare and \prepareOK[]. However, these messages may be received and processed, so the process can passively join the protocol. The moment when the process joins (actively) Paxos protocol is also a moment when the process is considered as correct.
+The process cannot join the Paxos protocol until the recovery phase is finished. \linebreak So recovering process cannot respond to any message received, like \propose[], \accept[], \prepare and \prepareOK[]. However, these messages may be received and processed, so the process can passively join the protocol. The moment when the process joins (actively) Paxos protocol is also a moment when the process is considered as correct.
 
 
 \section{Crash-recovery with stable storage}
 \label{sec:full_ss}
 
-First algorithm with ability to recover a process is crash recovery with stable storage. In this algorithm, we want to save all necessary data to stable storage. After crash, the process can load all information from stable storage and join the Paxos protocol. To increase the performance the process should write as little as possible and as rare as possible to stable storage.
+First algorithm with ability to recover a process is crash recovery with stable storage. In this algorithm, we want to save all necessary data to stable storage. After crash, the process can load all information from stable storage and join the Paxos protocol. \linebreak To increase the performance the process should write as little as possible and as rare as possible to stable storage.
 
 Description of variables used in algorithm below:
 \begin{tightList}[\setlength{\labelwidth}{20em} \setlength{\leftmargin}{2\leftmargin}]
@@ -162,7 +162,7 @@ Epoch based recovery algorithms tolerates $f = \left\lfloor \frac{n-1}{2} \right
 
 In recovery phase the process first notifies the majority of other replicas about its recovery. As the process must know when its state will be correct, it must wait for recovery answer from the leader, who has the most recent state. Once it gets the acknowledgments, it is downloading all information from other replicas using catch-up mechanism.  When all necessary information is transferred, the replica can join the Paxos protocol and is considered as correct.
 
-On normal execution, this algorithm should be as fast as crash-stop model. The size of \prepareOK message is increased by epoch vector, which contains $n$ numbers but it shouldn't have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
+On normal execution, this algorithm should be as fast as crash-stop model. \linebreak The size of \prepareOK message is increased by epoch vector, which contains $n$ numbers but it shouldn't have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
 
 \subsection*{Example}
 
@@ -228,7 +228,7 @@ The pseudocode of this algorithm is presented below:
   \ENDUPON
 \end{algorithmic}
 
-This algorithm makes synchronous write to stable storage on every view change. If the network is stable and the leader doesn't crash, performance of the algorithm should be the same as in crash-stop model. If the view is changed often because of message loss or leader crash, the performance can decrease.
+This algorithm makes synchronous write to stable storage on every view change. \linebreak If the network is stable and the leader does not crash, performance of the algorithm should be the same as in crash-stop model. If the view is changed often because of message loss or leader crash, the performance can decrease.
 
 The recovery phase is quite similar to the epoch-based recovery. Recovering process is sending \recovery message to all and waits for majority of \recoveryAnswer to get $heighestId$ value from leader. Then catch-up mechanism is used to retrieve missing instances from correct processes. This algorithm is easier than based on epoch, because it doesn't introduce any changes in handling \prepareOK message.
 

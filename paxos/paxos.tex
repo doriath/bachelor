@@ -1,34 +1,37 @@
 \chapter{Paxos}
 
-In this chapter, we provide some background on the Paxos and MultiPaxos algorithm. We start with the introduction to the Paxos and MultiPaxos protocol. Then we describe the problems we encountered while implementing these protocols and performance improvements that we made.
+In this chapter, we provide some background on the Paxos and MultiPaxos algorithms.
+First, we present the Paxos algorithm in detail and characterize shortly the MultiPaxos algorithm.
+Later, we discuss the leader election as well as the division of Paxos responsibilities into three main roles.
+
 
 \section{Overview}
-The Paxos algorithm is used to solve consensus problem in a distributed system. Consider $n$ processes that try to decide upon the same value, which was proposed by one of them in the presence of failures. Paxos does not need a coordinator, however some process may consider itself a leader for a certain time for a specific ballot. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
+The Paxos algorithm solves consensus problem in a distributed system. Paxos does not need a coordinator, however some process may consider itself a leader for current moment. As long as there is one leader and the majority of the processes are correct, liveness is guaranteed.
 
-In order to simplify Paxos as well as for increased performance, the MultiPaxos protocol has been proposed \cite{Lam01}. It introduces one leader for all ballots.
+MultiPaxos is an algorithm designed to agree upon a series of consecutive values. \linebreak It is an extension of the Paxos consensus algorithm.
 
-\section{The algorithm}
-First we explain shortly the Paxos algorithm as proposed in \cite{Lam98}.
+Both algorithms were first described in \cite{Lam98}.
 
-Paxos is a consensus algorithm, that means using it a group of \textit{processes} agree in finite time upon a single \textit{value} proposed by one of them.
+\section{The Paxos algorithm}
 
+Paxos is a consensus algorithm, that means a group of \textit{processes} using it agree in finite time upon a single \textit{value} proposed by one of them.
 The pseudocode of the Paxos algorithm is presented in table \ref{table:paxosAlgorithm}.
 
 In Paxos, as in many other consensus algorithms, the voting is made in rounds. Each round is identified by the \textit{view}, and for a certain \textit{view} a certain process is the leader.
 
-The \textit{view} is sent with every message. If any process receives a message, it checks whether the message has not been send in a past voting round -- i.e. if the \textit{view} sent with the message is smaller then the \textit{view} a process assumes, the message is droped.
+The \textit{view} is sent with every message. If any process receives a message, it checks whether the message has not been send in a past voting round -- i.e.\ if the \textit{view} sent with the message is older than the \textit{view} a process assumes, the message is dropped.
 
-To start the algorithm at least one of the processes must enter the Prepare phase. Ususally it is the process that has a value to agree upon.
-In the Prepare phase a process chooses \textit{view} that indicates it as the leader and that is greater than current view. The process sends then the \prepare message to all with the chosen \textit{view}.
+To start the algorithm at least one of the processes must enter the Prepare phase. Usually it is the process that has a value to agree upon.
+In the Prepare phase a process chooses a new \textit{view} in which it is the leader and that is greater than current \textit{view}. The~process sends then the \prepare message to all with the chosen \textit{view}.
 
-As the processes receive \prepare message, they update theirs \textit{view} and respond with \prepareOK[]. Each \prepareOK carries the information in which \textit{view}$_v$ the process sent last \accept message and what \textit{value} it accepted. From now on the process will reject all messages from the old voting rounds (with smaller \textit{view}).
+As the processes receive \prepare message, they update theirs \textit{view} and respond with \prepareOK[]. Each \prepareOK carries the information in which \textit{view}$_v$ the process sent last \accept message and what \textit{value} it accepted. From now on, the process will reject all messages from the old voting rounds (with smaller \textit{view}).
 
-As the process in Prepare phase receives the majority of \prepareOK messages it chooses the most recent \textit{value} it got in the messages. If there is no such value yet, the process is free to choose any value it wants. As the \textit{value} is selected, the process enters the Propose phase.
+As the process in Prepare phase receives the majority of \prepareOK messages it~chooses the most recent \textit{value} it~got in the messages. If there is no such value yet, the process is free to choose any value it wants. As the \textit{value} is selected, the process enters the Propose phase.
 
 In the Propose phase the process sends to the others \propose message with \textit{value} to agree upon and, of course, the \textit{view}.
 
-Every process must agree upon the valid \propose by sending a \accept message.
-A process decides (agrees upon) a value, when it receives the \accept messages from the majority of processes in a single view.
+Every process must agree upon the valid \propose by sending an \accept message.
+A process decides (agrees upon) a value, when it receives the \accept messages from the majority of processes in a same view.
 
 
 \begin{table}
@@ -109,41 +112,41 @@ A process decides (agrees upon) a value, when it receives the \accept messages f
 
 The Paxos algorithm is a consensus algorithm, so its target is to agree upon one value. MultiPaxos is an algorithm which is designed to agree upon an ordered series of values.
 
-MultiPaxos algorithm executes multiple Paxos algorithm instances subsequenty. Each instance has an ID to differentiate from the others.
+MultiPaxos algorithm executes multiple Paxos algorithm instances subsequently. Each instance has an ID to differentiate it from the others.
 
-A Prepare phase in MultiPaxos may be started for multiple instances. A process that sends a \prepare message indicates for which instances it prepares. Ususally the process wants to become the leader for all instances since the first not yet decided.
+A Prepare phase in MultiPaxos may be started for multiple instances. A process that sends a \prepare message indicates for which instances it prepares. Usually the process wants to become the leader for all instances since the first not yet decided.
 
 \section{Leader Election}
 \label{sec:leader_election}
 
-The Paxos algorithm includes the leader election. As presented in the the pseudocode, a process requests to be elected for the leader if it has something to propose or it assumes the previous leader crashed.
+The Paxos algorithm includes the leader election. As presented in the pseudocode, a~process requests to be elected for the leader if it has something to propose or it assumes the previous leader crashed.
 
-To decide who is the current leader, our implementation is using the \textit{view} number. This number is sent in every message and processes keep track of the highest \textit{view} received. The current leader is a process for which \textit{view $\mod$ n $=$ local id}. For example, if \textit{view} = 5 and we have \textit{n} = 3 processes then processes with \textit{local id} = 2 is the current leader.
+To decide who is the current leader, our implementation is using the \textit{view} number. This number is sent in every message and processes keep track of the highest \textit{view} received. The current leader is a process for which \textit{view $\mod$ n $=$ local id}. For example, if \textit{view} = 5 and we have \textit{n} = 3 processes then process with \textit{local id} = 2 is the current leader.
 
-To notice a crash of the leader a failure detector is needed. Paxos needs the weakest possible failure detector -- \textit{eventually weak} -- to work. The $\lozenge W$ faliure detector, as defined in \cite{chandra1996unreliable}, must eventually consider a crashed process crashed, and at least one correct processes must eventually be considered to be correct by all. In Paxos this process will be eventually considered as the leader by all, and this guarantees liveness.
+To notice a crash of the leader, a failure detector is needed. Paxos needs the weakest possible failure detector -- \textit{eventually weak} -- to work. The $\lozenge W$ failure detector, as defined in \cite{chandra1996unreliable}, must eventually consider a crashed process crashed, and at least one correct process must eventually be considered to be correct by all. In Paxos this process will be eventually considered as the leader by all, and this guarantees liveness.
 
-In JPaxos a simple failure detector basing on heartbeats is used. An \alive message is sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it has not sent any message during the last $\tau_0$ time. Thanks to this a failure is noticed -- no messages from the leader -- and the leader is considered as correct if it can send the messages.
+In JPaxos a simple failure detector based on heartbeats is used. An \alive message is sent periodically by the leader to all processes. The heartbeats are sent only when there are no other messages being sent, that is, the leader sends an \alive message to the replicas if it has not sent any message during the last $\tau_0$ time. Thanks to this a failure is~noticed -- no messages from the leader -- and the leader is considered correct if it can send the messages.
 
-When a replica does not receive a message from the leader for more than $\tau_1$ time, it suspects that the leader crashed and tries to become the new leader. It advances to the next view where it is the leader and enters the Prepare phase.
+When a replica does not receive a message from the leader for more than $\tau_1$ time, it~suspects that the leader crashed and tries to become the new leader. It advances to~the~next view where it is the leader and enters the Prepare phase.
 
 The $\tau_1$, called also \textit{timeout}, is at least a few times longer than $\tau_0$, in order to be immune to delays and single message losses.
 
 
 \section{Propose phase} 
 
-Every process keeps track of already proposed as well as decided values in a log. A log is an ordered list of consensus instances -- triple \textit{<id, view, value>}. When a process is a leader, it can start a propose phase for a new value. To propose a value, the leader creates a new consensus instance with first available id, current view and the value to propose. Then it is sends all the data to all processes in a \propose message. Every process after receiving the \propose message saves it to its local log and sends the \accept message to all. When any process receives the majority of \accept messages, it marks the proposed value as decided. The value is then passed to the upper layers.
+Every process keeps track of already proposed as well as decided values in a log. A log is an ordered list of consensus instances -- triple \textit{<id, view, value>}. When a process is the leader, it can start a propose phase for a new value. To propose a value, the leader creates a new consensus instance with first available ID, current view and the value to propose. Then it sends all the data to all processes in a \propose message. Every process after receiving the \propose message saves it to its local log and sends the \accept message to all. When any process receives the majority of the \accept messages, it marks the proposed value as decided. The value is then passed to the upper layers.
 
 \section{Division of responsibility}
 
 As introduced in \cite{Lam01}, the Paxos protocol defines three roles: proposers, acceptors and learners.
-A process can act as any combination of these, i.e. it can be only an acceptor, but may as well play the role of an acceptor, a proposer and a learner at the same time. The roles stand for:
+A process can act as any combination of these, i.e.\ it can be only an~acceptor, but may as well play the role of an acceptor, a proposer and a learner at the same time. The roles stand for:
 \begin{description}
  \item[Proposer] is responsible for proposing the values in correct order. A proposer must first pass the Prepare phase, later it sends the \propose messages.
  
- \item[Acceptor] receives the \propose messages and responds to these messages if the message view is not lower than current view.
+ \item[Acceptor] receives the \propose messages and responds to these messages with an \accept message if the message view is not lower than current view.
  
  \item[Learner] gathers the \accept messages and when it gets the response from the majority of acceptors, it marks the value as decided. Later on, it informs the Proposer that the value has been decided.
 \end{description}
 
-Our implementation also uses this division in order to make the code more readable. Every process acts as Acceptor, Learner and Proposer.
+% Our implementation also uses this division in order to make the code more readable. Every process acts as Acceptor, Learner and Proposer.
 

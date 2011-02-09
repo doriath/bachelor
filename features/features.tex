@@ -1,22 +1,25 @@
 \chapter{Implemented Features}
 
 In this chapter, we present the implementation details of some non-trivial modules.
+We begin with our solution for differentiating the client requests. Later we describe the module responsible for keeping the replicas up-to-date. As next, we present the snapshotting mechanism in JPaxos. Last part of this chapter is devoted to improving transparency for the service programmer.
 
 \section{Unique request IDs}
 
-A request must be distinguishable from any other request. Only this guarantees that we will be able to say if a request is retransmitted, or it's a new one. A common method is to split the request identification in two parts: the client ID and a sequential number. As far as assigning a sequential number is trivial, a method providing unique client IDs must be chosen carefully, especially considering the crash-recovery model.
+A request must be distinguishable from any other request. Only this guarantees that we will be able to say if a request is retransmitted, or it is a new one. A common method is to split the request identification in two parts: the client ID and a sequential number. As far as assigning a sequential number is trivial, a method providing unique client IDs must be chosen carefully, especially considering the crash-recovery model.
 
-The client ID has to be unique for two different clients. To guarantee this, replicas must be responsible for granting IDs to clients, because a client has no knowledge of other clients ID.
+The client ID has to be unique for two different clients. To guarantee this, replicas must be responsible for granting IDs to clients, because a client has no knowledge of~other clients ID.
 
 Below we present some of the possible methods for solving this problem:
 
 \paragraphNewline{Based on the number of replicas}
 Each replica can grant numbers incremented by a number of replicas, starting from ID of a local replica. For example, if we have three replicas, replica with ID 0 can grant numbers 0, 3, 6, 9, \ldots{} and replica with ID 2 can grant 2, 5, 8, \ldots{} . It guarantees that two different replicas will not grant the same ID. This solution works with the crash-stop and crash-recovery with stable storage. This will not work when replica can recover from crash without stable storage, because it doesn't know what was the last granted ID.
 
-\paragraphNewline{Time based}
-This is a different approach -- we use system time as the source of unique numbers. To each client ID we are also adding information when replica was started (in milliseconds).
+\clearpage
 
-For example, if a replica has been started at time $t$, it will grant for new clients IDs $(t + $\textit{localId}$)$, $(t + $\textit{localId}$ + n)$, $(t + $\textit{localId}$ + 2n)$ \ldots
+\paragraphNewline{Time based}
+This is a different approach -- we use system time as the source of unique numbers. To~each client ID we also add information when the replica was started (in milliseconds).
+
+For example, if a replica has been started at time $t$, it will grant to the new clients the following IDs: $(t + $\textit{localId}$)$, $(t + $\textit{localId}$ + n)$, $(t + $\textit{localId}$ + 2n)$ \ldots
 
 This method assumes that the local system timer is not set back into past and also that the replica will not recover in the same millisecond. If these assumptions are fulfilled, then unique IDs are guaranteed also in the crash-recovery model without stable storage. This approach is currently set as default in our library.
 
@@ -29,17 +32,17 @@ Also, we have to guarantee that only the leader replica after prepare phase can 
 
 \paragraphNewline{Motivation}
 
-Paxos must guarantee that every valid process will eventually decide. To decide, the process has to receive a propose message and majority of accept messages. In network with message loss, it is possible that the propose message from the leader will be lost. The leader after receiving majority of accept messages, will continue to send next proposals and will never retransmit the lost propose again. Without the missing instance, the process is not able to execute any future instance.
+Paxos must guarantee that every valid process will eventually decide. To decide, the process has to receive a propose message and majority of accept messages. In network with message loss, it is possible that the propose message from the leader will be lost. The leader after receiving majority of accept messages, will send next proposals and will never retransmit the lost propose again. Without the missing instance, the process is not able to execute any future instance.
 
 Most papers about Paxos state that if a replica notices the lack of activity for some instance, it must send a new proposal and eventually decide. However, by using view for all instances, this would mean often view changes -- and this contradicts performance.
 
-Therefore, a different approach is used by us -- a catch-up mechanism. The catch-up mechanism is using following observation -- if the leader is correct, and no activity about an instance is noticed, that means the value is already decided. The process with missing instance can ask the leader process about the decision for the instance. This solution is faster than restarting the decided ballot and it does not require a view change.
+Therefore, a different approach is used by us -- a catch-up mechanism. The catch-up mechanism is using following observation -- if the leader is correct, and no activity about an instance is noticed, that means the value is already decided. The process with missing instance can ask the leader process about the decision for the instance. This solution \linebreak is faster than restarting the decided ballot and it does not require a view change.
 
 \paragraphNewline{Recovery}
 
 Catch-up module is also used by recovering the replica -- as a tool for downloading all decided instances up to the required state.
 
-However, there is one drawback of using catch-up in recovery -- for the recovery process needs to know also instances yet undecided.  However, if the system is operational, after a short time all required instances would be decided. If the system is not operational, the recovery cannot converge. So downloading only decided instances is correct, but may cause small delay by recovering.
+However, there is one drawback of using catch-up in recovery -- for the recovery, process needs to know also instances yet undecided.  However, if the system is operational, after a short time all required instances would be decided. If the system  is not operational, the recovery cannot converge. So downloading only decided instances is correct, but may cause small delay on recovery.
 
 \subsection{Log-based vs state-based recovery}
 \label{subsec:log_based_state_based_recovery}
@@ -86,7 +89,7 @@ Activating the mechanism should not happen too early, that is when Paxos itself 
 Most common events used to initialize the algorithm are:
 \begin{itemize}
   \item No traffic for the ballot during a particular period of time (\textsc{timeout})
-  \item An instance with higher ID (i.e. newer instance) has already been decided \\ (\textsc{higher instance decided})
+  \item An instance with higher ID (i.e.\ newer instance) has already been decided \\ (\textsc{higher instance decided})
   \item Instance with ID higher than $\alpha$ has been started, and the implementation ensures that only instances up to $\alpha$ are started as $\alpha-ws$ stays undecided (\textsc{window})
   \item Activate periodically the mechanism (\textsc{periodical})
 \end{itemize}
@@ -98,22 +101,22 @@ However the method used too often may cause bandwidth and processor consumption,
 
 The \textsc{timeout} event is caused either if problems with network occur, or if the \accept messages were lost -- otherwise current leader and other replicas would generate traffic for the ballot. The replica should try to learn the state of voting in such case, otherwise as long as no new proposal will arise the replica will have an old state.
 
-\textsc{higher instance decided} means that a voting started later has already finished. We may assume the previous voting took similar amount of time -- that is, it should be already finished. Message loss or varying latency can also cause the situation that a newer consensus is decided as the older is still in progress. To avoid the situation the method may be extended to: if the number of newer decided instances exceeds a constant value, then the catch-up should be initiated.
+\textsc{higher instance decided} means that a voting started later has already finished. We may assume the previous voting took similar amount of time -- that is, it should be already finished. Message loss or varying latency can also cause the situation that a newer consensus is decided as the older is still in progress. To avoid the situation the method may be extended to: if the number of newer decided instances exceeds a~constant value, then the catch-up should be initiated.
 
 This method, as well as the method described earlier, may be used in case when operations on state machine require long processing. The risk of loosing small bandwidth for catch-up may be small enough compared to earlier arrival time of resource-consuming task.
 
-The \textsc{window} method is very useful because of its assumption: the algorithm uses a window of the maximum size $ws$. If the condition that all decisions outside the window must be decided is violated on one replica, it means that the other replicas, at least the current leader, have already decided the instance. This means no new messages concerning the ballot will emerge, and catch-up is necessary.
+The \textsc{window} method is very useful because of its assumption: the algorithm uses a~window of the maximum size $ws$. If the condition that all decisions outside the window must be decided is violated on one replica, it means that the other replicas, at least the current leader, have already decided the instance. This means no new messages concerning the ballot will emerge, and catch-up is necessary.
 
-A different problem is when a replica doesn't know that the instance already exists (for example, a short-time netsplit or bad luck caused all messages for the replica to be dropped). In this case, the catch-up should be started as well. 
-Either periodic request must be sent, or additional information must be acquired. It should be emphasized, that as any newer ballot starts, the replica is informed about the existence of missing instance. 
+A different problem is when a replica does not know that the instance already exists (for example, a short-time netsplit or bad luck caused all messages for the replica to be dropped). In this case, the catch-up should be started as well. 
+Either periodic request must be sent, or additional information must be acquired. It should be emphasized, that as any newer ballot starts, the replica is informed about the existence of missing instance.
 
 Although this is not critical, it prevents state machine from executing the command until a new instance emerges. That means performance loss, as the old command must be caught-up and executed before the new.
 
 In our system, replica is notified about the highest instance ID from the \alive message from the leader. The leader is attaching this number to every \alive message sent. This guarantees that every replica learns what instances already exist within the failure detector timeout.
 
-\paragraph*{Stopping catch-up} As the algorithm runs, the state of Paxos may not be stable, i.e. new ballots may start. Therefore selecting the moment when catch-up should be deactivated is not trivial.
+\paragraph*{Stopping catch-up} As the algorithm runs, the state of Paxos may not be stable, \linebreak i.e.\ new ballots may start. Therefore selecting the moment when catch-up should be deactivated is not trivial.
 
-One method is to calculate conditions a priori (for example the IDs of missing instances), and continue the process as long as needed. However, this can easily lead to a constant switching on and off the catch-up -- voting for new instances may be faster than catching up, so as the predefined conditions are met, new event already caused catch-up activation.
+One method is to calculate conditions a priori (for example the IDs of missing instances), and continue the process as long as needed. However, this can easily lead to constant switching on and off the catch-up -- voting for new instances may be faster than catching up, so as the predefined conditions are met, new event already caused catch-up activation.
 
 The better solution is to determine dynamically if catch-up is still needed. A method that seems most convenient for that is checking if all instances outside the window are already decided. Stopping earlier is bad, as we know that at least the current leader must have decided for the missing instances, and that means we will not get the value via the Paxos algorithm.
 
@@ -123,10 +126,10 @@ Problem arises, if there really were decided instances inside the window. If the
 
 \subsection{Transport protocol}
 \label{subsec:transport_protocole}
-As very separate from Paxos, the catch-up may use different transport protocol than the consensus algorithm.
-Choice of the transport layer must take into account characteristics of this mechanism as well.
+As very separate from Paxos, the catch-up may use a different transport protocol than the consensus algorithm.
+Choice of the transport layer must take into account the characteristics of this mechanism as well.
 
-Both TCP and UDP may be used -- both having their pros and cons, presented in table below
+Both TCP and UDP may be used -- both having their pros and cons, presented in~table~below:
 
 \begin{center}
   \begin{tabular}{m{0.47\textwidth}|m{0.47\textwidth}}
@@ -140,26 +143,25 @@ Both TCP and UDP may be used -- both having their pros and cons, presented in ta
   \end{tabular}
 \end{center}
 
-When catch-up is needed,  our network must have (probably high) message loss. That means the catch-up messages may also get easily lost.
+When catch-up is needed, our network must have (probably high) message loss. That means the catch-up messages may also get easily lost.
 
-We have noticed, that it is more efficient to use UDP for all smaller messages -- if the package gets lost, we're retransmitting it with updated query. Sometimes UDP message retransmitted even twice is faster than one TCP. In TCP, the timeout for the ACK message grows automatically - and that may cause big delays. During experiments, with 30\% message loss, transmitting a message using TCP that is smaller than the UDP-datagram size took even more than 4 seconds 
-to reach the other side.
+We have noticed, that it is more efficient to use UDP for all smaller messages -- if the package gets lost, we are retransmitting it with updated query. Sometimes a UDP message retransmitted even twice reaches its target faster then the same message sent with TCP. In TCP, the timeout for the ACK message grows automatically -- and that may cause big delays. During experiments, with 30\% message loss, transmitting a message using TCP that is smaller than the UDP-datagram size took even more than 4 seconds to reach the other side.
 
-In UDP, a single message delay or loss does not block communication to the replica -- but in TCP, it does.
-In this case, no new catch-up query may be sent to this replica, as long as the previous will be processed. The request cannot of course be changed. It means that once we got the response, the core protocol may have already missed another instances to catch-up.
+In UDP, a single message delay or loss does not block the communication to the replica -- but in TCP, it does.
+In this case, no new catch-up query may be sent to this replica, as long as the previous will be processed. The request cannot of course be changed. It~means that once we got the response, the core protocol may have already missed another instances to catch-up.
 
 \subsection{Requirements}
 \label{subsec:catch_up_requirements}
-The speed and resource consumption must be correctly balanced.
+The speed and the resource consumption must be correctly balanced.
 
-In theory, catching-up can be delayed any finite time. On the other hand, it is important for view changes and for bounding the size of the log. A view change will take longer if the new leader is missing many requests. Since during a view change no new requests are being satisfied, we need to keep its length as short as possible. Additionally, if a replica doesn't know instance $i$, it cannot execute any request higher than $i-1$. This also means that it cannot remove entries from the log.
+In theory, catching-up can be delayed any finite time. On the other hand, it is important for the view changes and for bounding the size of the log. A view change will take longer if the new leader is missing many requests. Since during a view change no new requests are being satisfied, we need to keep its length as short as possible. Additionally, if a replica does not know the instance $i$, it cannot execute any request higher than $i-1$. This also means that it cannot remove entries from the log.
 
 In practical approach, most significant requirements for catch-up are: good performance and small resource usage. For sure catching up should not slow down the core protocol.
-Good performance demand has one main reason: arrival time of the tasks for state machine is dependent on being up to date. If catch-up would get information too late, the state machine would get long list of, possibly high CPU-consuming, tasks at once, instead of doing them in spare time before.
+Good performance demand has one main reason: the arrival time of the tasks for the state machine is dependent on being up to date. If catch-up would get the information too late, the state machine would get long list of, possibly high CPU-consuming, tasks at once, instead of doing them in spare time before.
 
-Therefore, it is desirable to catch-up as often as possible, but without slowing down the service significantly.
+Therefore, it is desirable to run the catch-up mechanism as often as possible, but without slowing down the service significantly.
 
-It should be noticed, that only the followers would have to catch-up, since the primary learns of all previous decisions on a view change and then it is the one proposing new values and leading the protocol.
+It should be noticed, that only the followers would have to catch-up, since the primary learns all previous decisions on a view change and then it is the one proposing new values and leading the protocol.
 
 \subsection{Catch-up algorithm}
 \label{subsec:catch_up_algorithm}
@@ -170,7 +172,7 @@ This ensures that the replica will catch-up eventually, even if there are no new
 
 There are three messages that may be sent during the algorithm: \catchUpQuery[], \catchUpResponse and \catchUpSnapshot[].
 \begin{description}
- \item[\normalfont\catchUpQuery --] a request for missing instances. It carries a list of missing ID's and may have one of two flags set: the first flag indicates if this was a periodical catch-up, second one -- 
+ \item[\normalfont\catchUpQuery --] a request for missing instances. It carries a list of missing IDs and may have one of two flags set: the first flag indicates if this was a periodical catch-up, second one -- 
  if we want to get the last snapshot, not the missing instances.
  \item[\normalfont\catchUpResponse --] response sent for every received request. It has a list of decided instances for requested numbers. The list may be empty. This message may have two flags: periodical flag and snapshot only flag. The periodical flag is set if this is response to the periodical query. The snapshot only flag is set if the replica does not have an old enough instances, and transferring a snapshot is the only possibility.
  \item[\normalfont\catchUpSnapshot --] if another replica asked for snapshot, this message is sent with most recent snapshot.
@@ -178,12 +180,12 @@ There are three messages that may be sent during the algorithm: \catchUpQuery[],
 
 The list describing missing instances is constructed by replica in straightforward way: it contains all undecided instance numbers plus the (highestID+1) as the first instance, the replica has no knowledge about. The responder sends therefore all decided instances from the list and all decided instances that are higher or equal the additional number.
 
-In order to make the messages smaller, a trick has been used: the list contains two lists. One called a range list and the other an instance list.
-The range list contains intervals we miss, while the instance list -- single numbers. For example, if we would miss instances 1,2,4,6,7,8,9,11, and the highest instance we know is 12 (state decided) our lists would look like:
+In order to make the messages smaller, a trick has been used: the list contains two lists. One, called a range list and the other, an instance list.
+The range list contains intervals we miss, while the instance list -- single numbers. For example, if we would miss instances 1, 2, 4, 6, 7, 8, 9, 11, and the highest instance we know is 12 (state decided) our lists would look like:
 \begin{quote}
 $[\langle1,2\rangle; \langle6,9\rangle]; [4,11,13]$
 \end{quote} 
-Notice the number 13 -- it's the first we have no idea of existing, as mentioned above.
+Notice the number 13 -- it is the first we have no idea of existing, as mentioned above.
 
 Catch-up works as follows:
 
@@ -230,7 +232,7 @@ Catch-up works as follows:
 
 \vspace{1em}
 
-In line \ref{alg_1_a} a best replica is chosen. We've implemented it as follows: a rating for each replica is kept. When sending a message, the rating decreases; when receiving response it rises. If an empty response is received (except for the \textsc{periodic} mode), we request asking the leader next time. The best replica for us is a follower with the highest positive rating, or the leader if all followers have negative rating.
+In line \ref{alg_1_a} a best replica is chosen. We have implemented it as follows: a rating for each replica is kept. When sending a message, the rating decreases; when receiving response it rises. If an empty response is received (except for the \textsc{periodic} mode), we request asking the leader next time. The best replica for us is a follower with the highest positive rating, or the leader if all followers have negative rating.
 
 The line \ref{alg_1_c} executes a predicate checking if the catch-up shall finish (see Section \ref{subsec:conditions_for_starting_and_finishing_the_catch_up}).
 
@@ -238,7 +240,7 @@ The line \ref{alg_1_c} executes a predicate checking if the catch-up shall finis
 \label{sec:snapshotting}
 As presented before, the support of storing and transmitting state of replicated machine is a very useful and important part of a replica. In practical systems, it is necessary -- it allows log truncating, faster recovery and catch-up.
 
-\subsection{When to snapshot,}
+\subsection{When to snapshot}
 \label{subsec:when_to_snapshot}
 Snapshots are needed in two cases: to enable catch-up and recovery, and to truncate the log. For both uses there is a different \textit{best moment} for making snapshot.
 
@@ -246,9 +248,9 @@ As for recovery, we get the best recovery result if the snapshot would be done e
 This, of course, is not the solution. It would completely decrease the throughput -- snapshot creation is resource-consuming.
 
 For the catch-up the moment when another replica requests snapshot is the best for creating one. 
-However some services cannot create snapshot anytime. So demanding a snapshot from the service is not acceptable.
+However some services cannot create snapshot anytime. So demanding a~snapshot from the service is not acceptable.
 
-the snapshot should be created periodically to truncate the log without any additional requirements.
+The snapshot should be created periodically to truncate the log without any additional requirements.
 
 Therefore, we assume the snapshot should be made when the cost of catch-up from the log becomes bigger than the cost of catch-up from the snapshot.
 
@@ -256,15 +258,15 @@ Please note that catch-up time also includes time of state/log transfer.
 
 \subsection{Replica vs service responsibility}
 \label{subsec:replica_vs_state_machine_responsibility}
-There are two approaches to the problem who is in charge for the initiating of snapshot creation. Either the JPaxos \texttt{Replica} module issues a snapshot, or the service chooses an appropriate moment.
+There are two approaches to the problem who is in charge for the initiating of snapshot creation. Either the JPaxos \texttt{Replica} module issues a snapshot, or the service chooses an~appropriate moment.
 
-Embedding this functionality into JPaxos would surely provide more secure work (the service may simply not deliver the snapshots, which means forever growing log). It is easier for the \texttt{Replica} to measure the size of messages that should be transferred in order to catch-up (or recover).
+Embedding this functionality into JPaxos would surely provide more secure work (the service may simply not deliver the snapshots, which means forever growing log). It is easier for the \texttt{Replica} to measure the size of the messages that should be transferred in order to catch-up (or recover).
 
-However, JPaxos does not know anything about the service. We can also assume, that the service is not aware of network conditions. Therefore choosing the proper moment (when the cost of log-based catch-up becomes more expensive than the state-based catch-up) is impossible for both. It is clearly visible, that service is better informed -- it knows not only the size of requests, but also it may estimate the size of its current state and resources that are needed to execute all commands from the log.
+However, JPaxos does not know anything about the service. We can also assume, that the service is not aware of network conditions. Therefore choosing the proper moment (when the cost of log-based catch-up becomes more expensive than the state-based catch-up) is impossible for both. It is clearly visible, that service is better informed -- it knows not only the size of requests, but also it may estimate the size of its current state and the resources that are needed to execute all commands from the log.
 
-The latter is most significant difference: JPaxos has no idea how long the log execution from previous snapshot would take. It seems possible to estimate this: measuring time between a request and reply to that request might solve the problem. However, such estimate can give mistaken results, especially in a multi-process environment. If another process is consuming CPU, or the replica waits a long time for granting some resources (like an access to a file or even a printer), the estimate surely will not reflect the real value.
+The latter is most significant difference: JPaxos has no idea how long the log execution from previous snapshot would take. It seems possible to estimate this: measuring the time between a request and the reply to that request might solve the problem. However, such estimate can give mistaken results, especially in a multi-process environment. If another process is consuming CPU, or the replica waits a long time for granting some resources (like an access to a file or even a printer), the estimate surely will not reflect the real value.
 
-Below we present a table showing in compact way the state of knowledge needed to select the best moment for a next snapshot:
+Below we present a table showing in compact way the state of knowledge needed to~select the best moment for a next snapshot:
 
 \begin{table}[h]
 \small \centering
@@ -285,19 +287,18 @@ Below we present a table showing in compact way the state of knowledge needed to
 \label{subsec:our_approach_to_snapshotting}
 Snapshotting, as described above, may be done in a variety of ways. Moreover, how often the snapshots are made depends on the implementation. Here we give some main clues how the snapshotting is implemented.
 
-The decision who orders a snapshot creation has been left to the future user of the library. To achieve this, some assumptions has been taken -- mainly
-concerning the architecture of the service.
+The decision who orders a snapshot creation has been left to the future user of the library. To achieve this, some assumptions have been taken -- mainly concerning the architecture of the service.
 
 The service must implement three methods: \texttt{askForSnapshot}, \texttt{forceSnapshot} and \texttt{up\-date\-To\-Snap\-shot}. Also it is required to implement adding and removing snapshot listeners -- objects that implement the \texttt{onSnapshotMade} function. When a snapshot is made on the state machine, method \texttt{onSnapshotMade} with the snapshot as a parameter must be called on all snapshot listeners.
 
-Replica measures the size of the log after every n-th instance, and calculates an average size of the snapshot basing on previous ones. By every log measurement a ratio is calculated: $\frac{ \text{log size} }{ \text{snapshot estimate} }$. As the ratio exceeds one constant, method \texttt{askForSnapshot} is called. After another constant, \texttt{forceSnapshot} is executed.
+Replica measures the size of the log after every $n$-th instance, and calculates an average size of the snapshot basing on the previous ones. By every log measurement, a ratio is calculated: $\frac{ \text{log size} }{ \text{snapshot estimate} }$. As the ratio exceeds one constant, method \texttt{askForSnapshot} is called. After another constant, \texttt{forceSnapshot} is executed.
 
 There are several approaches possible on who decides the proper time for the snapshot:
 \begin{description} 
- \item[State machine only] -- service ignores the functions \texttt{askForSnapshot} and \texttt{forceSnap\-shot} and does the snapshot on its will.
- \item[Using replica calls as hints] -- service takes under consideration \texttt{askForSnapshot} and \texttt{fo\-rce\-Snapshot} functions, but decides itself when to do snapshot
- \item[Balanced responsibility] -- service uses both \texttt{askForSnapshot} and \texttt{forceSnapshot}; the first as a hint, the latter treats as an order
- \item[Replica only] -- each time \texttt{askForSnapshot} is called, the state machine does snapshot
+ \item[State machine only] -- service ignores the functions \texttt{askForSnapshot} and \texttt{forceSnap\-shot} and does the snapshot on its will,
+ \item[Using replica calls as hints] -- service takes under consideration \texttt{askForSnapshot} and \texttt{fo\-rce\-Snapshot} functions, but decides itself when to do snapshot,
+ \item[Balanced responsibility] -- service uses both \texttt{askForSnapshot} and \texttt{forceSnapshot}; the first as a hint, the latter treats as an order,
+ \item[Replica only] -- each time \texttt{askForSnapshot} is called, the state machine does snapshot.
 \end{description}
 
 Snapshotting requires also additional data exchanged between replica and service: the state machine must know the request number, in order to let snapshot identification in replica. For example, if the snapshotting would be done completely on service's side, how would the replica know after which command the snapshot was taken.
@@ -312,12 +313,12 @@ This is not desired. We want to provide as much transparency as possible, withou
 
 \texttt{ServiceProxy} is a module that translates JPaxos instances to service requests and takes care for all the requirements concerning snapshotting. On the replica side, interaction with the service through \texttt{ServiceProxy} is instance-oriented and convenient. On the service side, the interaction with clients is as transparent as possible.
 
-To achieve this the \texttt{ServiceProxy} keeps a list of responses for all requests since the previous snapshot as well as some information required later to properly restore a
+To achieve this \texttt{ServiceProxy} keeps a list of responses for all requests since the previous snapshot as well as some information required later to properly restore the
 request sequential number % one phrase ?
 from a snapshot.
 As the replica provides a snapshot, this module adds to the snapshot required data.
 
-Overhead caused by this proxy should be smaller than the difference in speed of the service if the service had to be aware of instances. The difference is size of the snapshot depends on the state size, but usually the state is much bigger than a few responses required to provide transparency.
+Overhead caused by this proxy should be smaller than the difference in speed of the service if the service had to be aware of instances. The difference in size of the snapshot depends on the state size, but usually the state is much bigger than a few responses required to provide transparency.
 Of course, this does not release the service from responsibility of providing valid snapshots. The service still must provide the corresponding 
 request sequential number % one phrase
 for the snapshot it creates.

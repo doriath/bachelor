@@ -8,11 +8,10 @@ The most common and effective method of providing reliable services is replicati
 Each replication approach relies on some group communication mechanism, usually providing strong guarantees. For example, the total-order (atomic) broadcast is a very useful for interconnecting replicas -- it simplifies the design and implementation of the replication protocols, as it allows for dividing the system into two main modules with clearly visible responsibilities.
 
 We have chosen to implement one of the replication approaches -- one that we think is very promising.
-It is called active replication. In this approach, each service replica does the same work. The replicas must behave identically and therefore we require the service to behave deterministically.
+It is called active replication. In this approach, each replica does the same work. The replicas must behave identically and therefore we require the service to behave deterministically.
 
-Every library for replicating services should address its main purpose, i.e. to guarantee high availability of service as well as durability of the service work results.
+Every library for replicating services should address its main purpose, i.e.\ to guarantee high availability of service as well as durability of the service work results.
 
-% TODO something about Paxos - (JPaxos is using Paxos / MultiPaxos as algorithm for solving consensus problem?)
 
 \begin{minipageWithIndent}{0.9\textwidth}
 {
@@ -28,8 +27,8 @@ JPaxos allows for replica crashes as well as recovering the crashed replicas, en
 
 \section{Thesis organization}
 
-In the opening chapter we shortly characterize articles concerning Paxos algorithm and present the most significant definitions as well as theoretical results concerning Paxos. 
-The second chapter provides description of Paxos algorithm, including some modifications to the core algorithm.
+In the opening chapter we shortly characterize articles concerning Paxos algorithm and present the most significant definitions as well as theoretical results concerning Paxos.
+The second chapter provides description of the Paxos algorithm.
 In chapter 3 we describe the design of JPaxos -- its architecture, modules, important data structures and threading model.
 Chapter 4 is devoted to the implementation work related to the state machine replication, including snapshotting, catch-up and achieving transparency for the service.
 Fifth chapter contains description of optimizations we used in order to achieve better performance of the library.
@@ -42,19 +41,19 @@ The Paxos and MultiPaxos algorithms have been proposed by L. Lamport in \textit{
 
 Since then the Paxos protocol has been described from the theoretical point of view. Improvements and their proofs of correctness were presented as well as behaviour with byzantine crashes has been characterized.
 
-Some of the first real-world Paxos applications have been described in 2006 and 2007 (\textit{Paxos made live}~\cite{CGR07}). The articles describe certain implementation issues concerning the Paxos algorithm in the Chubby distributed filesystem developed at Google.
+One of the first real-world Paxos application has been described in 2007 (\textit{Paxos made live}~\cite{CGR07}). The article describes certain implementation issues concerning the Paxos algorithm in the Chubby distributed filesystem developed at Google.
 
 A year later, in \textit{Paxos for system builders}~\cite{AK08}, the Paxos protocol has been described from programmer point of view.
 
-In 2009, and subsequently in 2010, M. Primi et al. released two implementations of Paxos designed to achieve good performance. Both of these implementations have been released as open-source. The first -- libPaxos$^2$ -- is described in Primi's master thesis, the latter -- RingPaxos -- is described in \textit{Ring Paxos: A High-Throughput Atomic Broadcast Protocol}~\cite{Mar10}.
+In 2009, and subsequently in 2010, M. Primi et al.\ released two implementations of~Paxos designed to achieve good performance. Both of these implementations have been released as open-source. The first -- libPaxos$^2$ -- is described in Primi's master thesis, the latter -- RingPaxos -- is described in \textit{Ring Paxos: A High-Throughput Atomic Broadcast Protocol}~\cite{Mar10}.
 
-The crash-recovery model has also been the subject of many research papers. The \textit{Atomic Broadcast in Asynchronous Crash-Recovery Distributed Systems}~\cite{rodriguez2000atomic} provides definitions concerning recovery as well as shows a method to transform any crash-stop consensus protocol to the crash-recovery one.
+The crash-recovery model has also been the subject of many research papers. \linebreak The \textit{Atomic Broadcast in Asynchronous Crash-Recovery Distributed Systems}~\cite{rodriguez2000atomic} provides definitions concerning recovery as well as shows a method to transform any crash-stop consensus protocol to the crash-recovery one.
 
 A summary of the crash-recovery approaches for the Paxos algorithm can be found in N. Santos technical report~\cite{Nun10}. All algorithms implemented by us are described there.
 
 \section{Contributions}
 
-Jan Kończak for the purpose of this thesis has prepared the design and implementation of:
+Jan Kończak for the purpose of this thesis has prepared the design and implementation~of:
 \begin{tightList}
   \item[\textbullet] catch-up module (Section \ref{sec:catch_up}),
   \item[\textbullet] snapshotting module (Section \ref{sec:snapshotting}),

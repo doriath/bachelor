@@ -3,7 +3,7 @@
 \section{Overview}
 \label{overview:overview}\label{overview::doc}\label{overview:jpaxos-user-guide}
 JPaxos is a Java library and runtime system for efficient state machine
-replication. With JPaxos it is very easy to make a user-provided
+replication. \linebreak With JPaxos it is very easy to make a user-provided
 service tolerant to machine crashes. Our system supports the \emph{crash-recovery}
 model of failure and tolerates message loss and communication delays.
 \begin{description}
@@ -12,7 +12,7 @@ is a general method for implementing a fault-tolerant service by
 replicating it on separate machines and coordinating client interactions
 with these replicas (or copies). The physical isolation of machines in
 a distributed system ensures that failures of server replicas are
-independent, as required. As long as there are enough of non-faulty
+independent, as required. \linebreak As long as there are enough of non-faulty
 replicas, the service is guaranteed to be provided.
 
 \end{description}
@@ -73,7 +73,7 @@ For the end user JPaxos provides:
 \code{Service} interface -- it specifies a few methods for interfacing
 the user-defined servi\-ce code with JPaxos; our library provides
 abstract classes implementing \code{Ser\-vice} interface, making it easier to
-to create a new service (state machine);
+to create a new service (state machine);\linebreak
 see {\hyperref[api:jpaxos-service]{\emph{Service interface}}} for details
 
 \item {} 
@@ -124,7 +124,7 @@ by the Client to the replicated state machine:
 \begin{figure}[htbp]
 \centering
 
-\scalebox{0.500000}{\includegraphics{user_guide/state_machine.pdf}}
+\scalebox{0.750000}{\includegraphics{user_guide/state_machine.pdf}}
 \end{figure}
 \end{quote}
 
@@ -138,7 +138,7 @@ Figure below:
 \begin{figure}[htbp]
 \centering
 
-\scalebox{0.500000}{\includegraphics{user_guide/state_machine_crash.pdf}}
+\scalebox{0.750000}{\includegraphics{user_guide/state_machine_crash.pdf}}
 \end{figure}
 \end{quote}
 
@@ -276,11 +276,11 @@ catastrophic - all replicas may crash; $f=n$
 \end{itemize}
 
 To select a crash model, one must add to the configuration file a line
-\code{CrashModel = {[}crash model name{]}}. If no crash model is provided, the
+\\\code{CrashModel = {[}crash model name{]}}\\ If no crash model is provided, the
 \code{FullStableStorage} is assumed.
 
-For choosing a log path one needs to add another line with syntax \code{LogPath =
-{[}path{]}}. The logs will be actually stored in subdirectory named after replica
+For choosing a log path one needs to add another line with syntax\\ \code{LogPath =
+{[}path{]}}\\ The logs will be actually stored in subdirectory named after replica
 id in the given location. The default value for log path is \code{jpaxosLogs}.
 
 An example configuration:
@@ -373,7 +373,7 @@ requests and of BatchSize so that this limit is not violated. Because of this
 limitations, user should choose TCP or Generic option.
 
 If one chooses Generic, it is also recommended to set what is a `small' and
-what is a `big' message, by setting maximum allowed UDP packet size:
+what is a~`big' message, by setting maximum allowed UDP packet size:
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{n}{Network} \PYG{o}{=} \PYG{n}{Generic}
@@ -681,7 +681,7 @@ Method summary:
 \code{void addSnapshotListener (SnapshotListener listener)}
 \begin{quote}
 
-Registers a new listener. Each listener has to be informed every time a snapshot has been created by \code{Service}.
+Registers a new listener. Each listener has to be informed every time a~snapshot has been created by \code{Service}.
 \end{quote}
 
 \item {} 
