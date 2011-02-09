@@ -34,7 +34,7 @@ with the same IP address.
 \end{itemize}
 
 
-\subsection{Two execution modes}
+\subsection*{A.1.1\quad Two execution modes}
 \label{overview:two-execution-modes}
 JPaxos can be run in one of the following two modes of operation
 (the mode is set up from the configuration file at system start up
@@ -65,7 +65,7 @@ around 200 times slower than the basic mode
 \end{itemize}
 
 
-\subsection{Simple API}
+\subsection*{A.1.2\quad Simple API}
 \label{overview:simple-api}
 For the end user JPaxos provides:
 \begin{enumerate}
@@ -104,7 +104,7 @@ any two replicas will execute the requests in the same order
 \end{itemize}
 
 
-\subsection{Distributed implementation}
+\subsection*{A.1.3\quad Distributed implementation}
 \label{overview:distributed-implementation}
 JPaxos is a fully distributed implementation, which means that there
 is no predefined central coordinator that might be a bottle-neck or a single
@@ -256,10 +256,10 @@ minority
 \begin{description}
 \item[{Crash model types:}] \leavevmode\begin{itemize}
 \item {} 
-CrashStop - once the replica crashed, it cannot recover
+CrashStop -- once the replica crashed, it cannot recover
 
 \item {} 
-CrashRecovery - the replica may crash and subsequently recover
+CrashRecovery -- the replica may crash and subsequently recover
 
 \end{itemize}
 
@@ -268,10 +268,10 @@ CrashRecovery - the replica may crash and subsequently recover
 Fault tolerance ranks:
 \begin{itemize}
 \item {} 
-minority - the minority of replicas may crash; $f = \left\lfloor (n-1)/2 \right\rfloor$
+minority -- the minority of replicas may crash; $f = \left\lfloor (n-1)/2 \right\rfloor$
 
 \item {} 
-catastrophic - all replicas may crash; $f=n$
+catastrophic -- all replicas may crash; $f=n$
 
 \end{itemize}
 
@@ -305,14 +305,14 @@ instances. The meaning of this option is very similar to window size in TCP
 protocol.
 
 To illustrate it, assume that window size is set to 10. It allows to run
-instances with IDs from 1 to 10 concurrently and to decide instances 2 - 10
+instances with IDs from 1 to 10 concurrently and to decide instances 2 -- 10
 before instance 1. JPaxos cannot execute any instance until all previous
 instances are executed so because instance 1 is not decided / executed, no
 instance can be executed on state machine. When instances 1 will be
 decided and executed all consecutive instances will also be executed.
 
 The example above shows that by increasing the value of window size we can
-decrease the response time - a lot of instances will be decided, but none can
+decrease the response time -- a lot of instances will be decided, but none can
 be executed. Because of that it is recommended to set this option to lower
 value and BatchSize to higher value so that decided instances can be executed
 faster.
@@ -362,7 +362,7 @@ TCP (default)
 UDP
 
 \item {} 
-Generic - Uses UDP for small messages and TCP for larger messages
+Generic -- Uses UDP for small messages and TCP for larger messages
 
 \end{itemize}
 
@@ -417,7 +417,7 @@ The user of JPaxos has to configure the system by creating instance of
 The \code{Configuration} class either loads the setting from certain file, or the
 settings may be provided by instantiating.
 
-\code{Configuration} contains nodes configuration (information about replicas - ids,
+\code{Configuration} contains nodes configuration (information about replicas -- ids,
 hostnames and ports), and replica related options (batching size, window size,
 etc.). \code{Client} is using only nodes configuration (hostnames and ports) and
 ignores replica related options, while \code{Replica} is using all options from
@@ -479,8 +479,8 @@ The port used by clients to establish connection with this replica.
 \section{Application programming interface}
 \label{api:application-programming-interface}\label{api:jpaxos-api}\label{api:code-generation-library}\label{api::doc}
 
-\subsection{Introduction}
-\label{api:introduction}
+%\subsection{Introduction}
+%\label{api:introduction}
 A non-replicated service looks like this:
 \begin{figure}[H]
 \centering
@@ -503,7 +503,7 @@ JPaxos provides implementation of its Client and the Replica. The programmer mus
 
 \code{Service} executes all requests from clients deterministically. The service must also implement a few additional methods to save and restore its state, which will explained in detail below.
 
-Data exchanged by client and service are in form of byte arrays -- \code{byte{[}{]}}. This gives biggest flexibility to the programmer - any data can be put there. One may use byte arrays in the service, as well as serialise/deserialise the \code{byte{[}{]}} to certain objects.
+Data exchanged by client and service are in form of byte arrays -- \code{byte{[}{]}}. This gives biggest flexibility to the programmer -- any data can be put there. One may use byte arrays in the service, as well as serialise/deserialise the \code{byte{[}{]}} to certain objects.
 
 
 \subsection{Service}
@@ -525,7 +525,7 @@ interface Service
 
 Using the \code{Service} interface is discouraged in favour of \code{AbstractService}, as the latter implements methods common to all services.
 
-\code{AbstractService} provides widest range of functionality. \code{SimpleService} is the \code{AbstractSer\-vice} narrowed to the absolute minimum for the system to work. \code{Seria\-li\-za\-ble\-Service} differs from \code{SimpleService} only with data type - all client requests and service responses are serialised using Java serialisation.
+\code{AbstractService} provides widest range of functionality. \code{SimpleService} is the \code{AbstractSer\-vice} narrowed to the absolute minimum for the system to work. \code{Seria\-li\-za\-ble\-Service} differs from \code{SimpleService} only with data type -- all client requests and service responses are serialised using Java serialisation.
 
 
 \paragraphNewline{\texttt{SerializableService} class}
@@ -566,7 +566,7 @@ Updates the current state of Service to state from snapshot. This me\-thod will 
 \label{api:simplifiedservice-class}
 This class also has minimal number of methods.
 
-Only difference between \code{Simplified\-Ser\-vice} and \code{SerializableService} is the type of passing the data - the \code{SimplifiedService} uses byte arrays for that.
+Only difference between \code{Simplified\-Ser\-vice} and \code{SerializableService} is the type of passing the data -- the \code{SimplifiedService} uses byte arrays for that.
 
 Method summary:
 \begin{itemize}
@@ -597,10 +597,10 @@ snapshots can be passed for state after specific request, not only after the las
 
 \end{itemize}
 
-These features let the service be more flexible and make using threads inside the service code easier. This comes at cost of placing partial responsibility on the service programmer - he must provide valid arguments for the functions.
+These features let the service be more flexible and make using threads inside the service code easier. This comes at cost of placing partial responsibility on the service programmer -- he must provide valid arguments for the functions.
 
 In order to preserve the functionality, some additional data needs to be remembered by the service.
-A sequential number of request identifies each request and request order in JPaxos - these numbers must be taken under consideration in the service as well. This sequential number is global among the replicas.
+A sequential number of request identifies each request and request order in JPaxos -- these numbers must be taken under consideration in the service as well. This sequential number is global among the replicas.
 
 To make the snapshot creation easier, JPaxos checks the size of logs and previous snapshots. If the ratio between these sizes reaches certain levels (see Configuration chapter) methods \code{askForSnapshot} and \code{forceSnapshot} are called. Programmer should use these methods as hints, although one may just make the snapshot then, or ignore these methods at all.
 
@@ -647,7 +647,7 @@ Updates the current state of \code{Service} to the state from the snapshot.
 \code{void recoveryFinished()}
 \begin{quote}
 
-Informs the service that the replica is fully functional - i.e. recovery process has been finished (if any).
+Informs the service that the replica is fully functional -- i.e. recovery process has been finished (if any).
 
 This implementation is an empty method. One may not override it, if the knowledge that recovery has finished is not needed.
 \end{quote}
@@ -699,7 +699,7 @@ Unregisters the listener.
 
 \subsection{Replica}
 \label{api:jpaxos-replica}\label{api:replica}
-In order to achieve replication above the Paxos protocol another layer must be implemented - a layer that passes the Paxos decisions to the service and accepts client requests. This part is called Replica. Each Replica has one copy of underlying \code{Service}. A replica must have its unique number - called local Id, or just Id. The IDs are sequential numbers starting from 0.
+In order to achieve replication above the Paxos protocol another layer must be implemented -- a layer that passes the Paxos decisions to the service and accepts client requests. This part is called Replica. Each Replica has one copy of underlying \code{Service}. A replica must have its unique number -- called local Id, or just Id. The IDs are sequential numbers starting from 0.
 
 To create the \code{Replica} object you need:
 \begin{itemize}
@@ -707,7 +707,7 @@ To create the \code{Replica} object you need:
 configuration (shared by replicas and clients)
 
 \item {} 
-local Id - identification number
+local Id -- identification number
 
 \item {} 
 the \code{Service} that has to be replicated
@@ -784,7 +784,7 @@ If one chose using \code{SerializableService} as base class for the service impl
 This example presents simple service implementation. The service is a replicated hash map. Each client command reads requested entry and modifies it. Service responds with old map entry value.
 
 
-\subsection{Service}
+\subsection*{A.4.1\quad Service}
 \label{example:service}
 First, we present an example Service implementation.
 
@@ -860,7 +860,7 @@ lineskip=-0.5em
     }
 \end{lstlisting}
 
-\subsection{Replica}
+\subsection*{A.4.2\quad Replica}
 \label{example:replica}
 In order to run the service, one needs also to write an application starting the service.
 
@@ -885,7 +885,7 @@ In order to run the service, one needs also to write an application starting the
 \end{lstlisting}
 
 
-\subsection{Client}
+\subsection*{A.4.3\quad Client}
 \label{example:client}
 The code below presents the client side.
 

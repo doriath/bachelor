@@ -260,7 +260,7 @@ Please note that catch-up time also includes time of state/log transfer.
 \label{subsec:replica_vs_state_machine_responsibility}
 There are two approaches to the problem who is in charge for the initiating of snapshot creation. Either the JPaxos \texttt{Replica} module issues a snapshot, or the service chooses an~appropriate moment.
 
-Embedding this functionality into JPaxos would surely provide more secure work (the service may simply not deliver the snapshots, which means forever growing log). It is easier for the \texttt{Replica} to measure the size of the messages that should be transferred in order to catch-up (or recover).
+Embedding this functionality into JPaxos would surely provide more secure work (the service may simply not deliver the snapshots, which means forever growing log). It~is~easier for the \texttt{Replica} to measure the size of the messages that should be transferred in order to catch-up (or recover).
 
 However, JPaxos does not know anything about the service. We can also assume, that the service is not aware of network conditions. Therefore choosing the proper moment (when the cost of log-based catch-up becomes more expensive than the state-based catch-up) is impossible for both. It is clearly visible, that service is better informed -- it knows not only the size of requests, but also it may estimate the size of its current state and the resources that are needed to execute all commands from the log.
 
@@ -301,7 +301,7 @@ There are several approaches possible on who decides the proper time for the sna
  \item[Replica only] -- each time \texttt{askForSnapshot} is called, the state machine does snapshot.
 \end{description}
 
-Snapshotting requires also additional data exchanged between replica and service: the state machine must know the request number, to allow snapshot identification in the replica. For example, if the snapshotting would be done completely on service's side, how would the replica know after which command the snapshot was taken.
+Snapshotting requires also additional data exchanged between replica and service: the state machine must know the request number, to allow snapshot identification in~the~replica. For example, if the snapshotting would be done completely on service's side, how would the replica know after which command the snapshot was taken.
 
 
 \section{Service Proxy}
@@ -311,7 +311,7 @@ Some operations on services require proper arguments. Should a service be respon
 
 This is not desired. We want to provide as much transparency as possible, without forcing the service to remember redundant data.
 
-\texttt{ServiceProxy} is a module that translates JPaxos instances to service requests and takes care for all the requirements concerning snapshotting. On the replica side, interaction with the service through \texttt{ServiceProxy} is instance-oriented and convenient. On the service side, the interaction with clients is as transparent as possible.
+\texttt{ServiceProxy} is a module that translates JPaxos instances to service requests and takes care for all the requirements concerning snapshotting. On the replica side, interaction with the service through \texttt{ServiceProxy} is instance-oriented and convenient. On~the~service side, the interaction with clients is as transparent as possible.
 
 To achieve this \texttt{ServiceProxy} keeps a list of responses for all requests since the previous snapshot as well as some information required later to properly restore the
 request sequential number % one phrase ?
