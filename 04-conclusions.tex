@@ -2,19 +2,18 @@
 
 In this thesis, we have studied the problem of state machine replication based
 on Paxos algorithm defined in \cite{Lam98}. We described challenges faced in
-implementation phase to make the library ready to use in production systems
+the implementation phase to make the library ready to use in production systems,
 with support of crash-recovery model, message loss and communication delays.
 
 We first presented the Paxos algorithm with theoretical background. Then we
-focused on problems which occurs when transforming one page pseudocode of
-distributed algorithm to few thousands line of production code. We presented
-the architecture of our library with short description of every module and data
-structures used. The library has to handle unreliable network with message
+focused on the problems that occur when a single page of distributed algorithm pseudocode 
+is transformed to ten thousand lines of production code. We presented
+the architecture of our library, with short description of every module and data
+structure used. The library has to handle unreliable network with message
 loss and delays, so we presented the catch-up mechanism, which guarantees that
 eventually every correct replica will be up to date. By introducing snapshot
-mechanism, we solve a problem with infinite grow of log. To make the library
-very efficient, we implemented several performance improvements like concurrent
-instances, skipping redundant message and batching. To tolerate crash-recovery
+mechanism, we solve the problem of keeping the log size bounded. To improve the efficiency of JPaxos, we implemented several performance improvements like concurrent
+instances, skipping redundant messages and batching. To tolerate crash-recovery
 model, four different recovery algorithms have been implemented and described in
 this paper.
 
@@ -23,9 +22,8 @@ deterministic service. We used it to verify that our library is working
 correctly and that API we provide is user friendly. Our library is used as 
 communication layer in PaxosSTM master thesis \cite{Tad10}.
 
-Our future work includes further performance improvements to Paxos protocol and
-implementing more crash-recovery algorithms with no use of stable storage.  It
-would be also interesting to evaluate all recovery algorithms in network with
+Our future work includes introducing further performance improvements to JPaxos and
+adding support for crash-recovery models without the stable storage at all. It~would be also interesting to evaluate all recovery algorithms in a network with
 message loss and environment when failure of replica is a common scenario.
 Finally, we would like to publish the library as open source project and test it
 in production environment.
