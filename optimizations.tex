@@ -90,7 +90,7 @@ When concurrent instances optimization is used, it is possible that leader after
 
 As we can see after the prepare phase, a leader can have a gap in the log. Without filling this gap, replica cannot execute and propose new values. Because of that, a new value has to be proposed in this place.
 
-With crash-stop or crash-recovery without stable storage the value may be lost forever. That happens when decision $k+1$ is already decided, and decision $k$ is unknown to all but the leader, and the leader crashes. As only he got the value, and it has been lost -- either because he is not allowed to recover, or he is recovering without stable storage.
+With crash-stop or crash-recovery without stable storage the value may be lost forever. That happens when decision $k+1$ is already decided, and decision $k$ is unknown to all but the leader, and the leader crashes. As only it got the value, and the value has been lost -- either because processes are not allowed to recover, or they are recovering without stable storage.
 
 On the other hand, the leader change may happen due to a lost \alive message. \linebreak In this case, someone has the value, and it could be used back in the voting. However, there is no simple and fast method to detect this situation.
 
@@ -102,18 +102,18 @@ The replicated log cannot be allowed to grow forever, it must be bounded in any 
 
 In JPaxos, the Paxos protocol is not used for getting lost requests due to performance reasons. For this we use a special procedure called \textit{catch-up}, which is described in section~\ref{sec:catch_up}.
 
-Having the old log is needed in three cases: for the catch-up, for view change and, in the crash-recovery model, for recovery.
-The catch-up needs old log in order to send them to a replica which is not up-to-date, once the replica requests them.
+Having the old log entries is needed in three cases: for the catch-up, for view change and, in the crash-recovery model, for recovery.
+The catch-up needs old log entries in~order to send them to a replica which is not up-to-date, once the replica requests them.
 During the view change, the leader requests log entries of all instances it considers undecided.
 By recovery, a replica needs the log of other replicas in order to know what has been decided at least since its crash.
 
-Especially the latter is problematic. The view change always requires a bounded number of instances in the log. However, if we assume recovery with minimal or no stable storage (as in the case of the epoch based or view-based recovery algorithm), after the recovery a replica needs to recover the state from scratch. For this, it needs the whole log or complete state.
+Especially the latter is problematic. The view change always requires a bounded number of instances in the log. However, if we assume recovery with minimal or no stable storage (as in the case of the epoch-based or view-based recovery algorithm), after the recovery a replica needs to recover the state from scratch. For this, it needs the whole log or complete state.
 
 \paragraphNewline{Global Commit Point}
 
 A command can be deleted from the log after being executed by all replicas in crash-stop and crash-recovery models with stable storage. The highest instance executed by all replicas is called a \emph{global commit point}.
 
-However, removing all instances prior to the global commit point is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for some time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime. If one replica crashes, the other replicas have no way of knowing that it is a crash and not a disconnection, so they would have to keep the logs forever. In addition, the replica can stay crashed for arbitrary long time.
+However, removing all instances prior to the global commit point is not enough to ensure that the log is kept bounded, because a correct replica may be disconnected from the system for some time. When communication is reestablished, the replica needs to learn about all the decisions taken in the meantime. If one replica crashes, the other replicas have no way of knowing that it is a crash and not a disconnection, so they would have to keep the logs forever.
 
 Therefore using snapshotting is the only acceptable solution in JPaxos.
 
@@ -136,22 +136,22 @@ The most problematic part is the Service -- if it does not implement creating sn
 Snapshotting is described in details in the section \ref{sec:snapshotting}.
 
 \section{Skipping redundant messages}
-Reducing the number of messages is one of the most efficient optimizations. In JPaxos a process does not send messages to itself, also the proposer does not send \accept messages to anyone.
+Reducing the number of messages is one of the most efficient optimizations. In JPaxos a process does not send messages to itself, also the proposer does not send the \accept messages to anyone.
 
-It has been proved for the Paxos consensus algorithm that it minimizes the number of messages carrying a value to be agreed upon (the client request in our case). The value is sent only once to each replica (not counting retransmission due to message loss). As for additional messages, their count varies among certain implementations. Some of messages proposed in the typical implementation may be easily skipped without violating guarantees or adding any assumptions.
+It has been proved for the Paxos consensus algorithm that it minimizes the number of messages carrying a value to be agreed upon (the client request in our case). The value is sent only once to each replica (not counting retransmission due to message loss). \linebreak As for additional messages, their count varies among certain implementations. Some of the messages proposed in the typical implementation may be easily skipped without violating guarantees or adding any assumptions.
 
 \paragraphNewline{Using \propose as \accept}
 
-Another optimization is merging the role of \accept and \textsc{Propose}. As long as \linebreak acceptors and proposers do not share the log this is not allowed. However, if their knowledge is identical and the leader proposed some value, then he must accept it as well. In most solutions, one node acts as proposer and acceptor, and they do share the~log.
+Another optimization is merging the role of \accept and \textsc{Propose}. As long as \linebreak acceptors and proposers do not share the log this is not allowed. However, if their knowledge is identical and the leader proposed some value, then he must accept it as well. In most solutions, one node acts as the proposer and the acceptor, and they do share the~log.
 
-Therefore, in JPaxos each \propose is simultaneously an \accept message. Notice that if the system consists of three nodes every process decides on the value by receiving a valid propose -- it knows that the leader and itself
-accept the message. Normally the leader process has to first send \propose to all and later \accept to all. By this optimization, only half of messages are required to be sent.
+Therefore, in JPaxos each \propose message is simultaneously an \accept message. Notice, that if the system consists of three nodes, every process decides on the value by receiving a valid propose -- it knows that the leader and itself
+accept the message. Normally the leader process first has to send \propose to all and later \accept to all. By this optimization, only half of messages are required to be sent.
 
 \paragraphNewline{Sending to itself}
 
 As stated before, Paxos defines three types of roles: proposers, acceptors and learners. Processes or some of their parts act as one of them. In order to communicate they must send messages to each other.
 
-In our program, every node consists of a (probable) proposer, acceptor as well as learner. In this case, there is no need to send messages to self. Especially all send-to-all commands may be replaced by send to others command, as long as the communication with self will be done internally. This skips one \accept and one \propose sent by the leader, and one \accept by all other processes.
+In our program, every node consists of a (probable) proposer, an acceptor as well as a learner. In this case, there is no need to send messages to self. Especially all send-to-all commands may be replaced by send to the others command, as long as the communication with self will be done internally. This skips one \accept and one \propose sent by the leader, and one \accept by all other processes.
 
 This does not influence performance much, however it is recommended as it decreases the use of system resources (especially the networking stack). It also skips a few system calls.
 
@@ -161,7 +161,7 @@ Most of the articles about Paxos state that the \accept message carries the valu
 In such case, we can accept on the value even without receiving a~\propose message.
 
 The value usually is bigger than a normal message of JPaxos. Because of that, we want to minimize number of messages, which contain the value.
-In JPaxos the \accept message does not carry the value. Before a process can send the \accept message, it has to receive the \propose message. The process decides upon a value if it receives a~\propose and majority of \accept messages.
+In JPaxos the \accept message does not carry the value. Before a process can send the \accept message, it~has to receive the \propose message. The process decides upon a value if it receives a~\propose and majority of \accept messages.
 
 Waiting for the \propose message might cause additional overhead, but usually the \propose will be delivered prior to the majority of \accept messages.
 Each process must receive one \propose[], but multiple \accept messages. If the \accept message does not carry the value, significantly less network bandwidth is used by a single instance.
@@ -194,6 +194,6 @@ We can see that in order to decide the process needs to send the \propose[] once
 
 For the comparison of consensus algorithms usually time is defined in a specific way: $n$ denotes the time needed to send a message containing the value to be agreed upon, and $1$ is the time required to send any other message. This is motivated by the value size -- usually the value is significantly bigger than any protocol message, so it is important to differentiate the messages carrying value and all the others.
 
-Other implementations consider using bounded learner count -- only some processes are selected as the learners. For example, only one process plays the role of a~learner -- that means the acceptors send the \accept messages only to this process. An additional message, \textsc{Decided}, is sent by the learner to all as the ballot has finished. Thanks to this modification, no reliable broadcast is needed, but also an additional phase of communication must occur. If only some processes act as learners, it is important to ensure that there is at least one correct learner. Otherwise, the protocol would not guarantee liveness.
+Other implementations consider using bounded learner count -- only some processes are selected as the learners. For example, only one process plays the role of the~learner -- that means the acceptors send the \accept messages only to this process. An additional message, \textsc{Decided}, is sent by the learner to all as the ballot has finished. Thanks to this modification, no reliable broadcast is needed, but also an additional phase of communication must occur. If only some processes act as learners, it is important to ensure that there is at least one correct learner. Otherwise, the protocol would not guarantee liveness.
 
 An interesting approach is presented in the RingPaxos (see \cite{Mar10}), where IP-multicast is used for all broadcasts, what significantly increases the scalability and performance.

@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.0
-lastDocument=paxos/paxos.tex
+lastDocument=main.tex
 masterDocument=
 name=inz
 pkg_extIsRegExp=false
@@ -17,20 +17,20 @@ QuickBuild=
 
 [item:01-introduction.tex]
 archive=true
-column=0
+column=77
 encoding=UTF-8
 highlight=LaTeX
-line=32
-open=true
+line=12
+open=false
 order=3
 
 [item:02-theory.tex]
 archive=true
-column=37
+column=0
 encoding=UTF-8
 highlight=LaTeX
-line=83
-open=true
+line=40
+open=false
 order=2
 
 [item:03-jpaxos.tex]
@@ -44,10 +44,10 @@ order=1
 
 [item:04-conclusions.tex]
 archive=true
-column=46
+column=7
 encoding=UTF-8
 highlight=LaTeX
-line=26
+line=32
 open=false
 order=5
 
@@ -71,19 +71,19 @@ order=3
 
 [item:algorithmicplus.sty]
 archive=true
-column=78
+column=0
 encoding=UTF-8
 highlight=LaTeX
-line=25
-open=true
+line=0
+open=false
 order=5
 
 [item:architecture/architecture.tex]
 archive=true
-column=171
+column=197
 encoding=UTF-8
 highlight=LaTeX
-line=188
+line=247
 open=false
 order=1
 
@@ -101,7 +101,7 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=145
+line=324
 open=false
 order=4
 
@@ -110,42 +110,51 @@ archive=true
 column=7
 encoding=UTF-8
 highlight=LaTeX
-line=142
+line=148
 open=true
 order=0
 
-[item:paxos/paxos.tex]
+[item:optimizations.tex]
 archive=true
-column=0
+column=43
 encoding=UTF-8
 highlight=LaTeX
-line=41
-open=true
+line=142
+open=false
+order=-1
+
+[item:paxos/paxos.tex]
+archive=true
+column=2
+encoding=UTF-8
+highlight=LaTeX
+line=143
+open=false
 order=1
 
 [item:ppfcmthesis.cls]
 archive=true
-column=25
+column=33
 encoding=UTF-8
 highlight=LaTeX
-line=2
+line=189
 open=false
 order=-1
 
 [item:recovery.tex]
 archive=true
-column=18
+column=137
 encoding=UTF-8
 highlight=LaTeX
-line=111
-open=true
+line=230
+open=false
 order=4
 
 [item:user_guide/JPaxos.tex]
 archive=true
-column=1
+column=72
 encoding=UTF-8
 highlight=LaTeX
-line=180
+line=683
 open=false
 order=1
