@@ -1,5 +1,7 @@
 \chapter{Optimizations}
 
+In this section, we focus on performance improvements used in JPaxos library. We begin with concurrent instances optimization, which allows for better network utilization. Later we describe batching technique for inserting more than one client request into one consensus instance. As next, we present different methods for log truncation to solve a problem with infinitely growing log in a memory. Last part of this chapter describes messages which are skipped by JPaxos library to improve the performance.
+
 \section{Concurrent instances}
 \label{subsec:concurrent_instances}
 Running multiple consensus instances simultaneously is an easy way of making the MultiPaxos algorithm faster. Usually, a single instance at time is not able to use available bandwidth; running more instances makes it possible to use the network more efficiently.
