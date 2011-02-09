@@ -93,7 +93,7 @@ JPaxos guarantees that in crash-recovery model, with static groups,
 lossy network with any delays:
 \begin{itemize}
 \item {} 
-if the client sends a request, it'll eventually get the answer
+if the client sends a request, it will eventually get the answer
 
 \item {} 
 every replica will execute the request exactly once
@@ -305,7 +305,7 @@ instances. The meaning of this option is very similar to window size in TCP
 protocol.
 
 To illustrate it, assume that window size is set to 10. It allows to run
-instances with id's from 1 to 10 concurrently and to decide instances 2 - 10
+instances with IDs from 1 to 10 concurrently and to decide instances 2 - 10
 before instance 1. JPaxos cannot execute any instance until all previous
 instances are executed so because instance 1 is not decided / executed, no
 instance can be executed on state machine. When instances 1 will be
@@ -495,7 +495,7 @@ A non-replicated service looks like this:
 
 In order to make the replication and recovery possible, we require a few additional methods from the Service.
 
-JPaxos provides implementation of it's Client and the Replica. The programmer must implement the Service and make use of the Client class.
+JPaxos provides implementation of its Client and the Replica. The programmer must implement the Service and make use of the Client class.
 
 \code{Client} sends requests to replicas and waits for reply. It provides only method for connecting and executing requests.
 
@@ -699,7 +699,7 @@ Unregisters the listener.
 
 \subsection{Replica}
 \label{api:jpaxos-replica}\label{api:replica}
-In order to achieve replication above the Paxos protocol another layer must be implemented - a layer that passes the Paxos decisions to the service and accepts client requests. This part is called Replica. Each Replica has one copy of underlying \code{Service}. A replica must have it's unique number - called local Id, or just Id. The Id's are sequential numbers starting from 0.
+In order to achieve replication above the Paxos protocol another layer must be implemented - a layer that passes the Paxos decisions to the service and accepts client requests. This part is called Replica. Each Replica has one copy of underlying \code{Service}. A replica must have its unique number - called local Id, or just Id. The IDs are sequential numbers starting from 0.
 
 To create the \code{Replica} object you need:
 \begin{itemize}

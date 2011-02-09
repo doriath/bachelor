@@ -11,13 +11,13 @@ So, what is stable storage? The process can write data to different places, it c
 
 Usually operating system buffers the data before writing it to stable storages. Such writes are called asynchronous. They do not provide guarantee that if crash occurs the data will be on the storage instead of being lost with the rest of system buffer.
 
-Another option is to force the operating system to write the data to stable storage. Such operating is called \emph{synchronizing} the buffers with storage. If we call write and synchronize, we can say that the write is synchronous -- the data won't be lost due to crash. However, writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
+Another option is to force the operating system to write the data to stable storage. Such operating is called \emph{synchronizing} the buffers with storage. If we call write and synchronize, we can say that the write is synchronous -- the data will not be lost due to crash. However, writing to stable storage synchronously is very slow, so we want to minimize the amount of writes on critical path.
 
 In following sections, we will use below variables: 
 \begin{tightList}
   \item[$n$] -- number of processes
-  \item[$f$] -- number of faulty process
-  \item[$p$] -- the id of local process
+  \item[$f$] -- number of faulty processes
+  \item[$p$] -- the ID of local process
 \end{tightList}
 
 \section{Crash stop}
@@ -162,7 +162,7 @@ Epoch-based recovery algorithms tolerates $f = \left\lfloor \frac{n-1}{2} \right
 
 In recovery phase the process first notifies the majority of other replicas about its recovery. As the process must know when its state will be correct, it must wait for recovery answer from the leader, who has the most recent state. Once it gets the acknowledgments, it is downloading all information from other replicas using catch-up mechanism.  When all necessary information is transferred, the replica can join the Paxos protocol and is considered as correct.
 
-On normal execution, this algorithm should be as fast as crash-stop model. \linebreak The size of \prepareOK message is increased by epoch vector, which contains $n$ numbers but it shouldn't have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
+On normal execution, this algorithm should be as fast as crash-stop model. \linebreak The size of \prepareOK message is increased by epoch vector, which contains $n$ numbers but it should not have big impact on performance or network usage. This algorithm is a compromise between crash-stop and crash-recovery with stable storage.  
 
 \subsection*{Example}
 
@@ -170,7 +170,7 @@ Let's analyze one example to better understand this algorithm. Assume that we re
 
 Process 0 is suspecting a leader and changing view to 5 by sending \prepare message to all. Process 1 receives \prepare and respond with $<$\prepareOK[], [0, 0, 0, 0, 0], 5, -$>$. The process 0 receives the response and process 1 crashes. After crash process 1 is recovering, increases epoch number to 1 and sends $<$\recovery[], 1$>$ message to all. Processes [2, 3, 4] receives \recovery message, updates epoch vector to [0, 1, 0, 0, 0] and responds with \recoveryAnswer and view 4. After receiving three \recoveryAnswer messages with view 4 (also from leader of view 4), process 1 joins the protocol with view 4. Now process 2 receives the \prepare from process 0 and responds with $<$\prepareOK[], [0, 1, 0, 0, 0], 5, -$>$.
 
-Process 0 already received three \prepareOK responses, from [0, 1, 2]. However, message from process 1 will be discarded because it was sent when process 1 was in epoch 0 and now from process 2 we know that process 1 is in epoch 1. If we wouldn't discard this message, process 0 would be prepared leader in view 5 but processes [1, 3, 4] would be in view 4 and that would cause violation of Paxos protocol.
+Process 0 already received three \prepareOK responses, from [0, 1, 2]. However, message from process 1 will be discarded because it was sent when process 1 was in epoch 0 and now from process 2 we know that process 1 is in epoch 1. If we would not discard this message, process 0 would be prepared leader in view 5 but processes [1, 3, 4] would be in view 4 and that would cause violation of Paxos protocol.
 
 \begin{figure}[h]
  \centering
@@ -182,7 +182,7 @@ Process 0 already received three \prepareOK responses, from [0, 1, 2]. However, 
 \section{View-based recovery}
 \label{sec:view_ss}
 
-The next algorithm is view-based recovery. It has similar properties to epoch-based recovery. In every moment majority of processes is required to be correct but instead of using epoch numbers, the view number is written to table storage on every change. 
+The next algorithm is view-based recovery. It has similar properties to epoch-based recovery. In every moment majority of processes is required to be correct but instead of using epoch numbers, the view number is written to stable storage on every change. 
 
 The pseudocode of this algorithm is presented below: 
 
@@ -230,11 +230,11 @@ The pseudocode of this algorithm is presented below:
 
 This algorithm makes synchronous write to stable storage on every view change. \linebreak If the network is stable and the leader does not crash, performance of the algorithm should be the same as in crash-stop model. If the view is changed often because of message loss or leader crash, the performance can decrease.
 
-The recovery phase is quite similar to the epoch-based recovery. Recovering process is sending \recovery message to all and waits for majority of \recoveryAnswer to get $heighestId$ value from leader. Then catch-up mechanism is used to retrieve missing instances from correct processes. This algorithm is easier than based on epoch, because it doesn't introduce any changes in handling \prepareOK message.
+The recovery phase is quite similar to the epoch-based recovery. Recovering process is sending \recovery message to all and waits for majority of \recoveryAnswer to get $heighestId$ value from leader. Then catch-up mechanism is used to retrieve missing instances from correct processes. This algorithm is easier than based on epoch, because it does not introduce any changes in handling \prepareOK message.
 
 \section{Comparison}
 
-We presented 4 different algorithms implemented to JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table below, we present the comparison of all algorithms by comparing:
+We presented 4 different algorithms implemented in JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table below, we present the comparison of all algorithms:
 \begin{table}[h]
   \footnotesize
   \begin{tabular}{lccccc}
@@ -260,8 +260,8 @@ We presented 4 different algorithms implemented to JPaxos library. Each algorith
 
 Crash recovery with full stable storage is an algorithm with the best fault tolerance because it tolerates catastrophic failures. However, to achieve that it makes a synchronous write to stable storage on every round (on every view and value change) what decreases the performance.
 
-Crash stop doesn't provide any recovery (crashed processes will never be correct again) and all the time majority of processes have to be correct. However, no synchronous writes to stable storage are made so it provides the best performance.
+Crash stop does not provide any recovery (crashed processes will never be correct again) and all the time majority of processes have to be correct. However, no synchronous writes to stable storage are made so it provides the best performance.
 
-The compromise between crash recovery with stable storage and crash stop are view-based and epoch-based recovery. They support recovery of crashed process and their performance should be close to crash-stop model. If service doesn't have to tolerate catastrophic failures, it is the best to use them in production environment.
+The compromise between crash recovery with stable storage and crash stop are view-based and epoch-based recovery. They support recovery of crashed process and their performance should be close to crash-stop model. If service does not have to tolerate catastrophic failures, it is the best to use them in production environment.
 
 Proofs of all algorithms presented in this chapter can be found in \cite{Nun10}. 
