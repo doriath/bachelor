@@ -96,7 +96,7 @@ This synchronous writes are made on critical path, so the performance of this al
 
 As we can see, this algorithm is already deployable in environment with crashes. However, because the performance is low, we will introduce two more algorithms. These algorithms will not tolerate catastrophic failures but their performance should be close to performance of crash-stop model.
 
-\section{Epoch based recovery}
+\section{Epoch-based recovery}
 \label{sec:epoch_ss}
 
 In this section, we will describe the algorithm based on epoch numbers. This algorithm is making only one synchronous write to stable storage on process startup, but the recovery phase is more complicated comparing to previous algorithm.
@@ -158,7 +158,7 @@ The pseudocode below should explain this algorithm:
   \ENDUPON
 \end{algorithmic}
 
-Epoch based recovery algorithms tolerates $f = \left\lfloor \frac{n-1}{2} \right\rfloor $ crashed processes. It is required that at least majority of processes are always correct - otherwise the algorithm will not be able to continue.
+Epoch-based recovery algorithms tolerates $f = \left\lfloor \frac{n-1}{2} \right\rfloor $ crashed processes. It is required that at least majority of processes are always correct - otherwise the algorithm will not be able to continue.
 
 In recovery phase the process first notifies the majority of other replicas about its recovery. As the process must know when its state will be correct, it must wait for recovery answer from the leader, who has the most recent state. Once it gets the acknowledgments, it is downloading all information from other replicas using catch-up mechanism.  When all necessary information is transferred, the replica can join the Paxos protocol and is considered as correct.
 
@@ -238,7 +238,7 @@ We presented 4 different algorithms implemented to JPaxos library. Each algorith
 \begin{table}[h]
   \footnotesize
   \begin{tabular}{lccccc}
-                        & Crash-stop & Full stable storage & View-based      & Epoch based \vspace{0.2em} \\
+                        & Crash-stop & Full stable storage & View-based      & Epoch-based \vspace{0.2em} \\
     Decides by          & $2f+1$     & $2f+1$              & $2f+1$          & $2f+1$      \\
     Fault tolerance     & $2f+1$     & $f$                 & $2f+1$          & $2f+1$      \\
     Process can recover & no         & yes                 & yes             & yes         \\

@@ -301,7 +301,7 @@ There are several approaches possible on who decides the proper time for the sna
  \item[Replica only] -- each time \texttt{askForSnapshot} is called, the state machine does snapshot.
 \end{description}
 
-Snapshotting requires also additional data exchanged between replica and service: the state machine must know the request number, in order to let snapshot identification in replica. For example, if the snapshotting would be done completely on service's side, how would the replica know after which command the snapshot was taken.
+Snapshotting requires also additional data exchanged between replica and service: the state machine must know the request number, to allow snapshot identification in the replica. For example, if the snapshotting would be done completely on service's side, how would the replica know after which command the snapshot was taken.
 
 
 \section{Service Proxy}
