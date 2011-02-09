@@ -182,7 +182,7 @@ Process 0 already received three \prepareOK responses, from [0, 1, 2]. However, 
 \section{View-based recovery}
 \label{sec:view_ss}
 
-The next algorithm is view-based recovery. It has similar properties to epoch-based recovery. In every moment majority of processes is required to be correct but instead of using epoch numbers, the view number is written to table storage on every change. 
+The next algorithm is view-based recovery. It has similar properties to epoch-based recovery. In every moment majority of processes is required to be correct but instead of using epoch numbers, the view number is written to stable storage on every change. 
 
 The pseudocode of this algorithm is presented below: 
 
@@ -234,7 +234,7 @@ The recovery phase is quite similar to the epoch-based recovery. Recovering proc
 
 \section{Comparison}
 
-We presented 4 different algorithms implemented to JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table below, we present the comparison of all algorithms by comparing:
+We presented 4 different algorithms implemented in JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table below, we present the comparison of all algorithms:
 \begin{table}[h]
   \footnotesize
   \begin{tabular}{lccccc}
