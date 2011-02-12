@@ -1,0 +1,232 @@
+\documentclass[hyperref={pdfpagelabels=true},11pt,compress,trans]{beamer}
+
+\input{header.tex}
+
+\begin{document}
+
+
+{ %%% Titleframe
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{frametitle}{}
+
+  \logo
+  {
+    \includegraphics[keepaspectratio,height=0.2\textheight]{images/put_logo.pdf} \hspace*{3.5em}
+  }
+
+  \begin{frame}
+    \rmfamily
+    \begin{center}
+      \Huge
+        \par\noindent\ignorespaces\rule{0.8\textwidth}{0.05em} \\
+        \textsc{JPaxos}
+
+        \vspace*{-\parsep}
+        \begin{minipage}{0.5\textwidth}
+          \normalsize\centering
+          \textsc{State~machine~replication\\based~on~the~Paxos~protocol}
+        \end{minipage}
+
+        \rule{0.8\textwidth}{0.05em}
+      \tiny
+
+      \vspace{1em}
+
+      \begin{columns}
+       \column{0.4\textwidth}
+       \column{0.4\textwidth}
+        \begin{tabbing}
+          \textsc{Authors} \qquad \= \\
+          \>Jan \' Kończak \\
+          \>Tomasz \' Żurkowski \\
+          \textsc{Thesis advisor} \\
+          \> PhD Paweł \' T. Wojciechowski
+        \end{tabbing}
+      \end{columns}
+    \end{center}
+  \end{frame}
+}
+
+
+  \logo
+  {
+    \includegraphics[keepaspectratio,height=0.12\textheight]{images/put_logo.pdf} \hspace*{1em}
+  }
+
+\begin{frame}{Tasks}
+ \begin{block}{IT-SOA (march 2009 - june 2010)}
+  Full Paxos implementation supporting crash-stop model
+ \end{block}
+
+ \begin{block}{Tasks for thesis}
+  Optimizing JPaxos
+  
+  Prepairing code to meet crash-recovery requirements
+  
+  Adding various crash-recovery models: \vspace{-\parsep}
+  \begin{itemize} 
+   \item Full Stable Storage
+   \item Epoch based
+   \item View based
+  \end{itemize}
+
+  Testing
+ \end{block}
+\end{frame}
+
+\begin{frame}{System assumptions}
+  \begin{block}{Model}
+    \vspace{-1em}\vspace{-\parskip}\vspace{-\lineskip}
+    \begin{itemize}
+      \item Non-byzantine behaviour
+      \item Static group membership
+      \item Crash-recovery
+      \item Catastrophical failures (may be) tolerated
+     \end{itemize}
+  \end{block}
+
+  \begin{block}{Network}
+    \vspace{-1em}\vspace{-\parskip}\vspace{-\lineskip}
+    \begin{itemize}
+      \item Messages may get lost
+      \item Large delays acceptable for bounded time
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Guarantees}
+  \begin{block}{State machine replication}
+    \vspace{-1em}\vspace{-\parskip}\vspace{-\lineskip}
+    \begin{itemize}
+      \item If majority of replicas will be correct, system is able to decide
+      \item All client requests will be executed on each state machine exactly once (even if it will be sent multiple times)
+      \item All state machines will execute requests in the same order
+      \item After crashing, replica will recover from other replicas to actual state
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Our approach}
+  \begin{block}{Our approach}
+    \vspace{-1em}\vspace{-\parskip}\vspace{-\lineskip}
+    \begin{itemize}
+      \item Leader election using view numbers
+      \item Failure detector based on timeouts
+      \item All messages from and to clients are handled as byte arrays
+      \item Reliable broadcast is used for the last phase in the algorithm
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Features implemented before summer 2010}
+ \begin{block}{}
+    \vspace{-1em}\vspace{-\parskip}\vspace{-\lineskip}
+    \begin{itemize}
+      \item Failure detector
+      \item Networking
+      \item Client managment
+      \item Catching up
+      \item Snapshotting
+      \item Batching
+      \item Concurrent instances
+      \item Stable storage writes
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Transparency for the user}
+ \begin{block}{Service vs JPaxos}
+  For the target service a request is the smallest data portion
+  
+  For the replica an instance is the smallest data portion
+  
+  The instance may have multiple requests
+ \end{block}
+
+ \begin{block}{ServiceProxy}
+  Translates from requests to instances and vice versa
+  
+  Cares for proper snapshot creation and recovery
+ \end{block}
+\end{frame}
+
+\begin{frame}{Full Stable Storage}
+ \begin{block}{Assumption}
+  Use stable storage (hard drive) to log all possible stray messages
+  
+  Read the contents of Stable Storage by recovery
+ \end{block}
+
+ \begin{block}{Features}
+  \vspace{-1em}\vspace{-\parskip}\vspace{-\lineskip}
+  \begin{itemize}
+   \item[+]  Replica forgets nothing
+   \item[+]  No additional communication steps
+   \item[+]  Catastrophical failures are acceptable
+   \item[--] Catastrophical slowdown
+   \item[--] Needs synchronous disk writes
+  \end{itemize}
+ \end{block}
+\end{frame}
+
+\begin{frame}{Epoch-based algorithm}
+ \begin{block}{Assumption}
+  Differentiate messages by consecutive run number (epoch)
+
+{\footnotesize i.e. First run has number 1, afer first crash and recovery replica has run number 2}
+
+  Replicas will ignore stray messages, as they will recognize them.
+
+  By recovery the JPaxos state is taken from other replicas
+ \end{block}
+ \begin{block}{Features}
+  \vspace{-1em}\vspace{-\parskip}\vspace{-\lineskip}
+  \begin{itemize}
+   \item[+]  Fast
+   \item[+]  No additional communication steps
+   \item     Majority of replicas must be anytime up
+   \item     Stable Storage is used once per run
+  \end{itemize}
+ \end{block}
+\end{frame}
+
+\begin{frame}{View-based algorithm}
+ \begin{block}{Assumption}
+  Every message is labelled with view - let's force the view to be bigger than any stray message may have
+
+  Replicas will ignore stray messages, as they will consider them stale.
+
+  By recovery the JPaxos state is taken from other replicas
+ \end{block}
+ \begin{block}{Features}
+  \vspace{-1em}\vspace{-\parskip}\vspace{-\lineskip}
+  \begin{itemize}
+   \item[+]  Fast
+   \item[+]  No additional communication steps
+   \item     Majority of replicas must be anytime up
+   \item     Stable Storage is used once per view change
+  \end{itemize}
+ \end{block}
+\end{frame}
+
+{
+ \setbeamertemplate{footline}{}
+ \setbeamertemplate{frametitle}{}
+ \logo
+{
+  \includegraphics[keepaspectratio,height=0.2\textheight]{images/put_logo.pdf} \hspace*{3.5em}
+}
+
+\begin{frame}{}
+  \rmfamily\Large
+  \begin{center}
+      \par\noindent\ignorespaces\rule{0.9\textwidth}{0.05em} \\
+      \textsc{Thank You for Your attention} \\ \vspace{-\parskip}
+      \rule{0.9\textwidth}{0.05em}
+  \end{center}
+\end{frame}
+
+}
+\end{document}
+
+

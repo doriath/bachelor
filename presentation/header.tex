@@ -1,0 +1,107 @@
+
+\usepackage[OT4]{fontenc}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{array}
+\usepackage{beamerthemeboxes}
+\usepackage{fancyvrb}
+%\usepackage{beamerthemeshadow}
+\usepackage{subfigure}
+
+\usepackage{listings}
+\lstset{
+  language=java,
+  basicstyle=\footnotesize,
+  numberstyle=\footnotesize,
+  tabsize=2,
+  breaklines=true
+  }
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{headline}{}
+
+\usetheme{Madrid}
+
+%%% Available themes:
+% AnnArbor Antibes Bergen Berkeley Berlin Boadilla boxes
+% CambridgeUS Copenhagen Darmstadt default Dresden Frankfurt
+% Goettingen Hannover Ilmenau JuanLesPins Luebeck Madrid
+% Malmoe Marburg Montpellier PaloAlto Pittsburgh Rochester
+% Singapore Szeged Warsaw
+%%%
+
+\usecolortheme[rgb={0.2,0.2,0.2 }]{structure}
+\definecolor{myGray}{cmyk}{0,0,0,0.4}
+\setbeamercolor*{palette quaternary}{fg=gray,bg=myGray}
+
+%%% Some examle, copied from my other presentation colour settings
+%\usetheme{Warsaw}
+%\usecolortheme[rgb={0.25,0.8,0.25}]{structure}
+%\definecolor{ciemnozielony}{RGB}{20,60,20}
+%\setbeamercolor*{palette quaternary}{fg=white,bg=ciemnozielony}
+%%% Other colour settings
+% \usecolortheme[rgb={1,0.2,0}]{structure}
+% \definecolor{cyan}{cmyk}{100,0,0,0}
+% \definecolor{bordowy}{cmyk}{0,100,0,0.25}
+% \setbeamercolor{frametitle}{fg=bordowy,bg=cyan}
+% \definecolor{sjena_spalona}{RGB}{120,80,40}
+% \definecolor{zzielenialy}{RGB}{80,255,120}
+% \setbeamercolor*{normal text}{fg=zzielenialy,bg=sjena_spalona}
+% \setbeamercolor*{palette quaternary}{bg=orange}
+%%%
+
+\newenvironment{TODO}
+  {\begin{center}\par\noindent
+    {\huge \vspace{-2em}\par\noindent  \rule{0.55\textwidth}{0.05em}  \\ \nointerlineskip
+    \[ \mathbf{T} \, _\mathcal{O} \:\: \mathfrak{D} \, _\mathbb{O} \] }
+    \begin{minipage}{0.5\textwidth}
+  }{\end{minipage} {\huge \rule{0.55\textwidth}{0.05em}} \par\noindent \end{center} \par}
+
+\newenvironment{warning}{{\rmfamily\textsc{Warning:}}\it} {\normalfont}
+
+\newcommand{\mySection}[1]
+{
+  \section{#1}
+  \begin{frame}{}
+    \rmfamily\Large
+    \begin{center}
+        \par\noindent\ignorespaces\rule{0.9\textwidth}{0.05em} \\
+        \textsc{#1} \\ \vspace{-\parskip}
+        \rule{0.9\textwidth}{0.05em}
+    \end{center}
+  \end{frame}
+}
+
+\setbeamertemplate{block begin}
+  {\par\vskip\medskipamount{\noindent\!\!\!\underline{\rmfamily\textsc{\insertblocktitle}}}\par\noindent\ignorespaces}
+\setbeamertemplate{block end}
+  {\vskip\medskipamount}
+
+\setbeamertemplate{frametitle}
+{
+  \nointerlineskip
+  \begin{beamercolorbox}[sep=0.2cm,wd=\pdfpagewidth]{frametitle}
+    \usebeamerfont{frametitle}
+    \vbox{}\vskip-1ex
+    \strut\rmfamily\textsc{\hspace{0.3cm}\insertframetitle}\strut\par
+      \usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\rmfamily\textsc{\hspace{0.3cm}\insertframesubtitle}\strut\par
+    \vskip-1ex
+    \vskip-.3cm
+  \end{beamercolorbox}
+}
+
+\useinnertheme{default}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{itemize items}[default]
+\setbeamersize{text margin left=2em,text margin right=2em}
+
+\setlength{\parskip}{0.5em}
+
+\usefonttheme{professionalfonts}
+
+\title{JPaxos}
+\date{\today}
+\author{Jan Ko\'nczak, Tomasz \.Zurkowski}
