@@ -54,20 +54,20 @@
   }
 
 \begin{frame}{Tasks}
- \begin{block}{IT-SOA (march 2009 - june 2010)}
+ \begin{block}{IT-SOA (March 2009 - June 2010)}
   Full Paxos implementation supporting crash-stop model
  \end{block}
 
  \begin{block}{Tasks for thesis}
   Optimizing JPaxos
   
-  Prepairing code to meet crash-recovery requirements
+  Preparing code to meet crash-recovery requirements
   
   Adding various crash-recovery models: \vspace{-\parsep}
   \begin{itemize} 
    \item Full Stable Storage
-   \item Epoch based
-   \item View based
+   \item Epoch-based
+   \item View-based
   \end{itemize}
 
   Testing
@@ -81,7 +81,7 @@
       \item Non-byzantine behaviour
       \item Static group membership
       \item Crash-recovery
-      \item Catastrophical failures (may be) tolerated
+      \item Catastrophic failures (may be) tolerated
      \end{itemize}
   \end{block}
 
@@ -124,7 +124,7 @@
     \begin{itemize}
       \item Failure detector
       \item Networking
-      \item Client managment
+      \item Client management
       \item Catching up
       \item Snapshotting
       \item Batching
@@ -154,7 +154,7 @@
  \begin{block}{Assumption}
   Use stable storage (hard drive) to log all possible stray messages
   
-  Read the contents of Stable Storage by recovery
+  Read the contents of Stable Storage on recovery
  \end{block}
 
  \begin{block}{Features}
@@ -162,8 +162,8 @@
   \begin{itemize}
    \item[+]  Replica forgets nothing
    \item[+]  No additional communication steps
-   \item[+]  Catastrophical failures are acceptable
-   \item[--] Catastrophical slowdown
+   \item[+]  Catastrophic failures are acceptable
+   \item[--] Catastrophic slowdown
    \item[--] Needs synchronous disk writes
   \end{itemize}
  \end{block}
@@ -173,9 +173,9 @@
  \begin{block}{Assumption}
   Differentiate messages by consecutive run number (epoch)
 
-{\footnotesize i.e. First run has number 1, afer first crash and recovery replica has run number 2}
+{\footnotesize i.e. First run has number 1, after first crash and recovery replica has run number 2}
 
-  Replicas will ignore stray messages, as they will recognize them.
+  Replicas will ignore stray messages, as they will recognize them
 
   By recovery the JPaxos state is taken from other replicas
  \end{block}
@@ -194,7 +194,7 @@
  \begin{block}{Assumption}
   Every message is labelled with view - let's force the view to be bigger than any stray message may have
 
-  Replicas will ignore stray messages, as they will consider them stale.
+  Replicas will ignore stray messages, as they will consider them stale
 
   By recovery the JPaxos state is taken from other replicas
  \end{block}
