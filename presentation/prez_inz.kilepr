@@ -53,10 +53,10 @@ order=-1
 
 [item:presentation.tex]
 archive=true
-column=13
+column=11
 encoding=UTF-8
 highlight=LaTeX
-line=81
+line=134
 open=true
 order=0
 
@@ -71,7 +71,7 @@ order=-1
 
 [item:soa.bib]
 archive=true
-column=4290362302
+column=0
 encoding=
 highlight=
 line=0
