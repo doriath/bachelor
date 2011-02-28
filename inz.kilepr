@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.0
-lastDocument=main.tex
+lastDocument=01-introduction.tex
 masterDocument=
 name=inz
 pkg_extIsRegExp=false
@@ -17,12 +17,12 @@ QuickBuild=
 
 [item:01-introduction.tex]
 archive=true
-column=86
+column=24
 encoding=UTF-8
 highlight=LaTeX
-line=31
-open=false
-order=3
+line=89
+open=true
+order=1
 
 [item:02-theory.tex]
 archive=true
@@ -44,12 +44,12 @@ order=1
 
 [item:04-conclusions.tex]
 archive=true
-column=389
+column=90
 encoding=UTF-8
 highlight=LaTeX
 line=32
 open=true
-order=1
+order=2
 
 [item:0a-zalacznik.tex]
 archive=true
@@ -102,7 +102,7 @@ column=276
 encoding=UTF-8
 highlight=LaTeX
 line=313
-open=true
+open=false
 order=3
 
 [item:main.tex]
@@ -110,7 +110,7 @@ archive=true
 column=7
 encoding=UTF-8
 highlight=LaTeX
-line=148
+line=150
 open=true
 order=0
 
@@ -120,7 +120,7 @@ column=9
 encoding=UTF-8
 highlight=LaTeX
 line=0
-open=true
+open=false
 order=4
 
 [item:paxos/paxos.tex]
@@ -156,5 +156,5 @@ column=40
 encoding=UTF-8
 highlight=LaTeX
 line=483
-open=true
+open=false
 order=2
