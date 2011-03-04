@@ -1,0 +1,1358 @@
+﻿\chapter{Pseudocode of Paxos algorithm}
+
+In this chapter, we present the pseudocode of Paxos algorithm written by us to better understand the algorithm, before writing implementation in Java. The pseudocode was designed and written within IT-SOA project, before the internship at EPFL.
+
+\begin{lstlisting}[frame=lines,caption=Pseudocode of Paxos algorithm]
+
+=================================================
+                Classes, structs and data types planned to use
+=================================================
+
+/// As process ID we're planning to use a single unsigned int value
+typedef uint proc_id;
+
+/// The same counts for decision number
+/// The vote_t has also a special value called NULL, set as zero (the votings
+/// will begin at least with 1)
+typedef uint vote_t;
+
+/// Special "NoVote" value, meaning either no voting, or no earlier promise.
+#DEFINE NoVote 0
+
+/// Special value no operation - if all processes having a value are down,
+/// we need to ensure no-op will be chosen
+#DEFINE NOOP
+
+/// Type for values (which also mean state machine operations)
+struct value_t
+{
+	uint size;
+	char * data;
+};
+
+/**
+ * generic class map assumptions: it's a association table, that means a table
+ * indexed by some key. we have [] operator, has value and remove function.
+ * At the beginning each map is empty, writing to non-existing element creates
+ * it. Some func gives us count.  Most languages have something like that;
+ * in C++ it's std::map, in C# it's Dictionary, apparently all descendants
+ * of the Map Interface in Java etc.
+ **/
+template<typename T1, typename T2> class map;
+
+
+template<typename T1> class set;
+
+
+/// My process ID - given by joining the group.
+proc_id myProcessID = 0;
+
+/**
+ * \struct Data
+ * Data of the message should contain some value for state machine 
+ * and also the client, which send this message. The client is needed
+ * because state machine has to know where to send the response to the 
+ * message.
+ **/
+struct Data
+{
+	char * value;
+	Client client;
+};
+
+/**
+ * \struct Message
+ * Proposed representation of the paxos message.
+ **/
+struct Message
+{
+	proc_id sender; ///< ID of sending process
+	enum messageType ///< Type of the massage
+	{
+		ALIVE   = 0x00, // For Failure Detector and once used as meaningless message
+		PREPARE = 0x01,
+		PROMISE = 0x02,
+		VOTE    = 0x04,
+		VOTED   = 0x08,
+		SUCCEED = 0x10,
+		NACK    = 0x20, // A not-acknowledge message to make the algorithm faster
+		OTHER   = 0xFF, // Yet undefined ;-)
+	} type;
+	
+	uint instanceId; ///< The number of paxos instance
+	uint size; ///< Size of the message
+	Data data; ///< All the other data 
+};
+
+/**
+ * \enum Status
+ * Indicates the state in which every SinglePaxosEntity currently is.
+ **/
+enum Status
+{
+	IDLE,   // the default status of each process
+	        // indicates that process try to start new ballot 
+	        // (sending prepare messages and waiting for promise responses)
+
+	TRYING, // indicates that process started new ballot
+	        // (sending vote messages and waiting for voted responses)
+
+	POLLING 
+};
+
+/**
+ * \class FailureDetector
+ * This class will have current list of all members, with time of 
+ * last received message from them. 
+ **/
+class FailureDetector
+{
+	public:
+		/// By initiating, we do exactly nothing
+		FailureDetector(){}
+		
+		/// Checks, if a process sent anything for the last {timeout} seconds
+		isAlive(proc_id id);
+		/// Returns lowest process id which is alive
+		getLowestAliveId();
+		
+		/// Class GroupMembers tells the failure detector that the group has
+		/// changed
+		addMember(proc_id id);
+		removedMember(proc_id id);
+		
+		/// This list holds time of last message from processes, for example as
+		/// unix timestamps (seconds elapsed from 01.01.1970)
+		map<proc_id, time_t> lastMessageReceived;
+		
+		/// Time after which a process is thought to be dead
+		static const uint timeout;
+};
+
+
+/**
+ * \class GroupMembers
+ * This class will have current list of all members, that means it will inform
+ * whether a process is at that moment taking part in consensus.
+ *
+ * The list can be modified by the state machine itself, according to the pro-
+ * per rules.
+ **/
+class GroupMembers
+{
+	public:
+		/// Initializes new instance of GroupMembers with specified failure detector.
+		/// The specified failure detector will be notified about every change of group 
+		/// members.
+		///
+		/// By initialization we should request group membership; currently we're reading
+		/// only a config file.
+		GroupMembers(FailureDetector & fd);
+	
+		list<proc_id> currentMembers;
+		isMember(proc_id id);
+
+		addMember(proc_id id); ///< This function also inform failure detector!
+		removeMember(proc_id id); ///< This function also inform failure detector!
+
+		getMemberCount();
+		getMajority()
+	protected:
+		FailureDetector & failureDetector;
+};
+
+/**
+ * \class MessageReceiver
+ * Working as a wrapper for incoming messages this class will record time for 
+ * every message, check it's type, sender and forward it to Paxos protocol.
+ **/
+class MessageReceiver
+{
+	public:
+		MessageReceiver(FailureDetector & fd, GroupMembers & gm);
+		
+		/// Broadcasts message to all members of current group.
+		/// Note: This doesn't has to be a reliable broadcast. We cannot
+		/// assume that all members will receive this message.
+		broadcastMessage(Message msg);
+		
+		/// Sends message to member with specified id
+		sendMessage(proc_id receiver, Message msg);
+		
+		/// This function will add new listener for incoming messages. The 
+		/// listener is function with one argument (message) and returning 
+		/// nothing (void). All listeners are executed when new message was
+		/// received.
+		/// example:
+		///   void receiveMessage(Message msg);
+		///   messageReceiver.addListener(receiveMessage);
+		addListener(function func);
+		removeListener(function func);
+	protected:
+		FailureDetector & failureDetector;
+		GroupMembers & groupMembers;
+	
+		/// This function is designed to receive every message, and after that
+		/// forward it if necessary to the Paxos algorithm
+		receiveMessage(Message m);
+		
+		/// The list of all listeners waiting for incoming messages
+		list<function> listeners;
+};
+
+/**
+ * \class MultiPaxos
+ * This class is the main class managing whole consensus process.
+ * It creates single paxos instances, forwards them appropriate messages etc.
+ * If the process is the leader, it must also conduct whole process.
+ **/
+class MultiPaxos
+{
+	public:
+		MultiPaxos(FailureDetector & fd,
+				   MessageReceiver & mr,
+				   GroupMembers & gm,
+				   StableStorage & ss,
+				   StateMachine & sm);
+	
+		receiveMessage(Message m);
+		/// After switching on multiPaxos is informed how many entries had the
+		/// file, that is how many entries were read after crash
+		fromFile(int how_many_read);
+		
+		/// Stops current algorithm clearly.
+		stop();
+	protected:
+		FailureDetector & failureDetector;
+		MessageReceiver & messageReceiver;
+		GroupMembers & groupMembers;
+		StableStorage & storage;
+		StateMachine & stateMachine;
+		
+		// The time after which check method will be called in all active paxos instances.
+		// static const uint timeout; should be taken from FaliureDetector::timeout
+		
+		
+		/// Determines whether this algorithm is running. This is used to 
+		/// stop algorithm clearly.
+		bool isRunning;
+		
+		/// The main loop started in some other thread, used to monitor current
+		/// state of single instances. It is important due to crashes of the leader,
+		/// and when we have to repeat some paxos algorithm phase. This also fill
+		/// not finished instances with NOOP value.
+		thread mainLoop
+		{
+			uint checksPerTimeout = 3;
+			run();
+		};
+		
+		/// Gets the process id of current leader. This is lowest id from alive processes
+		proc_id getLeader();
+		
+		/// Determines whether current process is the leader
+		bool amILeader();
+		
+		/// Adds new Paxos instances if necessary; otherwise does nothing
+		addMissingPaxos(Message msg)
+		
+		/// runningPaxos has the list of single Paxos instances started until
+		/// this moment. As first message emerges, new instance is created and
+		/// added here
+		list<SinglePaxosEntity> runningPaxos;
+		
+		/// The list of instanceId of paxos instances which are not finished yet.
+		set<uint> activePaxos;
+};
+
+/**
+ * \class SinglePaxosEntity
+ * Is a single, typical Paxos algorithm. It gets from MultiPaxos only messages
+ * for the instance, and takes a single decision.
+ **/
+class SinglePaxosEntity
+{
+	public:
+		SinglePaxosEntity(StableStorage::SingleEntry my_entry, MessageReceiver & mr, Message msg, uint instanceId)
+		receiveMessage(Message msg);
+	protected:
+		SingleEntry & entry;
+		MessageReceiver & messageReceiver;
+		
+		/// The id of current paxos instance. This is needed to set proper
+		/// instance id when sending message to other members (e.g. prepare message)
+		uint instanceId;
+	
+		// The amount of time used to determine whether some phase should be repeated.
+		// const uint timeout; should be taken from FaliureDetector::timeout
+		
+		/// The last time when some message related with specified phase
+		/// was received. This times are used to determine whether some 
+		/// phase should be repeated
+		uint lastTryingTime;
+		uint lastPoolingTime;
+		
+		uint lastMessageTime;
+	
+		/// This method is called every amount of time, to check crashes.
+		/// This is responsible, to start prepare phase if old leader crashes,
+		/// and also to repeat some phase if not enough responses is get in 
+		/// specified amount of time.
+		check(bool amILeader);
+	
+		/// the methods executed when appropriate message will be received
+		prepare(Message & msg);
+		promise(Message & msg);
+		vote(Message & msg);
+		voted(Message & msg);
+		succeed(Message & msg);
+		
+		/// Routine for not acknowledge handling
+		nackReceived(Message & msg);
+		
+		/// Starts the prepare phase, and set current state to TRYING. This 
+		/// method sends the prepare message to all processes.
+		sendPrepare();
+		
+		/// Starts the voting phase, and set current state to POOLING. This
+		/// method setds the vote message to all processes.
+		sendVote();
+		
+		/// the variables which can be in RAM, and that not a problem if it will
+		/// be lost
+		
+		/// The current status of this paxos instance
+		Status status;
+		
+		/// the set promisers and voters is used by leader only
+		
+		/// indicates processes from which promise messages was received for lastTriedBallot
+		set<proc_id> promisers; 
+		/// indicates processes from which voted messages was received for lastTriedBallot
+		set<proc_id> voters;
+		
+		/// The values sent by proccesses in responce to prepare message.
+		set<pair<vote_t, value>> valuesSentByPromisers;
+		
+		/// The message from the client which will be forced when no other process
+		/// has some value in first phase.
+		Message clientMessage;
+};
+
+/**
+ * \class StateMachine
+ * Represents the state machine. When we run the same state machine on different 
+ * processes and execute the same set of methods, in the same order, then on each 
+ * process the state machine will be in the same state. This class also manage to
+ * check which values can be executed, and when we have to wait for some previous 
+ * values.
+ */
+class StateMachine
+{
+	public:
+		StateMachine(MessageReceiver &  mr);
+		
+		addValue(Data & data, int instanceId);
+		
+	protected:
+		/// Message receiver used to send response to the client.
+		MessageReceiver & messageReceiver;
+		
+		/// Indicates how many values has been executed on this machine.
+		/// This will be always values with numbers from 1 to lastCoherentPart.
+		/// Each executed values has to be succeeded in paxos.
+		int lastCoherentPart = 0;
+		
+		/// The data which are currently succeeded on paxos, and are waiting 
+		/// to be executed.
+		map<int, Data> commands;
+		
+		/// Executes some data on this state machine.
+		execute(Data data);
+}
+
+/**
+ * \class StableStorage
+ * We implement the stable storage as two disk files.
+ * One of them has triples of constant-length fields:
+ *  - if the consensus succeeded
+ *  - last promise value
+ *  - last ballot number
+ *  - last value number
+ *  - offset to the last value
+ *  - size of the last value
+ * As for the offset: in order to keep files simple, we need to make some
+ * easy to implement structure. Thanks to constant length of one entry, we
+ * can problemlessly use it without shifting larger part of the file.
+ *
+ * As for the voting values: initially, they will be empty - we will use any
+ * offset for that, and indicate no value with 0 size. As we receive first
+ * message with some value, we'll fill offset and size after writing value to
+ * the file. Even if we will receive other value (what is a very rare situation
+ * because only one process proposes it's value, so we should either accept
+ * it, or take an no-op) we can simply by 'loosing' some place skip moving
+ * large part of the file. It's acceptable, because we can ensure really small
+ * amount of conflicts (in fact, we must do in order to preserve progress).
+ **/
+class StableStorage
+{
+	public:
+		/// Structure needed by each Paxos instance
+		class SingleEntry
+		{
+			public:
+				SingleEntry(uint num, int & offset);
+			protected:
+				int & lastOffset; /// Reference to value needed for valuesFile
+				const number; /// Instance number
+				bool succeeded;
+				vote_t lastTriedBallot; // The last number of ballot which this process began
+				vote_t lastVotedBallot; // The last number of ballot in which this process voted
+				vote_t lastPromise; // The last number of ballot which this process promise not to accept lesser one
+				int offsetToValue;
+				unsigned sizeOfValue;
+			public:
+				/// The getters simply read value from RAM
+				getSucceded() {return succeeded;}
+				getLastTriedBallot() {return lastTriedBallot;}
+				getLastVotedBallot() {return lastVotedBallot;}
+				getLastPromise() {return lastPromise;}
+				getValue();
+				{return readFile(valuesFile,offsetToValue,size);}
+
+				/// The setters need to write first our function on hard drive
+				/// and after then to update RAM
+				setSucceded(bool);
+				setLastTriedBallot(vote_t);
+				setLastVotedBallot(vote_t);
+				setLastPromise(vote_t);
+				setValue(value_t);
+		};
+
+	protected:
+		/// Vector (a table) of data stored in RAM for fast read operation
+		vector<SingleEntry> paxosData;
+
+		/// Filenames; these need to be constant (or known) in order to allow
+		/// crash-recovery. Some configuration file can be later issued
+		///
+		/// As for pseudocode, these names also indicate open files, that means
+		/// writeToFile(mainFile, offset, value) is a allowed write operation.
+		/// In real code we'll need at least two variables for this.
+		///
+		/// stateFile has only number of entries yet initiated;
+		/// mainFile has four higher described numbers;
+		/// valuesFile has the values.
+		///
+		/// stateFile is in fact unnecessary, if we can read size of mainFile,
+		/// as the record length is constant.
+		const string stateFile;
+		const string mainFile;
+		const string valuesFile;
+
+		int lastOffset;
+
+	public:
+		/// In order to simplify the (pseudo)code, we allow to use this class
+		/// as typical table of singleEntry objects
+		SingleEntry operator[](uint num)
+				{ if(paxosData.count()<num) return paxosData[num]; return 0; }
+
+		/// This functions will add objects for new consensus instances
+		addNewEntry();
+		addNewEntries(int n) { for(n times) addNewEntry();}
+		addNewEntriesUpTo(int n) { for( (n-paxosData.count()) times) addNewEntry();}
+
+		/// Returns the number of data == the number of instances
+		count() { return paxosData.count(); }
+
+		/// The initializing function must read from file previous data. This
+		/// lets crash-recovery; if process crashed, it must read previous
+		/// state (if any).
+		StableStorage();
+
+};
+
+/**
+ * \class Heartbeat
+ * This class simply sends every {timeout}/{countPerTimeout} a message treated
+ * as 'alive indicator' for all other processes.
+ **/
+class Heartbeat
+{
+	public:
+		/// This class needs information what group should be informed, and
+		/// which class will handle message sending.
+		Heartbeat(MessageReceiver & mr, groupMembers & gm);
+		
+		uint countPerTimeout = 3;
+	
+	protected:
+		list<proc_id> & currentMembers;
+		
+		MessageReceiver & messageReceiver;
+		
+		Message mes;
+		
+		bool isRunning = true;
+		
+		/// Additional thread OR some scheduling trick is needed in order to
+		/// assure the message is sent
+		thread heartBeater
+		{
+			/// Func executed by the thread, here: sending the messagages in
+			/// proper moments
+			run();
+		}
+};
+
+
+
+==================================================
+                                Message handling
+==================================================
+
+UPON(receiving message m) execute receiveMessage(Message m) at MessageReceiver
+
+==================================================
+                            Pseudo-code of functions
+==================================================
+
+
+-------------------------------------------------
+                       Message receiver && failure detector
+-------------------------------------------------
+
+MessageReceiver::MessageReceiver(FailureDetector & fd, GroupMembers & gm)
+{
+	failureDetector = fd;
+	groupMembers = gm;
+	
+	// ### in real implementation we have to implement listening for 
+	// ### new incoming messages, and the call receiveMessage
+}
+
+MessageReceiver::broadcastMessage(Message msg)
+{
+	// sending message to all members of current group.
+	// 1st way: we iterate through all members of group and send
+	// message to them (for TCP protocole)
+	// 2nd way: we multicast message (for UDP-multicast)
+	
+	for(id in gm.currentMembers)
+		sendMessage(id, msg);
+	OR
+	multicast(gm.currentMembers, msg);
+}
+
+MessageReceiver::sendMessage(proc_id receiver, Message msg)
+{
+	// language specific code for sending message
+	// it can use some internet protocol like TCP or UDP
+	sendMessage(receiver, msg);
+}
+
+MessageReceiver::addListener(function func)
+{
+	listeners.add(func);
+}
+
+MessageReveiver::removeListener(function func)
+{
+	listeners.remove(func);
+}
+			   
+MessageReceiver::receiveMessage(Message m)
+{
+	// ### check procedure if the message is not from some stupid port scanner
+	// ### should go here. As for now, a totally non-byzantine model is assumed
+
+
+	// If the sender is unknown, we need to check if it isn't in the group
+	// (but, in fact, this is unnecessary, the groupMembers should inform
+	// us that a new member joined the group
+	if ( ! lastMessageReceived.hasKey( m.sender ) )
+	{
+		if ( ! groupMembers.isMember( m.sender ) )
+		{
+			drop message;
+			return;
+		}
+	}
+
+	// The last reception time is updated to current system time
+	lastMessageReceived[m.sender] = time(0);
+
+	// The type of message is checked, and proper action taken up
+	switch ( m.type )
+	{
+		// If it's heart beat, we should do nothing else
+		case ALIVE:
+			return;
+
+		// If this is one of consensus messages, we forward it
+		case PREPARE | PROMISE | VOTE | VOTED | SUCCEED:
+			// notify all listeners about new message
+			for(listener in listeners)
+				listener(m);
+			break;
+			
+		default:
+			// ### If we receive a unknown message, that means something has
+			// ### gone wrong - some reaction should be implemented here
+	}
+}
+
+-------------------------------------------------
+							    Failure detector
+-------------------------------------------------
+
+FaliureDetector::isAlive(proc_id id)
+{
+	// the process is suspected to be down when it didn't sent any message
+	// in last {timeout} seconds
+	return lastMessageReceived[id] - time(0) < timeout;
+}
+
+FaliureDetector::addMember(proc_id id)
+{
+	// We indicate that the process is in group by creating it's slot in map
+	// 1st way: we set last time for current time minus timeout - it means
+	// we would consider the process for dead. Bad if timeout is't constant
+	// (we assume it is)
+	// 2nd way: if we use unix time, setting timestamp to 0 would mean setting
+	// it to the oldest date we can.
+	lastMessageReceived[id] = time(0) - timeout;
+	OR
+	lastMessageReceived[id] = 0;
+}
+
+FaliureDetector::removeMember(proc_id id)
+{
+	// We simply delete the record. It's even unnecessary to stop tracking
+	// this processes (it doesn't take additional time), but many not deleted
+	// process id's would mean longer search and bigger memory usage.
+	lastMessageReceived.remove(id);
+}
+
+FailureDetector::getLowestAliveId()
+{
+	proc_id lowest = null;
+	for(pair<proc_id, time_t> procTime in lastMessageReceived)
+	{
+		if(lowest == null || lowest > procTime.first)
+			lowest = procTime.first;
+	}
+	return lowest;
+}
+
+-------------------------------------------------
+						          Multi Paxos
+-------------------------------------------------
+
+MultiPaxos::MultiPaxos(FailureDetector & fd,
+					   MessageReceiver & mr,
+				       GroupMembers & gm,
+				       StableStorage & ss,
+					   StateMachine & sm);
+{
+	failureDetector = fd;
+	messageReceiver = mr;
+	groupMembers = gm;
+	storage = ss;
+	stateMachine = sm;
+	
+	// every time there is new message, receiveMessage is executed
+	messageReceiver.addListener(receiveMessage);
+	
+	{ // Here begins recovery process
+		Message msg; 
+		msg.type = ALIVE;
+		msg.instanceId = ss.count(); // We get number of paxoses read from file
+		
+		addMissingPaxos(msg); // We create the paxoses
+		// The main loop will in short time start it's work. It'll automaticly 
+		// get all newer values and fill the missing ones.
+	}
+	
+	
+	for(int i=1; i<=activePaxos.count(), ++i)
+	{
+		if(ss[i].getSucceded())
+		{
+			activePaxos.remove(i);
+			stateMachine.addValue(ss[i].getValue());
+		}
+	}
+	
+	// start main loop
+	isRunning = true;
+	
+	// Running the main loop thread
+	mainLoop.run();
+}			   
+
+MultiPaxos::receiveMessage(Message m)
+{
+	if( ! isRunning) return; // If the algorithm is not running, no message may be forewarded
+	
+	// is this a message from a client
+	if(m is message from client)
+	{
+		if(m is duplicate message)return;
+		
+		// if i am not leader I have to send it to current leader
+		if(amILeader() == false)
+		{
+			send(getLeader(), m);
+			return;
+		}
+		m.instanceId = (biggest instanceId from runningPaxos) + 1;
+		
+		addMissingPaxos(m);
+		
+		return;
+	}
+	
+	// is this message used by paxos algorithm
+	if(m is a paxos message)
+	{
+		addMissingPaxos(m);
+		runningPaxos[m.instanceId].receiveMessage(m);
+		
+		// if this is succeed message, then we can add this data to state machine
+		if(m.messageType == SUCCEED)
+		{
+			stateMachine.addValue(m.data, m.instanceId);
+			activePaxos.remove(m.instanceId);
+		}
+	}
+}
+
+MultiPaxos::addMissingPaxos(Message msg)
+{
+	// get biggest instance id among running paxos (runningPaxos is a set of numbers)
+	uint lastInstanceId = runningPaxos.max();
+	
+	// If the instance(s) already exist, return
+	if(msg.instanceId <= lastInstanceId) return;
+	
+	
+	ss.addNewEntriesUpTo(m.instanceId);
+	
+	// create all missing paxos
+	for(int i = lastInstanceId + 1; i < m.instanceId; i++)
+	{
+		// message used to initializes paxos instance properly
+		Message msg; 
+		msg.type = ALIVE;
+		msg.instanceId = i;
+		
+		runningPaxos[i] = new SinglePaxosEntity(ss[i], messageReceiver, msg);
+		activePaxos.add(i);
+	}
+	
+	activePaxos.add(m.instanceId);
+	runningPaxos[m.instanceId] = new SinglePaxosEntity(ss[m.instanceId], messageReceiver, m);
+}
+
+// The starting routine for mainLoop thread
+MultiPaxos::mainLoop::run()
+{
+	while(isRunning)
+	{
+		bool leader = amILeader();
+		foreach(proc_id id, activePaxos)
+		{
+			runningPaxos[id].check(leader);
+		}
+		
+		// checksPerTimeout is a thread value
+		this.suspend( (double) FaliureDetector::timeout / checksPerTimeout);
+	}
+}
+
+MultiPaxos::amILeader()
+{
+	return ( getLeader() == myProcessID );
+}
+
+MultiPaxos::getLeader()
+{
+	return failureDetector.getLowestAliveId();
+}
+		
+MultiPaxos::stop()
+{
+	isRunning = false;
+	
+	// TODO: Leaving group should go here.
+	//       Flushing disk files may also go here
+	//       For further implementation.
+}
+-------------------------------------------------
+                               Single Paxos Entity
+-------------------------------------------------
+
+SinglePaxosEntity::SinglePaxosEntity(StableStorage::SingleEntry & my_entry, MessageReceiver & mr, Message msg)
+{
+	entry = my_entry;
+	messageReceiver = mr;
+	instanceId = msg.instanceId;
+	
+	clientMessage = 0;
+	status = IDLE;
+	
+	if( msg is a message from client)
+	{
+		// That means we're the leader
+		clientMessage = msg;
+		sendPrepare();
+	}
+	else
+	{
+		// That means we are not leader, but a typical consensus member
+		receiveMessage(msg)
+	}
+}
+
+SinglePaxosEntity::receiveMessage(Message msg)
+{
+	// On EVERY message after success, we respond with a succeed message
+	// This makes sync possible and faster after we've chosen the value
+	if(entry.getSucceded())
+	{
+		Message succMsg;
+		succMsg.messageType = SUCCEED;
+		succMsg.instanceId = msg.instanceId;
+		succMsg.sender = myProcessID;
+		succMsg.data.value = ss.getValue();
+		succMsg.size = sizeof(ss.getValue());
+		mr.send(msg.sender, succMsg);
+	}
+	
+	lastMessageTime = time(0);
+	
+	switch(msg.type)
+	{
+		case ALIVE:      // Used only for initralization of new instnaces
+				break;   // for which we got no message yet
+		case NACK:
+				nackReceived(msg);
+				break;
+		case PREPARE:
+				prepare(msg);
+				break;
+		case PROMISE:
+				promise(msg);
+				break;
+		case VOTE:
+				vote(msg);
+				break;
+		case VOTED:
+				voted(msg);
+				break;
+		case SUCCEED:
+				succeed(mgs);
+				break;
+		default:
+				// some other message which is not handled now
+	}
+}
+
+SinglePaxosEntity::check(bool amILeader)
+{
+	if(!amILeader)
+	{
+		// if i am not the leader, then set status to IDLE. It makes all previous 
+		// state not active (like tryig or pooling).
+		status = IDLE;
+		
+		// This means, if nearly for sure the consensus finished, and we don't know this
+		if(time(0)-lastMessageTime > 5*FaliureDetector::timeout)
+		{
+			Message inquiry;
+			inquiry.messageType = PREPARE;
+			inquiry.instanceId = instanceId;
+			inquiry.sender = myProcessID;
+			// We cast a prepare for voting no. 0 - a  special no-voting val
+			inquiry.data.value = 0;
+			inquiry.data.size = sizeof(inquiry.data.value);
+			
+			mr.send(failureDetector.getLowestAliveId(), inquiry);
+		}
+	}
+	else
+	{
+		switch(status)
+		{
+			case IDLE:
+				// if we just become a leader, then start prepare phase
+				sendPrepare();
+				
+				break;
+			case TRYING:
+				// if the prepare phase is too long, then repeat it
+				if(time(0) - lastTryingTime > FaliureDetector::timeout)
+					sendPrepare();
+					
+				break;
+			case POOLING:
+				// if voting phace is too long, then repeat everything from the begining
+				if(time(0) - lastPoolingTime > FaliureDetector::timeout)
+					sendPrepare();
+					
+				break;
+		}
+	}
+}
+
+
+SinglePaxosEntity::nackReceived(Message & msg)
+{
+	if(msg.ballotNumber != getLastTriedBallot()) return; // Not for this ballot
+	if(msg.data.value != status) return; // Not for this phase
+	
+	switch(status) // We change the times to reinitiate proper round
+	{
+		case POOLING:
+					lastPoolingTime=0;
+		case TRYING:
+					lastTryingTime=0;
+	}
+	
+	check(true); // We force the instance to check our state, what means
+	             // (because of the changed time) restarting some phase
+}
+
+SinglePaxosEntity::sendPrepare()
+{
+	status = TRYING;
+	lastTryingTime = time(0);
+	
+	// we are starting new phase, so we increase the ballot number we start
+	entry.setLastTriedBallot(entry.getLastTriedBallot() + 1);
+	
+	// start prepare phase
+	Message prepareMsg;
+	prepareMsg.messageType = PREPARE;
+	prepareMsg.sender = myProcessID;
+	prepareMsg.instanceId = msg.instanceId;
+	prepareMsg.data.value = entry.lastTriedBallot();
+	prepareMsg.data.value+sizeof(entry.lastTriedBallot)=entry.getValue();
+	prepareMsg.size=sizeof(entry.lastTriedBallot)+sizeof(entry.getValue());
+	
+	messageReceiver.broadcastMessage(prepareMsg);
+}
+
+SinglePaxosEntity::sendVote()
+{
+	// Local atomicity requierd, so that no two local threads
+	// will receive messages and get go to this part
+	status = POLLING;   
+	voters.clear();
+	lastPoolingTime = time(0);
+	
+	if(valuesSentByPromisers.isEmpty())
+	{
+		// try to force new value from the client
+		if( clientMessage == 0 )
+		{
+			entry.setValue(NOOP);
+		}
+		else
+		{
+			entry.setValue( Data(clientMessage.value, clientMessage.sender) );
+		}
+	}
+	else
+	{
+		// because we receive some value from other proces
+		// we have to force it
+		
+		// We're sorting the values from promisers, the latter as
+		// most significant
+		// I _do_ know that set must have no order, so in really
+		// implementation it will be replaces by something having order.
+		sort(valuesSentByPromisers, key, desc);
+		// We extract the value from highest voting
+		entry.setValue( valuesSentByPromisers->first().value );
+	}
+	
+	// start voting phase
+	Message voteMes;
+	voteMes.messageType = VOTE;
+	voteMes.sender = myProcessID;
+	voteMes.instanceId = msg.instanceId;
+	voteMes.data.value = entry.lastTriedBallot();
+	voteMes.data.value+sizeof(entry.lastTriedBallot)=entry.getValue();
+	voteMes.size=sizeof(entry.lastTriedBallot)+sizeof(entry.getValue());
+	
+	messageReceiver.broadcastMessage(voteMes);
+}
+
+SinglePaxosEntity::prepare(Message msg)
+{
+	// We eliminate the special value, used for getting val from lost consensus
+	if(msg.ballotNumber == 0) return;
+	
+	if(msg.ballotNumber > entry.getLastPromise())
+	{
+		entry.setLastPromise(msg.ballotNumber);
+		lastPromise = msg.ballotNumber;
+		
+		// response to the leader that we promising to take
+		// part in this ballot (we didn't promise to any
+		// ballot with higher number yet)
+		Message response;
+		response.type = PROMISE;
+		response.instanceId = instanceId;
+		response.sender = myProcessID;
+		// If we have any value, we need to append it and its ballot number
+		// to the message
+		response.data.value=msg.ballotNumber;
+		
+		response.data.value+sizeof(ballotNumber) = entry.getLastVotedBallot();
+		
+		response.data.value+sizeof(ballotNumber)+
+			sizeof(entry.getLastVotedBallot()) = entry.getValue(); 
+		
+		response.size = sizeof(ballotNumber)+
+			sizeof(entry.getLastVotedBallot())+sizeof(entry.getValue());
+
+		messageReceiver.sendMessage(msg.sender, response);
+	}
+	else
+	{
+		// Here we may response that there is ballot with higher
+		// voting number
+		Message nack;
+		nack.messageType = NACK;
+		nack.instanceId = msg.instanceId;
+		nack.ballotNumber = entry.getLastPromise();
+		nack.data.value = POOLING;
+		nack.size = sizeof(nack.data.value);
+		messageReceiver.sendMessage(msg.sender, nack);
+	}
+}
+
+SinglePaxosEntity::promise(Message msg)
+{
+	if(status == TRYING and msg.data.value == entry.getLastTriedBallot())
+	{
+		// if sender is currently in promisers set then no action is taken,
+		// otherwise senders is added to set of promisers
+		promisers.union(msg.sender);
+		lastTryingTime = time(0);
+		
+		// We're adding the values given by promisers to some set 
+		valuesSentByPromisers.union(pair<msg.data+sizeof(vote_t), msg.data+2*sizeof(vote_t)>);
+		
+		// if we get promise message from majority of processes, then we can 
+		// start sending vote messages
+		if(promisers.size() > gm.getMajority())
+		{                 
+			sendVote();
+		}		
+	}
+}
+
+SinglePaxosEntity::vote(Message msg)
+{
+	if(entry.getLastPromise() == msg.data.value and msg.data.value > entry.getLastVotedBallot())
+	{
+		entry.setLastVotedBallot(msg.ballotNumber);
+		entry.setValue(msg.data);
+		
+		// response that we are voting on this ballot
+		Message response;
+		response.messageType=VOTED;
+		response.instanceId=msg.instanceId;
+		response.sender=myProcessID;
+		response.data.value=msg.ballotNumber;
+		response.size=sizeof(msg.ballotNumber);
+		
+		mr.sendMessage(msg.sender, response);
+	}
+	else
+	{
+		// We can send some NACK to inform the leader
+		// we already have higher voting number
+		Message nack;
+		nack.messageType = NACK;
+		nack.instanceId = msg.instanceId;
+		nack.ballotNumber = entry.getLastPromise();
+		nack.data.value = TRYING;
+		nack.size = sizeof(nack.data.value);
+		messageReceiver.sendMessage(msg.sender, nack);
+	}
+}
+
+SinglePaxosEntity::voted(Message msg)
+{
+	if(status == POLLING and msg.data.value == entry.getLastVotedBallot())
+	{
+		// if sender is currently in voters set then no action is taken,
+		// otherwise senders is added to set of voters.
+		voters.union(sender);
+		lastPoolingTime = time(0);
+		
+		// if we get the voted message from majority of processes, then we can
+		// end by sending succeed message to all processes
+		if(voters.size() >= majority)
+		{
+
+			Message succMsg;
+			succMsg.messageType = SUCCEED;
+			succMsg.instanceId = msg.instanceId;
+			succMsg.sender = myProcessID;
+			succMsg.data.value = ss.getValue();
+			succMsg.size = sizeof(ss.getValue());
+			
+			mr.broadcastMessage(succMsg); //(also to itself)
+		}
+	}
+}
+
+SinglePaxosEntity::succeed(Message msg)
+{
+	// the order of this operations are very important. If we swap them,
+	// it will be possible that we set success value to true, having old
+	// value for this instance. After crash we will read that this instance
+	// was succeeded, but value will be incorrect.
+	setValue(msg.data);
+	setSucceeded(true);
+}
+			   
+			   
+-------------------------------------------------
+                                  State Machine
+-------------------------------------------------			   
+
+StateMachine::StateMachine(MessageReceiver & mr)
+{
+	messageReceiver = mr;
+}
+			   
+StateMachine::addValue(Data & data, int instanceId)
+{
+	// we can add this data to the list of all finished 
+	// consensus data.
+	commands[instanceId] = data;
+	
+	// try to expand the coherent part of commands
+	while(commands.containsKey(lastCoherentPart + 1))
+	{
+		// this to lines should be executed atomic
+		execute(commands[lastCoherentPart + 1]);
+		lastCoherentPart++;
+	}
+}
+
+StateMachine::execute(Data data)
+{
+	// here some action which this state machine do
+	print(data.value);
+	
+	// send respone to client - does everyone send, or only the leader?
+	// What if he crashes?
+	
+	// if(I am the leader)
+	// {
+		messageReceiver.send(data.klient, ACK);
+	// }
+}
+			   
+-------------------------------------------------
+                                  Group Members
+-------------------------------------------------
+
+GroupMembers::GroupMembers(FailureDetector & fd)
+{
+	failureDetector = fd;
+	
+	// group must be formed HERE.
+	
+	// 1st way:
+	// TODO: send a message to join the group
+	
+	// 2nd way:
+	// Read config file
+	
+	const string groupFile;
+	
+	int number = 0;
+	while ( ! end_of_file(groupFile) )
+	{
+		currentMembers.add( readFile(groupFile,number) );
+		number++;
+	}
+	
+	foreach(proc_id member, currentMembers)
+	{
+		// We set all the times for now, otherwise we would think we're the leader
+		failureDetector.lastMessageReceived[member] = time(0);
+	}
+	
+	// Optional: waiting a timeout for messages to know the group much better at
+	// the beginning of consensus.
+}
+
+GroupMembers::isMember(proc_id)
+{
+	return currentMembers.exists(proc_id)
+}
+
+GroupMembers::addMember(proc_id id)
+{
+	// add member to list and notify failure detector
+	// that group has changed
+	currentMemebers.add(id);
+	failureDetector.addMember(id);
+}
+
+GroupMembers::removeMember(proc_id id)
+{
+	// remove member from current members list and notify 
+	// failure detector that current group has changed
+	currentMembers.remove(id);
+	failureDetector.removeMember(id);
+}
+
+GroupMembers::getMemberCount()
+{
+	return currentMembers.size();
+}
+
+GroupMembers::getMajority()
+{
+	return currentMembers.size() / 2 + 1;
+}
+
+-------------------------------------------------
+                            Stable storage (hard disk)
+-------------------------------------------------
+
+StableStorage::SingleEntry::singleEntry(uint num, int & offset)
+{
+	lastOffset = offset; // warning: both are references!
+	number = num; // Entry learns instance number it's offset in main file
+	succeeded = false;
+	lastBallot = lastPromise = NoVote;
+}
+
+StableStorage::SingleEntry::setSucceded(bool s)
+{
+	writeToFile(mainFile, number*sizeof(singleEntry), s);
+	succeeded = s;
+}
+
+StableStorage::SingleEntry::setLastBallot(vote_t lb)
+{
+	writeToFile(mainFile, number*sizeof(singleEntry)+sizeof(succeeded), lb);
+	lastBallot=lb;
+}
+
+StableStorage::SingleEntry::setLastPromise(vote_t)
+{
+	writeToFile(mainFile,
+			number*sizeof(singleEntry) + sizeof(succeeded) + sizeof(lastBallot),
+			lb);
+	lastBallot=lb;
+}
+
+StableStorage::SingleEntry::setValue(value_t val)
+{
+	// Two operations here must be done without any other operations on offset
+	// value; if one object is not enough for that, one lock should do.
+	uint offset = lastOffset;
+	lastOffset = lastOffset + val.size;
+
+	writeToFile(valuesFile, offset, val.data.value);
+
+	writeToFile(valuesFile,
+				number*sizeof(singleEntry) + sizeof(succeeded) +
+				sizeof(lastBallot) + sizeof(lastPromise),
+				offset);
+	offsetToValue = offset;
+
+	writeToFile(valuesFile,
+				number*sizeof(singleEntry) + sizeof(succeeded) +
+				sizeof(lastBallot)+sizeof(lastPromise)+sizeof(offsetToValue),
+				val.size);
+	sizeOfValue = val.size;
+	// Only if above one succeeds, the program considers value to be written.
+
+
+}
+
+StableStorage::SingleEntry::getValue()
+{
+	if(sizeOfValue == 0) return NULL; // that means a no-value (it's size is 0)
+	return readFile(valuesFile,offsetToValue);
+}
+
+StableStorage::addNewEntry()
+{
+	paxosData.add( singleEntry(paxosData.count(), lastOffset) );
+	writeToFile(stateFile,0,paxosData.count());
+}
+
+StableStorage::StableStorage()
+{
+	uint count = readFile(stateFile,0, sizeof(uint));
+
+	addNewEntries(count);
+
+	for(count times)
+	{
+		succeeded = readFile(mainFile, i*sizeof(singleEntry));
+		lastPromise = readFile(mainFile, i*sizeof(singleEntry)+...);
+		lastBallot = readFile(mainFile, i*sizeof(singleEntry)+...);
+		offsetToValue = readFile(mainFile, i*sizeof(singleEntry)+...);
+		sizeOfValue = readFile(mainFile, i*sizeof(singleEntry)+...);
+	}
+}
+
+
+-------------------------------------------------
+                                    Heartbeat
+-------------------------------------------------
+
+Heartbeat::Heartbeat(MessageReceiver & mr, groupMembers & gm)
+{
+	messageReceiver = mr;
+	currentMembers = gm.currentMembers;
+	
+	// Preparing the 'alive' message.
+	mes.sender = myProcessID;
+	mes.messageType = ALIVE
+	mes.instanceId = size = data = NULL; // We don't include these fields here
+}
+
+Heartbeat::heartBeater::run()
+{
+	while(isRunning)
+	{
+		// Broadcasting the message to others
+		mr.broadcastMessage(mes);
+		
+		// The time _must_be double, otherwise most languages will have 0 in here!
+		suspend thread for (double)( FaliureDetector::timeout / countPerTimeout );
+	}
+}
+
+-------------------------------------------------
+                                   Initialization
+-------------------------------------------------
+// this is example initialization of one multiPaxos instance.
+void init()
+{
+	FailureDetector fd = FailureDetector();
+	GroupMembers gm = GroupMembers(fd);
+	MessageReceiver msgReceiver = MessageReceiver(fd, gm);
+	StableStorage storage = StableStorage();
+	MultiPaxos paxos = MultiPaxos(fd, msgReceiver, gm, storage);
+}
+
+\end{lstlisting}
