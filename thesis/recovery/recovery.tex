@@ -1,7 +1,9 @@
 \chapter{Recovery}
 \label{chapter:recovery}
 
-In this chapter, we describe the issues concerning recovery from crash. We start from short overview of recovery and then present four different algorithms -- crash-stop, crash-recovery with stable storage, epoch-based recovery and view-based recovery. \linebreak After that, we summarize and compare performance and fault tolerance of the algorithms.
+In this chapter, we describe the issues concerning recovery from crash. We start from short overview of recovery and then present four different algorithms -- crash-stop, crash-recovery with stable storage, epoch-based recovery and view-based recovery. \linebreak After that, we summarize and compare performance and fault tolerance of the algorithms. 
+
+Descriptions and proofs of algorithms presented in this chapter can be also found in Nuno Santos technical report \cite{Nun10}. Pseudocodes provided in this chapter are sligthly modified version of pseudocodes from \cite{Nun10}.
 
 \section{Overview}
 
@@ -51,44 +53,47 @@ Description of variables used in algorithm below:
   \item[$state_p$] -- the last snapshot made by service or received from catch-up
 \end{tightList}
 
-\begin{algorithmic}[1]
-  \INIT{}
-    \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
-    \STATE $view_p \leftarrow 0$
-    \IF{$view_p \mod n = p$}
-      \STATE $view_p \leftarrow 1$
-    \ENDIF
-    \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
-    \STATE
-    \IF{recovery after crash}
-      \STATE $view_p \leftarrow$ last view number written to stable storage
-      \FOR{$<id, view, value>$ from stable storage}
-        \STATE $log_p[id] \leftarrow <view, value>$
-      \ENDFOR
-      \STATE $state_p \leftarrow$ last snapshot saved to stable storage
-    \ENDIF
-    \STATE
-    \STATE join Paxos protocol
-  \ENDINIT
+\begin{algorithm}
+  \caption{Crash-recovery with stable storage \protect\cite{Nun10}.}
+  \begin{algorithmic}[1]
+    \INIT{}
+      \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
+      \STATE $view_p \leftarrow 0$
+      \IF{$view_p \mod n = p$}
+        \STATE $view_p \leftarrow 1$
+      \ENDIF
+      \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
+      \STATE
+      \IF{recovery after crash}
+        \STATE $view_p \leftarrow$ last view number written to stable storage
+        \FOR{$<id, view, value>$ from stable storage}
+          \STATE $log_p[id] \leftarrow <view, value>$
+        \ENDFOR
+        \STATE $state_p \leftarrow$ last snapshot saved to stable storage
+      \ENDIF
+      \STATE
+      \STATE join Paxos protocol
+    \ENDINIT
 
-  \vspace{1em}
-  \PROCEDURE{advanceView(view)}
-    \STATE write $view$ to stable storage
-    \STATE $view_p \leftarrow view$
-  \ENDPROC
+    \vspace{1em}
+    \PROCEDURE{advanceView(view)}
+      \STATE write $view$ to stable storage
+      \STATE $view_p \leftarrow view$
+    \ENDPROC
 
-  \vspace{1em}
-  \PROCEDURE{updateValue(id, view, value)}
-    \STATE $log_p[id] \leftarrow <view, value>$
-    \STATE write $<id, view, value>$ to stable storage
-  \ENDPROC
+    \vspace{1em}
+    \PROCEDURE{updateValue(id, view, value)}
+      \STATE $log_p[id] \leftarrow <view, value>$
+      \STATE write $<id, view, value>$ to stable storage
+    \ENDPROC
 
-  \vspace{1em}
-  \PROCEDURE{newSnapshot(snapshot)}
-    \STATE write $snapshot$ to stable storage
-    \STATE $state_p \leftarrow snapshot$ 
-  \ENDPROC
-\end{algorithmic}
+    \vspace{1em}
+    \PROCEDURE{newSnapshot(snapshot)}
+      \STATE write $snapshot$ to stable storage
+      \STATE $state_p \leftarrow snapshot$ 
+    \ENDPROC
+  \end{algorithmic}
+\end{algorithm}
 
 On recovery, the algorithm reads the view, values for all consensus instances and last snapshot from stable storage and can join a Paxos protocol (the process cannot respond to any message until it loads everything from stable storage).
 
@@ -109,54 +114,57 @@ We will use following variables in the pseudocode:
 \end{tightList}
 
 The pseudocode below should explain this algorithm:
-\begin{algorithmic}[1]
-  \INIT{}
-    \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
-    \STATE $view_p \leftarrow 0$
-    \IF{$view_p \mod n = p$}
-      \STATE $view_p \leftarrow view_p + 1$
-    \ENDIF
-    \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
-    \STATE $\forall q : epoch_p[q] \leftarrow 0$
-    \STATE
-    \IF{recovery after crash}
-      \STATE $epoch_p[p] \leftarrow$ last epoch number written to stable storage
-      \STATE $epoch_p[p] \leftarrow epoch_p[p] + 1$
-      \STATE send $<\recovery, epoch_p[p]>$ to all except $p$
-      \STATE wait for $n-f <\recoveryAnswer, epoch, view, highestId>$ messages including from primary of highest view received
-      \STATE $\forall s \in \Pi : epoch_p[s] \leftarrow \max\{{epoch[s] \; \mathrm{ received}}\}$
-      \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
-      \STATE download all instance up to $highestId$ from leader using catch-up module
-    \ENDIF
-      \STATE write $epoch_p[p]$ to stable storage
-    \STATE
-    \STATE join Paxos protocol
-  \ENDINIT
+\begin{algorithm}
+  \caption{Epoch-based recovery \protect\cite{Nun10}.}
+  \begin{algorithmic}[1]
+    \INIT{}
+      \STATE $log_p \leftarrow \bot$ %\COMMENT {In-memory log}
+      \STATE $view_p \leftarrow 0$
+      \IF{$view_p \mod n = p$}
+        \STATE $view_p \leftarrow view_p + 1$
+      \ENDIF
+      \STATE $state_p \leftarrow \bot$ %\COMMENT{The last snapshot}
+      \STATE $\forall q : epoch_p[q] \leftarrow 0$
+      \STATE
+      \IF{recovery after crash}
+        \STATE $epoch_p[p] \leftarrow$ last epoch number written to stable storage
+        \STATE $epoch_p[p] \leftarrow epoch_p[p] + 1$
+        \STATE send $<\recovery, epoch_p[p]>$ to all except $p$
+        \STATE wait for $n-f <\recoveryAnswer, epoch, view, highestId>$ messages including from primary of highest view received
+        \STATE $\forall s \in \Pi : epoch_p[s] \leftarrow \max\{{epoch[s] \; \mathrm{ received}}\}$
+        \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
+        \STATE download all instance up to $highestId$ from leader using catch-up module
+      \ENDIF
+        \STATE write $epoch_p[p]$ to stable storage
+      \STATE
+      \STATE join Paxos protocol
+    \ENDINIT
 
-  \vspace{1em}
-  \UPON{receive $<\recovery, e>$ from $q$}
-    \IF{$q$ is primary of $view_p$}
-      \STATE change to a higher view where $q$ is not primary
-      \STATE wait until view change is complete
-    \ENDIF
-    \STATE $epoch_p[q] \leftarrow e$
-    \STATE send $<\recoveryAnswer, epoch_p, view_p, highestId_p>$ to $q$
-  \ENDUPON
+    \vspace{1em}
+    \UPON{receive $<\recovery, e>$ from $q$}
+      \IF{$q$ is primary of $view_p$}
+        \STATE change to a higher view where $q$ is not primary
+        \STATE wait until view change is complete
+      \ENDIF
+      \STATE $epoch_p[q] \leftarrow e$
+      \STATE send $<\recoveryAnswer, epoch_p, view_p, highestId_p>$ to $q$
+    \ENDUPON
 
-  \vspace{1em}
-  \UPON{$<\prepareOK, epoch, view, highestId>$ from $q$}
-    \IF{$view > view_p$}
-      \STATE $view_p \leftarrow view$
-      \STATE send $<\prepare, view_p>$ to all
-    \ELSE
-      \STATE $\forall q : epoch_p[q] \leftarrow \max\{{epoch[q], epoch_q[q]}\}$
-      \FORALL{$s \in \Pi$}
-        \STATE discard all messages $<\prepareOK, epoch, view_p, -, ->$ from $s$ where $epoch[s] < epoch_q[p]$
-      \ENDFOR
-      \STATE execute normal handler 
-    \ENDIF
-  \ENDUPON
-\end{algorithmic}
+    \vspace{1em}
+    \UPON{$<\prepareOK, epoch, view, highestId>$ from $q$}
+      \IF{$view > view_p$}
+        \STATE $view_p \leftarrow view$
+        \STATE send $<\prepare, view_p>$ to all
+      \ELSE
+        \STATE $\forall q : epoch_p[q] \leftarrow \max\{{epoch[q], epoch_q[q]}\}$
+        \FORALL{$s \in \Pi$}
+          \STATE discard all messages $<\prepareOK, epoch, view_p, -, ->$ from $s$ where $epoch[s] < epoch_q[p]$
+        \ENDFOR
+        \STATE execute normal handler 
+      \ENDIF
+    \ENDUPON
+  \end{algorithmic}
+\end{algorithm}
 
 Epoch-based recovery algorithms tolerates $f = \left\lfloor \frac{n-1}{2} \right\rfloor $ crashed processes. It is required that at least majority of processes are always correct - otherwise the algorithm will not be able to continue.
 
@@ -175,7 +183,7 @@ Process 0 already received three \prepareOK responses, from [0, 1, 2]. However, 
 \begin{figure}[h]
  \centering
  \includegraphics[keepaspectratio, width=0.9\textwidth]{recovery/epoch_recovery.pdf}
- \caption{Example of epoch-based recovery}
+ \caption{Example of epoch-based recovery.}
  \label{fig:epoch_based_recovery}
 \end{figure}
 
@@ -186,47 +194,50 @@ The next algorithm is view-based recovery. It has similar properties to epoch-ba
 
 The pseudocode of this algorithm is presented below: 
 
-\begin{algorithmic}[1]
-  \INIT{}
-    \STATE $log_p \leftarrow \bot$
-    \STATE $view_p \leftarrow 0$
-    \IF{$view_p \mod n = p$}
-      \STATE $view_p \leftarrow view_p + 1$
-    \ENDIF
-    \STATE $state_p \leftarrow \bot$
-    \STATE
-    \IF{recovery after crash}
-      \STATE $view_p \leftarrow$ last view number written to stable storage
+\begin{algorithm}
+  \caption{View-based recovery \protect\cite{Nun10}.}
+  \begin{algorithmic}[1]
+    \INIT{}
+      \STATE $log_p \leftarrow \bot$
+      \STATE $view_p \leftarrow 0$
       \IF{$view_p \mod n = p$}
         \STATE $view_p \leftarrow view_p + 1$
       \ENDIF
-      \STATE send $<\recovery[], view_p>$ to all except $p$
-      \STATE wait for $n-f <\recoveryAnswer[], view, highestId>$ messages including from primary of highest view received
-      \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
-      \STATE download all instance up to $highestId$ from leader using catch-up module
-    \ENDIF
-    \STATE
-    \STATE join Paxos protocol
-  \ENDINIT
+      \STATE $state_p \leftarrow \bot$
+      \STATE
+      \IF{recovery after crash}
+        \STATE $view_p \leftarrow$ last view number written to stable storage
+        \IF{$view_p \mod n = p$}
+          \STATE $view_p \leftarrow view_p + 1$
+        \ENDIF
+        \STATE send $<\recovery[], view_p>$ to all except $p$
+        \STATE wait for $n-f <\recoveryAnswer[], view, highestId>$ messages including from primary of highest view received
+        \STATE $view_p \leftarrow \max\{{ view \; \mathrm{received}}\}$
+        \STATE download all instance up to $highestId$ from leader using catch-up module
+      \ENDIF
+      \STATE
+      \STATE join Paxos protocol
+    \ENDINIT
 
-  \vspace{1em}
-  \PROCEDURE{advanceView($view$)}
-    \STATE write $view$ to stable storage
-    \STATE $view_p \leftarrow view$
-  \ENDPROC
+    \vspace{1em}
+    \PROCEDURE{advanceView($view$)}
+      \STATE write $view$ to stable storage
+      \STATE $view_p \leftarrow view$
+    \ENDPROC
 
-  \vspace{1em}
-  \UPON{receive $<\recovery[], view>$ from $q$}
-    \IF{$q$ is primary of $view_p$}
-      \STATE change to a higher view where $q$ is not primary
-      \STATE wait until view change is complete
-    \ENDIF
-    \IF{$view > view_p$}
-      \STATE advanceView(view)
-    \ENDIF
-    \STATE send $<\recoveryAnswer[], view_p, highestId_p>$ to $q$
-  \ENDUPON
-\end{algorithmic}
+    \vspace{1em}
+    \UPON{receive $<\recovery[], view>$ from $q$}
+      \IF{$q$ is primary of $view_p$}
+        \STATE change to a higher view where $q$ is not primary
+        \STATE wait until view change is complete
+      \ENDIF
+      \IF{$view > view_p$}
+        \STATE advanceView(view)
+      \ENDIF
+      \STATE send $<\recoveryAnswer[], view_p, highestId_p>$ to $q$
+    \ENDUPON
+  \end{algorithmic}
+\end{algorithm}
 
 This algorithm makes synchronous write to stable storage on every view change. \linebreak If the network is stable and the leader does not crash, performance of the algorithm should be the same as in crash-stop model. If the view is changed often because of message loss or leader crash, the performance can decrease.
 
@@ -247,14 +258,14 @@ We presented 4 different algorithms implemented in JPaxos library. Each algorith
     State transfer      & no         & if needed           & yes             & yes         \\
     Increased msg size  & ---        & ---                 & ---             & \prepareOK by $n$\\
   \end{tabular}
-  \caption{Comparison of recovery algorithms.}
+  \caption{Comparison of recovery algorithms \protect\cite{Nun10}.}
   \scriptsize
 \end{table}
 
 \begin{figure}[h]
  \centering
  \includegraphics[keepaspectratio, width=0.75\textwidth]{recovery/recovery_algorithms.pdf}
- \caption{Comparison of recovery algorithms}
+ \caption{Comparison of recovery algorithms.}
  \label{fig:recovery_algorithms}
 \end{figure}
 
@@ -263,5 +274,3 @@ Crash recovery with full stable storage is an algorithm with the best fault tole
 Crash stop does not provide any recovery (crashed processes will never be correct again) and all the time majority of processes have to be correct. However, no synchronous writes to stable storage are made so it provides the best performance.
 
 The compromise between crash recovery with stable storage and crash stop are view-based and epoch-based recovery. They support recovery of crashed process and their performance should be close to crash-stop model. If service does not have to tolerate catastrophic failures, it is the best to use them in production environment.
-
-Proofs of all algorithms presented in this chapter can be found in \cite{Nun10}. 
