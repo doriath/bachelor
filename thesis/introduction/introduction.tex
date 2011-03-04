@@ -68,45 +68,56 @@ Jan Kończak has prepared the design and implementation~of:
 
 \noindent JPaxos has been created in collaboration with Laboratoire de Systèmes Répartis at École Polytechnique Fédérale de Lausanne (Distributed Systems Laboratory at EPFL). Part of the ideas and implementations work has been done by Nuno Santos.
 
-\noindent Nuno Santos has prepared the design and implementation~of:
+\noindent Nuno Santos has done:
 \begin{tightList}
- \item[1.] Implementing, enhancing and fixing JPaxos
+  \item[\textbullet] initial implemention of JPaxos
   \begin{tightList}
-    \item[\textbullet] initial implementation 30.06.2009 (had about $13\%$ of current code size):
-    \begin{tightList}
-      \item[---] core MultiPaxos algorithm
-      \item[---] failure detector and leader selection
-      \item[---] basic replica, client and service implementation
-    \end{tightList}
-    \item[\textbullet] Renaming classes and cleaning up the code 22.09.2009
-    \item[\textbullet] Changing Benchmark project 06.10.2009
-    \item[\textbullet] Code cleanup 30.10.2009
-    \item[\textbullet] Tampering with the code 19.01.2010
-    \item[\textbullet] Improving the dispatcher thread 29.01.2010
-    \item[\textbullet] Moving failure detector from own thread to Paxos thread, tampering with the code 04.02.2020
-    \item[\textbullet] Adding support for paxos.properties file instead of hardcoded settings 05.02.2020
-    \item[\textbullet] Improving paxos.properties file 10.05.2010
-    \item[\textbullet] Code cleanup, theoretical bug fix 18.05.2010
-    \item[\textbullet] Moving catch-up from separate thread to the Paxos thread, rewrite proposer part batching, removing value from accept messages, improving retransmitter, rewriting TCP communication 22.06.2010
-    \item[\textbullet] Introducing priority queue in the Dispatcher thread, tampering with the code 24.06.2010
-    \item[\textbullet] Testing and fixes after branch merge 11.08.2010
-    \item[\textbullet] Improved batching 31.08.2010
-    \item[\textbullet] 'Improving' the TCP so that it does not work properly 30.09.2010
+    \item[---] core MultiPaxos algorithm
+    \item[---] failure detector and leader selection
+    \item[---] basic replica, client and service implementation
   \end{tightList}
-
-  \item[2. ] Benchmarking and using JPaxos
-  \begin{tightList}
-    \item[\textbullet] Started Leader Oracle (not included in JPaxos) 22.09.2009
-    \item[\textbullet] Changes to Leader Oracle 22.01.2010
-    \item[\textbullet] Changes to Leader Oracle 04.02.2020 - 32.02.2010
-    \item[\textbullet] Modifications for improving benchmarks 07,15,26.07.2010
-    \item[\textbullet] Further improvements for benchmarks 17.08.2010
-    \item[\textbullet] Improving benchmarks again... 13.09.2010
-  \end{tightList}
+  \item[\textbullet] refactoring of batching and threading model
+  \item[\textbullet] benchmarks of batching and pipelining modules
 \end{tightList}
 
+%\begin{tightList}
+% \item[1.] Implementing, enhancing and fixing JPaxos
+%  \begin{tightList}
+%    \item[\textbullet] initial implementation 30.06.2009 (had about $13\%$ of current code size):
+%    \begin{tightList}
+%      \item[---] core MultiPaxos algorithm
+%      \item[---] failure detector and leader selection
+%      \item[---] basic replica, client and service implementation
+%    \end{tightList}
+%    \item[\textbullet] Renaming classes and cleaning up the code 22.09.2009
+%    \item[\textbullet] Changing Benchmark project 06.10.2009
+%    \item[\textbullet] Code cleanup 30.10.2009
+%    \item[\textbullet] Tampering with the code 19.01.2010
+%    \item[\textbullet] Improving the dispatcher thread 29.01.2010
+%    \item[\textbullet] Moving failure detector from own thread to Paxos thread, tampering with the code 04.02.2020
+%    \item[\textbullet] Adding support for paxos.properties file instead of hardcoded settings 05.02.2020
+%    \item[\textbullet] Improving paxos.properties file 10.05.2010
+%    \item[\textbullet] Code cleanup, theoretical bug fix 18.05.2010
+%    \item[\textbullet] Moving catch-up from separate thread to the Paxos thread, rewrite proposer part batching, removing value from accept messages, improving retransmitter, rewriting TCP communication 22.06.2010
+%    \item[\textbullet] Introducing priority queue in the Dispatcher thread, tampering with the code 24.06.2010
+%    \item[\textbullet] Testing and fixes after branch merge 11.08.2010
+%    \item[\textbullet] Improved batching 31.08.2010
+%    \item[\textbullet] 'Improving' the TCP so that it does not work properly 30.09.2010
+%  \end{tightList}
+%
+%  \item[2. ] Benchmarking and using JPaxos
+%  \begin{tightList}
+%    \item[\textbullet] Started Leader Oracle (not included in JPaxos) 22.09.2009
+%    \item[\textbullet] Changes to Leader Oracle 22.01.2010
+%    \item[\textbullet] Changes to Leader Oracle 04.02.2020 - 32.02.2010
+%    \item[\textbullet] Modifications for improving benchmarks 07,15,26.07.2010
+%    \item[\textbullet] Further improvements for benchmarks 17.08.2010
+%    \item[\textbullet] Improving benchmarks again... 13.09.2010
+%  \end{tightList}
+%\end{tightList}
 
-\noindent The remaining modules were the result of our joint work.
+
+\noindent The remaining modules, benchmarks and bugfixes were the result of our joint work.
 
 
 \clearpage
