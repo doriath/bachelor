@@ -121,7 +121,7 @@ pdfkeywords = {paxos} {state machine} {replication} {consensus} {recovery}%
 
 % Blank info page for "karta dyplomowa"
 \thispagestyle{empty}\vspace*{\fill}%
-\begin{center}Tutaj przychodzi karta pracy dyplomowej;\\oryginał wstawiamy do wersji dla archiwum PP, w pozostałych kopiach wstawiamy ksero.\end{center}%
+\begin{center}\strut\end{center}%
 \vfill\cleardoublepage%
 
 \thispagestyle{empty}\vspace*{\fill}
@@ -136,7 +136,7 @@ science\\ and for the supervision of this work.}\end{flushright}%
 
 % Table of contents.
 \pagenumbering{Roman}\pagestyle{ppfcmthesis}%
-\tableofcontents* \cleardoublepage%
+\vspace*{-4em} \tableofcontents* \cleardoublepage%
 
 
 % Main content of your thesis starts here.
@@ -155,7 +155,10 @@ science\\ and for the supervision of this work.}\end{flushright}%
 \setcounter{pageTemp}{\value{page}}
 \pagenumbering{roman}
 \input{user_guide/JPaxos.tex}
+\setcounter{page}{1}
 \input{pseudocode/pseudocode.tex}
+
+\clearpage
 
 % Bibliography (books, articles) starts here.
 \pagenumbering{arabic}
