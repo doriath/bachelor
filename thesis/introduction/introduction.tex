@@ -45,7 +45,7 @@ In 2009, and subsequently in 2010, M. Primi et al.\ released two implementations
 
 The crash-recovery model has also been the subject of many research papers. \linebreak The \textit{Atomic Broadcast in Asynchronous Crash-Recovery Distributed Systems}~\cite{rodriguez2000atomic} provides definitions concerning recovery as well as shows a method to transform any crash-stop consensus protocol to the crash-recovery one.
 
-A summary of the crash-recovery approaches for the Paxos algorithm can be found in N. Santos technical report~\cite{Nun10}. All algorithms implemented by us are described there.
+A survey of the crash-recovery approaches for the Paxos algorithm can be found in N. Santos technical report~\cite{Nun10}. All algorithms implemented by us are described there.
 
 \section{Contributions}
 
@@ -66,13 +66,13 @@ Jan Kończak has prepared the design and implementation~of:
   \item[\textbullet] disc writers for full stable storage recovery.
 \end{tightList}
 
-\noindent JPaxos has been created in collaboration with Laboratoire de Systèmes Répartis at École Polytechnique Fédérale de Lausanne (Distributed Systems Laboratory at EPFL). Part of the ideas and implementations work has been done by Nuno Santos.
+\noindent JPaxos has been developed in collaboration with Laboratoire de Systèmes Répartis at École Polytechnique Fédérale de Lausanne (Distributed Systems Laboratory at EPFL). Part of the ideas and implementations work has been done by Nuno Santos - a research assistant in the aforementioned laboratory at EPFL, working towards his PhD degree.
 
-\noindent Nuno Santos has done:
+\noindent Nuno Santos has provided us with:
 \begin{tightList}
-  \item[\textbullet] initial implemention of JPaxos
+  \item[\textbullet] a preliminary, rough code that we built upon; the code included:
   \begin{tightList}
-    \item[---] core MultiPaxos algorithm
+    \item[---] the core MultiPaxos algorithm
     \item[---] failure detector and leader selection
     \item[---] basic replica, client and service implementation
   \end{tightList}

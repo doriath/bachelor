@@ -3,7 +3,7 @@
 
 In this chapter, we describe the issues concerning recovery from crash. We start from short overview of recovery and then present four different algorithms -- crash-stop, crash-recovery with stable storage, epoch-based recovery and view-based recovery. \linebreak After that, we summarize and compare performance and fault tolerance of the algorithms. 
 
-Descriptions and proofs of algorithms presented in this chapter can be also found in Nuno Santos technical report \cite{Nun10}. Pseudocodes provided in this chapter are sligthly modified version of pseudocodes from \cite{Nun10}.
+Descriptions and proofs of algorithms presented in this chapter can also be found in Santos's technical report \cite{Nun10}. Pseudocodes provided in this chapter are sligthly modified versions of pseudocodes from \cite{Nun10}. The modifications reflect the actual implementaiton of the algorithms in the JPaxos library.
 
 \section{Overview}
 
@@ -245,7 +245,7 @@ The recovery phase is quite similar to the epoch-based recovery. Recovering proc
 
 \section{Comparison}
 
-We presented 4 different algorithms implemented in JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table below, we present the comparison of all algorithms:
+We presented four different algorithms implemented in JPaxos library. Each algorithm has different performance and fault tolerance. To choose the best algorithm for user service, we need to decide what fault tolerance and performance is required. In the table in Figure \ref{fig:recovery-comparison}\footnote{This table appeared in Santos's technical report \cite{Nun10}. We have included the table in our thesis with the consent of the author.}, we present the comparison of all algorithms:
 \begin{table}[h]
   \footnotesize
   \begin{tabular}{lccccc}
@@ -259,6 +259,7 @@ We presented 4 different algorithms implemented in JPaxos library. Each algorith
     Increased msg size  & ---        & ---                 & ---             & \prepareOK by $n$\\
   \end{tabular}
   \caption{Comparison of recovery algorithms \protect\cite{Nun10}.}
+  \label{fig:recovery-comparison}
   \scriptsize
 \end{table}
 
