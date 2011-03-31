@@ -54,6 +54,7 @@ Jan Kończak has prepared the design and implementation~of:
   \item[\textbullet] catch-up module (Section \ref{sec:catch_up}),
   \item[\textbullet] snapshotting module (Section \ref{sec:snapshotting}),
   \item[\textbullet] service proxy  (Section \ref{sec:serviceProxy}),
+  \item[\textbullet] support for PaxosSTM library,
   \item[\textbullet] benchmark project.
 \end{tightList}
 
@@ -66,18 +67,27 @@ Jan Kończak has prepared the design and implementation~of:
   \item[\textbullet] disc writers for full stable storage recovery.
 \end{tightList}
 
+\noindent The remaining modules and bugfixes were the result of our joint work, described within the thesis. More specifically, these include:
+\begin{tightList}
+  \item[\textbullet] implementation of concurrent instances,
+  \item[\textbullet] implementation of batching,
+  \item[\textbullet] implementation of recovery algorithms,
+  \item[\textbullet] replicated hash map as an examples of deterministic service.
+\end{tightList}
+
 \noindent JPaxos has been developed in collaboration with Laboratoire de Systèmes Répartis at École Polytechnique Fédérale de Lausanne (Distributed Systems Laboratory at EPFL). Part of the ideas and implementations work has been done by Nuno Santos - a research assistant in the aforementioned laboratory at EPFL, working towards his PhD degree.
 
 \noindent Nuno Santos has provided us with:
 \begin{tightList}
   \item[\textbullet] a preliminary, rough code that we built upon; the code included:
   \begin{tightList}
-    \item[---] the core MultiPaxos algorithm
-    \item[---] failure detector and leader selection
-    \item[---] basic replica, client and service implementation
+    \item[---] the core MultiPaxos algorithm,
+    \item[---] failure detector and leader election,
+    \item[---] basic replica, client and service implementation,
   \end{tightList}
-  \item[\textbullet] refactoring of batching and threading model
-  \item[\textbullet] benchmarks of batching and pipelining modules
+  \item[\textbullet] refactoring of batching and threading model,
+  \item[\textbullet] benchmarks of batching and pipelining modules,
+  \item[\textbullet] description of recovery algorithms in survey paper.
 \end{tightList}
 
 %\begin{tightList}
@@ -117,7 +127,6 @@ Jan Kończak has prepared the design and implementation~of:
 %\end{tightList}
 
 
-\noindent The remaining modules, benchmarks and bugfixes were the result of our joint work.
 
 
 \clearpage
