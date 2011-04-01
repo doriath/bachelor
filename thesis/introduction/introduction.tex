@@ -49,7 +49,9 @@ A survey of the crash-recovery approaches for the Paxos algorithm can be found i
 
 \section{Contributions}
 
-Jan Kończak has prepared the design and implementation~of:
+JPaxos is a joint project with Laboratoire de Systèmes Répartis at École Polytechnique Fédérale de Lausanne (Distributed Systems Laboratory at EPFL).
+
+\noindent Jan Kończak has prepared the design and implementation~of:
 \begin{tightList}
   \item[\textbullet] catch-up module (Section \ref{sec:catch_up}),
   \item[\textbullet] snapshotting module (Section \ref{sec:snapshotting}),
@@ -67,28 +69,32 @@ Jan Kończak has prepared the design and implementation~of:
   \item[\textbullet] disc writers for full stable storage recovery.
 \end{tightList}
 
-\noindent The remaining modules and bugfixes were the result of our joint work, described within the thesis. More specifically, these include:
+\noindent The following modules are the result of our joint work:
 \begin{tightList}
-  \item[\textbullet] implementation of concurrent instances,
-  \item[\textbullet] implementation of batching,
   \item[\textbullet] implementation of recovery algorithms,
+  \item[\textbullet] implementation of concurrent instances,
   \item[\textbullet] replicated hash map as an examples of deterministic service.
 \end{tightList}
 
-\noindent JPaxos has been developed in collaboration with Laboratoire de Systèmes Répartis at École Polytechnique Fédérale de Lausanne (Distributed Systems Laboratory at EPFL). Part of the ideas and implementations work has been done by Nuno Santos - a research assistant in the aforementioned laboratory at EPFL, working towards his PhD degree.
+%\noindent The remaining modules and bugfixes were the result of our joint work, described within the thesis. More specifically, these include:
+%\begin{tightList}
+%  \item[\textbullet] implementation of concurrent instances,
+%  \item[\textbullet] implementation of batching,
+%  \item[\textbullet] implementation of recovery algorithms,
+%  \item[\textbullet] replicated hash map as an examples of deterministic service.
+%\end{tightList}
 
-\noindent Nuno Santos has provided us with:
+\noindent The initial implementation of JPaxos has been done by Nuno Santos, a PhD student at the aforementioned laboratory at EPFL. It included the following:
+
 \begin{tightList}
-  \item[\textbullet] a preliminary, rough code that we built upon; the code included:
-  \begin{tightList}
-    \item[---] the core MultiPaxos algorithm,
-    \item[---] failure detector and leader election,
-    \item[---] basic replica, client and service implementation,
-  \end{tightList}
-  \item[\textbullet] refactoring of batching and threading model,
-  \item[\textbullet] benchmarks of batching and pipelining modules,
-  \item[\textbullet] description of recovery algorithms in survey paper.
+  \item[\textbullet] initial MultiPaxos algorithm implementation,
+  \item[\textbullet] failure detector and leader election,
+  \item[\textbullet] preliminary implementations of the replica, client and service modules,
+  \item[\textbullet] preliminary implementation of parallel instances.
 \end{tightList}
+
+\noindent Implementation of batching module was developed jointly by us and Nuno Santos.
+
 
 %\begin{tightList}
 % \item[1.] Implementing, enhancing and fixing JPaxos
